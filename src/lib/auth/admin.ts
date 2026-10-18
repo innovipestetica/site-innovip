@@ -18,7 +18,7 @@ export type AdminStatus =
  * Camada de acesso (DAL) do administrador.
  *
  * - getClaims() valida a assinatura do JWT (não confia em getSession()).
- * - O banco decide se o usuário é o administrador (private.admin_account) e
+ * - O banco decide se o usuário é administrador (private.admin_accounts) e
  *   se a sessão tem MFA (aal2), via RPC admin_session_status.
  * - Nunca usa user_metadata nem e-mail como critério de autorização.
  *

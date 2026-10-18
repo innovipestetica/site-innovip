@@ -1,7 +1,7 @@
 # Innovip — site e painel
 
-Site comercial da Innovip Clínica de Estética, com CMS e painel `/admin` para um
-único administrador. Especificação: *Innovip — Especificação técnica v1.0 (18/10/2026)*.
+Site comercial da Innovip Clínica de Estética, com CMS e painel `/admin` para os
+administradores da clínica (hoje dois; a especificação previa um — ver docs/admin-provisionamento.md). Especificação: *Innovip — Especificação técnica v1.0 (18/10/2026)*.
 
 Arquitetura: **Domínio/DNS (Locaweb) → Vercel → Next.js → Supabase**.
 
@@ -20,7 +20,8 @@ Arquitetura: **Domínio/DNS (Locaweb) → Vercel → Next.js → Supabase**.
 
 - Next.js (App Router, Cache Components) com TypeScript estrito, Tailwind e tokens de design provisórios a partir da logo.
 - Clientes Supabase separados: navegador (`client.ts`), servidor com a sessão (`server.ts`) e privilegiado (`privileged.ts`, só servidor).
-- Migração `20261018120000_foundation.sql`: schema `private`, `admin_account` singleton, `is_admin()` exigindo MFA (`aal2`), auditoria e grants mínimos por padrão.
+- Migração `20261018120000_foundation.sql`: schema `private`, administradores, `is_admin()` exigindo MFA (`aal2`), auditoria e grants mínimos por padrão.
+- Migração `20261018200000_multiple_admins.sql`: troca o administrador único por `private.admin_accounts` (até 5), por decisão da clínica.
 - Login do administrador, MFA TOTP (inscrição por QR code e verificação), recuperação de senha sem enumeração, logout no servidor.
 - Autorização reavaliada em cada página/ação (`requireAdmin`/`assertAdmin`) e no banco; o proxy faz só checagem otimista e renovação de sessão.
 - Cabeçalhos de segurança (CSP, frame, nosniff, referrer, HSTS em produção), `/admin` e `/auth` com `no-store` e `noindex`, robots bloqueado até o lançamento.
@@ -69,7 +70,7 @@ Veja [docs/configuracao-supabase.md](docs/configuracao-supabase.md) e
 | `npm run check` | typecheck + lint + unitários |
 | `npm run db:push` | aplica migrações no projeto vinculado |
 | `npm run db:types` | regenera `src/lib/supabase/database.types.ts` |
-| `npm run admin:provision -- --email X` | vincula o administrador único |
+| `npm run admin:provision -- --email X` | adiciona um administrador (`--remove` remove, `--list` lista) |
 
 ## Estrutura
 

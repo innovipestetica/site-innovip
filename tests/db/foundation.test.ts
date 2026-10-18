@@ -12,11 +12,11 @@ import {
  * Matriz de acesso da etapa 1 (seção 12 da especificação), testada com os
  * papéis reais do Supabase — não com service_role.
  */
-describe.skipIf(!hasDatabase)("fundação: admin_account, autorização e grants", () => {
+describe.skipIf(!hasDatabase)("fundação: admin_accounts, autorização e grants", () => {
   it("anônimo não acessa o schema privado nem as RPCs do painel", async () => {
     await inRollbackTransaction(async (db) => {
       await expect(
-        asRole(db, "anon", null, () => db.query("select * from private.admin_account")),
+        asRole(db, "anon", null, () => db.query("select * from private.admin_accounts")),
       ).rejects.toThrow(/permission denied/);
 
       await expect(
@@ -48,11 +48,11 @@ describe.skipIf(!hasDatabase)("fundação: admin_account, autorização e grants
       expect(isAdmin.rows[0]?.v).toBe(false);
 
       for (const sql of [
-        "select * from private.admin_account",
+        "select * from private.admin_accounts",
         "select * from private.audit_logs",
-        `insert into private.admin_account (singleton, user_id) values (1, '${other.id}')`,
-        `update private.admin_account set user_id = '${other.id}'`,
-        "delete from private.admin_account",
+        `insert into private.admin_accounts (user_id) values ('${other.id}')`,
+        `update private.admin_accounts set user_id = '${other.id}'`,
+        "delete from private.admin_accounts",
         "select private.write_audit_log('auth.sign_in')",
       ]) {
         await expect(
@@ -112,36 +112,84 @@ describe.skipIf(!hasDatabase)("fundação: admin_account, autorização e grants
       // Mesmo o admin não lê nem altera a tabela diretamente.
       await expect(
         asRole(db, "authenticated", userClaims(admin, "aal2"), () =>
-          db.query("select * from private.admin_account"),
+          db.query("select * from private.admin_accounts"),
         ),
       ).rejects.toThrow(/permission denied/);
     });
   });
 
-  it("singleton: no máximo um administrador", async () => {
+  it("dois administradores: cada um com MFA próprio e auditoria com o próprio autor", async () => {
     await inRollbackTransaction(async (db) => {
       const a = await createAuthUser(db);
       const b = await createAuthUser(db);
       await makeAdmin(db, a);
+      await makeAdmin(db, b, { reset: false });
 
-      await db.query("savepoint dup");
-      await expect(
-        db.query("insert into private.admin_account (user_id) values ($1)", [b.id]),
-      ).rejects.toThrow(/duplicate key|admin_account_pkey/);
-      await db.query("rollback to savepoint dup");
+      for (const admin of [a, b]) {
+        const ok = await asRole(db, "authenticated", userClaims(admin, "aal2"), () =>
+          db.query<{ s: string }>("select public.admin_session_status() as s"),
+        );
+        expect(ok.rows[0]?.s).toBe("ok");
 
-      await expect(
-        db.query("insert into private.admin_account (singleton, user_id) values (2, $1)", [b.id]),
-      ).rejects.toThrow(/admin_account_singleton/);
+        const semMfa = await asRole(db, "authenticated", userClaims(admin, "aal1"), () =>
+          db.query<{ s: string }>("select public.admin_session_status() as s"),
+        );
+        expect(semMfa.rows[0]?.s).toBe("mfa_required");
+
+        await asRole(db, "authenticated", userClaims(admin, "aal2"), () =>
+          db.query("select public.log_admin_auth_event('auth.sign_in')"),
+        );
+        const log = await db.query<{ actor_user_id: string }>(
+          "select actor_user_id from private.audit_logs order by id desc limit 1",
+        );
+        expect(log.rows[0]?.actor_user_id).toBe(admin.id);
+      }
     });
   });
 
-  it("service_role (chave secreta) também não altera admin_account", async () => {
+  it("administrador removido perde o acesso na hora", async () => {
+    await inRollbackTransaction(async (db) => {
+      const a = await createAuthUser(db);
+      const b = await createAuthUser(db);
+      await makeAdmin(db, a);
+      await makeAdmin(db, b, { reset: false });
+
+      await db.query("delete from private.admin_accounts where user_id = $1", [b.id]);
+      const res = await asRole(db, "authenticated", userClaims(b, "aal2"), () =>
+        db.query<{ s: string; a: boolean }>(
+          "select public.admin_session_status() as s, private.is_admin() as a",
+        ),
+      );
+      expect(res.rows[0]).toEqual({ s: "not_admin", a: false });
+    });
+  });
+
+  it("sem duplicidade e no máximo 5 administradores", async () => {
+    await inRollbackTransaction(async (db) => {
+      const users = [];
+      for (let i = 0; i < 6; i++) users.push(await createAuthUser(db));
+      const [first, , , , , sixth] = users;
+      await makeAdmin(db, first!);
+
+      await db.query("savepoint dup");
+      await expect(
+        db.query("insert into private.admin_accounts (user_id) values ($1)", [first!.id]),
+      ).rejects.toThrow(/duplicate key|admin_accounts_pkey/);
+      await db.query("rollback to savepoint dup");
+
+      for (const u of users.slice(1, 5)) await makeAdmin(db, u, { reset: false });
+      await expect(
+        db.query("insert into private.admin_accounts (user_id) values ($1)", [sixth!.id]),
+      ).rejects.toThrow(/limite de administradores/);
+    });
+  });
+
+  it("service_role (chave secreta) também não altera admin_accounts", async () => {
     await inRollbackTransaction(async (db) => {
       const a = await createAuthUser(db);
       await expect(
         asRole(db, "service_role", { role: "service_role" }, () =>
-          db.query("insert into private.admin_account (user_id) values ($1)", [a.id]),
+          db.query("insert into private.admin_accounts (user_id) values ($1)", [a.id]),
         ),
       ).rejects.toThrow(/permission denied/);
     });

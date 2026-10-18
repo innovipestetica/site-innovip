@@ -36,10 +36,13 @@ export async function createAuthUser(db: Client | PoolClient): Promise<TestUser>
   return { id, email };
 }
 
-/** Torna `user` o administrador (substitui o atual, só dentro da transação). */
-export async function makeAdmin(db: Client, user: TestUser): Promise<void> {
-  await db.query("delete from private.admin_account");
-  await db.query("insert into private.admin_account (user_id) values ($1)", [user.id]);
+/**
+ * Torna `user` administrador (só dentro da transação). Limpa a lista antes
+ * para os testes não dependerem dos administradores reais do projeto.
+ */
+export async function makeAdmin(db: Client, user: TestUser, { reset = true } = {}): Promise<void> {
+  if (reset) await db.query("delete from private.admin_accounts");
+  await db.query("insert into private.admin_accounts (user_id) values ($1)", [user.id]);
 }
 
 /**
