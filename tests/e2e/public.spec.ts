@@ -1,13 +1,12 @@
 import { expect, test } from "@playwright/test";
 
 /**
- * Site público. Com o banco sem conteúdo publicado, nenhuma seção vazia
- * pode virar página: tudo responde 404 com navegação alternativa.
- * (Os testes com conteúdo publicado dependem de dados de demonstração.)
+ * Site público: testes que não dependem do conteúdo do banco.
+ * Os que dependem do conteúdo de demonstração estão em public-demo.spec.ts.
  */
 test.describe("site público", () => {
-  test("seções sem conteúdo publicado respondem 404 (sem página vazia)", async ({ request }) => {
-    for (const path of ["/tratamentos", "/promocoes", "/blog", "/tratamentos/nao-existe", "/promocoes/nao-existe",
+  test("endereços sem conteúdo publicado respondem 404 real", async ({ request }) => {
+    for (const path of ["/tratamentos/nao-existe", "/tratamentos/categoria/nao-existe", "/promocoes/nao-existe",
       "/blog/nao-existe", "/lp/nao-existe", "/pagina-inexistente", "/a/b/c", "/__marcador__"]) {
       const res = await request.get(path, { maxRedirects: 0 });
       expect(res.status(), path).toBe(404);
@@ -37,7 +36,7 @@ test.describe("site público", () => {
     await expect(page.getByRole("link", { name: /página inicial/ })).toBeVisible();
   });
 
-  test("Home provisória continua noindex enquanto não houver Home publicada", async ({ page }) => {
+  test("antes do lançamento a Home é noindex (com ou sem conteúdo)", async ({ page }) => {
     await page.goto("/");
     const robots = await page.locator('meta[name="robots"]').evaluateAll((els) => els.map((e) => e.getAttribute("content")));
     expect(robots.length).toBeGreaterThan(0);

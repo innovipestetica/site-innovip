@@ -57,7 +57,7 @@ function ctaHref(action: CtaAction, ctx: RenderContext): string | null {
   }
 }
 
-function CtaButton({ action, ctx, variant = "primary" }: { action: CtaAction; ctx: RenderContext; variant?: "primary" | "secondary" }) {
+function CtaButton({ action, ctx, variant = "primary" }: { action: CtaAction; ctx: RenderContext; variant?: "primary" | "secondary" | "onDark" }) {
   const href = ctaHref(action, ctx);
   if (!href) {
     return <PreviewNote ctx={ctx}>botão “{action.label}” oculto — configure o WhatsApp em Configurações públicas.</PreviewNote>;
@@ -65,7 +65,10 @@ function CtaButton({ action, ctx, variant = "primary" }: { action: CtaAction; ct
   const cls =
     variant === "primary"
       ? "inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-brand-700 px-6 font-semibold text-white hover:bg-brand-800"
-      : "inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-brand-700 px-6 font-semibold text-brand-800 hover:bg-brand-50";
+      : variant === "onDark"
+        ? // Faixa escura: fundo claro para contraste AA (brand-800 sobre surface 7.8:1).
+          "inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-surface px-6 font-semibold text-brand-800 hover:bg-gold-100"
+        : "inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-brand-700 px-6 font-semibold text-brand-800 hover:bg-brand-50";
   const external = href.startsWith("https://");
   return external ? (
     <a href={href} className={cls} target="_blank" rel="noopener noreferrer" data-cta={action.kind}>{action.label}</a>
@@ -157,7 +160,7 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
           <div className={`${section} flex flex-col items-start gap-4`}>
             <h2 className="text-2xl font-bold">{b.heading}</h2>
             {b.text ? <p className="max-w-2xl text-white/90">{b.text}</p> : null}
-            <CtaButton action={b.action} ctx={ctx} variant="secondary" />
+            <CtaButton action={b.action} ctx={ctx} variant="onDark" />
           </div>
         </section>
       );

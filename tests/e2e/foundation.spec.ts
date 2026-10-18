@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("fundação", () => {
-  test("página inicial provisória renderiza sem rolagem horizontal", async ({ page }) => {
+  test("página inicial renderiza com um título e sem rolagem horizontal", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Site em construção");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > window.innerWidth,
     );

@@ -82,6 +82,8 @@ export default async function TreatmentPage({ params }: PageProps<"/tratamentos/
         <RelatedPromotions treatmentId={t.id} ctx={ctx} />
       </Suspense>
 
+      {/* Faixa final só quando o conteúdo não tem chamada própria. */}
+      {!t.blocks.some((b) => b.type === "cta") ? (
       <section className="bg-brand-800 text-white">
         <div className="mx-auto flex w-full max-w-5xl flex-col items-start gap-4 px-4 py-10">
           <h2 className="text-2xl font-bold">Quer saber se {t.title} é indicado para você?</h2>
@@ -91,6 +93,7 @@ export default async function TreatmentPage({ params }: PageProps<"/tratamentos/
           </Link>
         </div>
       </section>
+      ) : null}
 
       <JsonLd
         data={{
