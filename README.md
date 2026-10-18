@@ -9,7 +9,7 @@ Arquitetura: **Domínio/DNS (Locaweb) → Vercel → Next.js → Supabase**.
 
 | Etapa | Situação |
 |---|---|
-| 1. Fundação e segurança | **Implementada.** Migração aplicada no projeto `nkrqpebfolrbybhaovqy` (18/10/2026). Testes unitários, E2E e de RLS (banco real, papéis reais) passando. Pendente: provisionar o administrador e testar login/MFA ponta a ponta |
+| 1. Fundação e segurança | **Concluída (18/10/2026).** Migração aplicada no projeto `nkrqpebfolrbybhaovqy`; testes unitários, E2E e de RLS (banco real, papéis reais) passando; administrador provisionado e login com MFA (TOTP, `aal2`) verificado ponta a ponta |
 | 2. Banco e CMS | pendente |
 | 3. Páginas públicas | pendente |
 | 4. Leads e promoções | pendente |
