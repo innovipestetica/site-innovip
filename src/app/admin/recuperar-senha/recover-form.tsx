@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { z } from "zod";
 import { Alert, Field, buttonPrimary } from "@/components/ui/form";
+import { useHydrated } from "@/components/ui/use-hydrated";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const emailSchema = z.email().max(254);
@@ -13,6 +14,7 @@ const NEUTRAL_MESSAGE =
   "Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha em alguns minutos.";
 
 export function RecoverForm() {
+  const hydrated = useHydrated();
   const [emailError, setEmailError] = useState<string>();
   const [status, setStatus] = useState<"idle" | "pending" | "sent" | "limited">("idle");
 
@@ -48,7 +50,7 @@ export function RecoverForm() {
   }
 
   return (
-    <form noValidate onSubmit={onSubmit} className="flex flex-col gap-4">
+    <form method="post" noValidate onSubmit={onSubmit} className="flex flex-col gap-4">
       {status === "limited" ? (
         <Alert tone="error">Muitas solicitações. Aguarde alguns minutos e tente novamente.</Alert>
       ) : null}
@@ -61,7 +63,7 @@ export function RecoverForm() {
         required
         error={emailError}
       />
-      <button type="submit" className={buttonPrimary} disabled={status === "pending"}>
+      <button type="submit" className={buttonPrimary} disabled={!hydrated || (status === "pending")}>
         {status === "pending" ? "Enviando…" : "Enviar link"}
       </button>
       <Link href="/admin/login" className="mx-auto inline-flex min-h-11 items-center text-sm font-semibold text-brand-800 underline underline-offset-4">

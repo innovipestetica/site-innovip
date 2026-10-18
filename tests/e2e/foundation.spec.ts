@@ -50,6 +50,18 @@ test.describe("fundação", () => {
     expect(box?.height).toBeGreaterThanOrEqual(44);
   });
 
+  test("antes do JavaScript, formulários de auth não enviam campos pela URL", async ({ request }) => {
+    for (const path of ["/admin/login", "/admin/recuperar-senha"]) {
+      const html = await (await request.get(path)).text();
+      // O login pode vir só com o fallback do Suspense (form renderizado no
+      // cliente). Se o form vier no HTML do servidor: POST e envio desativado.
+      const forms = html.match(/<form[^>]*>/g) ?? [];
+      for (const form of forms) expect(form, path).toContain('method="post"');
+      const submits = html.match(/<button[^>]*type="submit"[^>]*>/g) ?? [];
+      for (const button of submits) expect(button, path).toMatch(/\sdisabled/);
+    }
+  });
+
   test("login com credenciais erradas mostra mensagem neutra", async ({ page }) => {
     await page.goto("/admin/login");
     await page.getByLabel("E-mail").fill("nao-existe@example.invalid");

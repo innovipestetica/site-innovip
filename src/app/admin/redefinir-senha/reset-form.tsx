@@ -3,10 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Alert, Field, buttonPrimary } from "@/components/ui/form";
+import { useHydrated } from "@/components/ui/use-hydrated";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { passwordProblem } from "@/lib/validation/password";
 
 export function ResetPasswordForm() {
+  const hydrated = useHydrated();
   const router = useRouter();
   const [errors, setErrors] = useState<{ password?: string; confirm?: string }>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -45,7 +47,7 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <form noValidate onSubmit={onSubmit} className="flex flex-col gap-4">
+    <form method="post" noValidate onSubmit={onSubmit} className="flex flex-col gap-4">
       {formError ? <Alert tone="error">{formError}</Alert> : null}
       <Field
         label="Nova senha"
@@ -64,7 +66,7 @@ export function ResetPasswordForm() {
         required
         error={errors.confirm}
       />
-      <button type="submit" className={buttonPrimary} disabled={pending}>
+      <button type="submit" className={buttonPrimary} disabled={!hydrated || pending}>
         {pending ? "Salvando…" : "Salvar nova senha"}
       </button>
     </form>

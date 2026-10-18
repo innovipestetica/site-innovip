@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Alert, Field, buttonPrimary } from "@/components/ui/form";
+import { useHydrated } from "@/components/ui/use-hydrated";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Mode =
@@ -14,6 +15,7 @@ type Mode =
 const CODE_PATTERN = /^\d{6}$/;
 
 export function MfaForm({ next }: { next: string }) {
+  const hydrated = useHydrated();
   const router = useRouter();
   const [mode, setMode] = useState<Mode>({ kind: "loading" });
   const [codeError, setCodeError] = useState<string>();
@@ -109,7 +111,7 @@ export function MfaForm({ next }: { next: string }) {
   }
 
   return (
-    <form noValidate onSubmit={onSubmit} className="flex flex-col gap-4">
+    <form method="post" noValidate onSubmit={onSubmit} className="flex flex-col gap-4">
       {mode.kind === "enroll" ? (
         <div className="flex flex-col gap-3 text-sm text-ink">
           <p>
@@ -150,7 +152,7 @@ export function MfaForm({ next }: { next: string }) {
         autoFocus
         error={codeError}
       />
-      <button type="submit" className={buttonPrimary} disabled={pending}>
+      <button type="submit" className={buttonPrimary} disabled={!hydrated || pending}>
         {pending ? "Verificando…" : "Verificar"}
       </button>
     </form>

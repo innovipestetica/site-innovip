@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { z } from "zod";
 import { Alert, Field, buttonPrimary } from "@/components/ui/form";
+import { useHydrated } from "@/components/ui/use-hydrated";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { safeAdminPath } from "@/lib/security/redirect";
 import { ADMIN_MFA_PATH } from "@/lib/auth/routes";
@@ -21,6 +22,7 @@ const MESSAGES: Record<string, string> = {
 };
 
 export function LoginForm() {
+  const hydrated = useHydrated();
   const router = useRouter();
   const params = useSearchParams();
   const next = safeAdminPath(params.get("next"));
@@ -68,7 +70,7 @@ export function LoginForm() {
   }
 
   return (
-    <form noValidate onSubmit={onSubmit} className="flex flex-col gap-4">
+    <form method="post" noValidate onSubmit={onSubmit} className="flex flex-col gap-4">
       {notice ? <Alert tone="info">{notice}</Alert> : null}
       {formError ? <Alert tone="error">{formError}</Alert> : null}
       <Field
@@ -88,7 +90,7 @@ export function LoginForm() {
         required
         error={errors.password}
       />
-      <button type="submit" className={buttonPrimary} disabled={pending}>
+      <button type="submit" className={buttonPrimary} disabled={!hydrated || pending}>
         {pending ? "Entrando…" : "Entrar"}
       </button>
       <Link
