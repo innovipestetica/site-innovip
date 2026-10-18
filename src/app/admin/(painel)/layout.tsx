@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
+import { AdminMobileMenu, AdminSidebar } from "@/components/admin/admin-nav";
 import { signOutAction } from "../actions";
 
 /**
@@ -9,12 +10,15 @@ import { signOutAction } from "../actions";
 export default function PainelLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <header className="border-b border-line bg-surface-raised">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-2">
-          <Link href="/admin" className="flex min-h-11 items-center gap-2 font-display font-bold text-brand-800">
-            <Logo size={44} />
-            <span>Painel</span>
-          </Link>
+      <header className="relative border-b border-line bg-surface-raised">
+        <div className="flex w-full items-center justify-between gap-3 px-4 py-2">
+          <div className="flex items-center gap-2">
+            <AdminMobileMenu />
+            <Link href="/admin" className="flex min-h-11 items-center gap-2 font-display font-bold text-brand-800">
+              <Logo size={40} />
+              <span>Painel</span>
+            </Link>
+          </div>
           <form action={signOutAction}>
             <button
               type="submit"
@@ -25,7 +29,10 @@ export default function PainelLayout({ children }: { children: React.ReactNode }
           </form>
         </div>
       </header>
-      {children}
+      <div className="flex flex-1">
+        <AdminSidebar />
+        <div className="min-w-0 flex-1">{children}</div>
+      </div>
     </>
   );
 }

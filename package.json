@@ -13,7 +13,7 @@
     "test:e2e": "playwright test",
     "check": "npm run typecheck && npm run lint && npm run test",
     "db:push": "supabase db push",
-    "db:types": "supabase gen types typescript --linked --schema public > src/lib/supabase/database.types.ts",
+    "db:types": "tsx scripts/db-types.ts",
     "admin:provision": "tsx scripts/provision-admin.ts",
     "db:migrate": "tsx scripts/db-migrate.ts"
   },
