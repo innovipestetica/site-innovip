@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+/*
+ * Tokens de design da Innovip — TEMA PROVISÓRIO.
+ * Cores extraídas da logo (verde #41957D e dourado #E5C88B); tipografia e
+ * escala ainda não aprovadas pela clínica. Para trocar a identidade, altere
+ * apenas este bloco.
+ *
+ * Contraste (WCAG 2.2 AA) medido sobre --color-surface (#FBF8F2):
+ * - ink 13.8:1, muted 6.0:1, brand-700 5.9:1, brand-800 7.8:1
+ * - brand-500 (verde da logo) 3.6:1 → só para texto grande, ícones e bordas
+ * - branco sobre brand-700 6.3:1 (botões primários)
+ */
+@theme {
+  --color-brand-50: #eef7f3;
+  --color-brand-100: #d5ebe2;
+  --color-brand-300: #8cc5b0;
+  --color-brand-500: #41957d;
+  --color-brand-700: #2b6b59;
+  --color-brand-800: #22574a;
+  --color-brand-900: #183f35;
+
+  --color-gold-100: #f6edda;
+  --color-gold-300: #e5c88b;
+  --color-gold-700: #8a6a2a;
+
+  --color-surface: #fbf8f2;
+  --color-surface-raised: #ffffff;
+  --color-ink: #1e2b27;
+  --color-muted: #55625e;
+  --color-line: #e3ddd0;
+  --color-danger: #b42318;
+  --color-danger-bg: #fef3f2;
+  --color-success: #1f6f43;
+  --color-success-bg: #ecfdf3;
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 1rem;
+  --radius-control: 0.75rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-brand-700);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    z-index: 50;
+    border-radius: var(--radius-control);
+    background: var(--color-brand-800);
+    color: #fff;
+    padding: 0.75rem 1rem;
+  }
+
+  .skip-link:focus {
+    top: 1rem;
+  }
+}
