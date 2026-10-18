@@ -391,6 +391,39 @@ describe.skipIf(!hasDatabase)("CMS: acesso de quem não é administrador", () =>
     });
   });
 
+  it("Storage: só admin com MFA lê/grava objetos; anônimo e não-admin não", async () => {
+    await inRollbackTransaction(async (db) => {
+      const admin = await setupAdmin(db);
+      const other = await createAuthUser(db);
+      const insert = (bucket: string) =>
+        db.query("insert into storage.objects (bucket_id, name) values ($1, $2)", [bucket, `originals/${crypto.randomUUID()}.jpg`]);
+
+      for (const bucket of ["media-private", "media-public"]) {
+        await expect(asAnon(db, () => insert(bucket)), `anon ${bucket}`).rejects.toThrow(/row-level security|permission denied/);
+        await expect(
+          asRole(db, "authenticated", userClaims(other, "aal2"), () => insert(bucket)),
+          `não-admin ${bucket}`,
+        ).rejects.toThrow(/row-level security/);
+        await expect(
+          asRole(db, "authenticated", userClaims(admin, "aal1"), () => insert(bucket)),
+          `admin sem MFA ${bucket}`,
+        ).rejects.toThrow(/row-level security/);
+        await asAdmin(db, admin, () => insert(bucket));
+      }
+
+      const anonSees = await asAnon(db, () =>
+        db.query("select name from storage.objects where bucket_id in ('media-private', 'media-public')"),
+      );
+      expect(anonSees.rowCount).toBe(0); // nem listar o bucket público
+    });
+  });
+
+  it("view do painel (cms_entry_list) não é acessível ao anônimo", async () => {
+    await inRollbackTransaction(async (db) => {
+      await expect(asAnon(db, () => db.query("select * from public.cms_entry_list"))).rejects.toThrow(/permission denied/);
+    });
+  });
+
   it("buckets: público só para cópias aprovadas; privado sem acesso anônimo", async () => {
     await inRollbackTransaction(async (db) => {
       const buckets = await db.query<{ id: string; public: boolean; file_size_limit: number }>(

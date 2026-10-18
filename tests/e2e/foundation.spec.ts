@@ -28,6 +28,24 @@ test.describe("fundação", () => {
     expect(response?.headers()["x-robots-tag"]).toContain("noindex");
   });
 
+  test("anônimo não acessa nenhuma tela do CMS", async ({ request }) => {
+    for (const path of [
+      "/admin/conteudo/tratamentos",
+      "/admin/conteudo/tratamentos/novo",
+      "/admin/conteudo/paginas/00000000-0000-4000-8000-000000000000",
+      "/admin/midia",
+      "/admin/taxonomias",
+      "/admin/configuracoes",
+      "/admin/redirecionamentos",
+      "/admin/previa/00000000-0000-4000-8000-000000000000",
+    ]) {
+      const res = await request.get(path, { maxRedirects: 0 });
+      expect(res.status(), path).toBe(307);
+      expect(res.headers()["location"], path).toContain("/admin/login");
+      expect(res.headers()["cache-control"], path).toContain("no-store");
+    }
+  });
+
   test("anônimo em rota protegida preserva o destino interno", async ({ page }) => {
     await page.goto("/admin/redefinir-senha");
     await expect(page).toHaveURL(/\/admin\/login\?next=%2Fadmin%2Fredefinir-senha$/);

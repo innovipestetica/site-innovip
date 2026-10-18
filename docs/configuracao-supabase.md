@@ -26,7 +26,20 @@ caracteres (ex.: `@` → `%40`) ou gere uma senha só com letras e números.
 
 ## 2. Aplicar as migrações
 
-Opção A — CLI (recomendada):
+Opção A — script do projeto (usa `DATABASE_URL`, sem Docker nem login na CLI):
+
+```bash
+npm run db:migrate -- --dry-run
+```
+
+```bash
+npm run db:migrate
+```
+
+O ensaio roda tudo e desfaz (ROLLBACK). O controle fica em
+`supabase_migrations.schema_migrations`, a mesma tabela da CLI.
+
+Opção B — CLI:
 
 ```bash
 npx supabase login
@@ -35,7 +48,7 @@ npx supabase db push
 npm run db:types
 ```
 
-Opção B — SQL Editor do dashboard: cole e execute cada arquivo de
+Opção C — SQL Editor do dashboard: cole e execute cada arquivo de
 `supabase/migrations/` em ordem. Depois rode `npm run db:types` com a CLI
 vinculada (ou mantenha o arquivo de tipos atualizado à mão).
 

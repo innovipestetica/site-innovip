@@ -10,11 +10,18 @@ Arquitetura: **Domínio/DNS (Locaweb) → Vercel → Next.js → Supabase**.
 | Etapa | Situação |
 |---|---|
 | 1. Fundação e segurança | **Concluída (18/10/2026).** Migração aplicada no projeto `nkrqpebfolrbybhaovqy`; testes unitários, E2E e de RLS (banco real, papéis reais) passando; administrador provisionado e login com MFA (TOTP, `aal2`) verificado ponta a ponta |
-| 2. Banco e CMS | pendente |
+| 2. Banco e CMS | **Implementada (19/10/2026).** Modelo de conteúdo versionado, RLS, Storage, painel completo e mídia. 60 testes unitários, 28 de banco e 24 E2E passando. Pendente: teste manual do painel logado (login com MFA não é automatizável) |
 | 3. Páginas públicas | pendente |
 | 4. Leads e promoções | pendente |
 | 5. Integrações (consentimento, GTM/GA4, Meta) | pendente |
 | 6. Testes finais e deploy | pendente |
+
+### O que a etapa 2 entrega
+
+- Migrações `20261019*`: `content_entries` + `content_versions` imutáveis (publicar troca o ponteiro em transação), detalhes e relações por versão, categorias/objetivos, mídia, evidências de licença, configurações públicas, redirecionamentos sem ciclo, auditoria por trigger, buckets `media-private`/`media-public`.
+- RPCs `cms_*` (exigem admin com MFA): criar, salvar com conflito 409, publicar com validação, despublicar, arquivar, restaurar, duplicar, trocar slug com 301.
+- Painel: listas com busca/filtro/ordem/paginação, editor por tipo com blocos, SEO, prévia autenticada, histórico, categorias/objetivos, configurações, redirecionamentos e mídia (upload com progresso, validação real, sem EXIF, variantes WebP, aprovação com licença, bloqueio de exclusão em uso).
+- Manual: [docs/manual-cms.md](docs/manual-cms.md).
 
 ### O que a etapa 1 entrega
 
@@ -68,8 +75,9 @@ Veja [docs/configuracao-supabase.md](docs/configuracao-supabase.md) e
 | `npm run test:db` | testes de RLS/grants com papéis reais (`DATABASE_URL`, rollback) |
 | `npm run test:e2e` | E2E contra o build (`PW_CHANNEL=msedge` usa o Edge instalado) |
 | `npm run check` | typecheck + lint + unitários |
-| `npm run db:push` | aplica migrações no projeto vinculado |
-| `npm run db:types` | regenera `src/lib/supabase/database.types.ts` |
+| `npm run db:migrate` | aplica migrações pendentes via `DATABASE_URL` (`-- --dry-run` para ensaio) |
+| `npm run db:push` | aplica migrações pela CLI (projeto vinculado) |
+| `npm run db:types` | regenera `src/lib/supabase/database.types.ts` a partir do banco |
 | `npm run admin:provision -- --email X` | adiciona um administrador (`--remove` remove, `--list` lista) |
 
 ## Estrutura
@@ -105,5 +113,7 @@ Ver [.env.example](.env.example).
 - **CSP sem nonce.** Nonce obriga renderização dinâmica em todas as páginas e é incompatível com o *static shell* do Cache Components. Por isso `script-src` tem `'unsafe-inline'` (scripts de hidratação do Next). Mitigação: o React escapa a saída, o CMS não aceita HTML/JS e as demais diretivas restringem origens. `'unsafe-eval'` só em desenvolvimento. Evolução possível: SRI experimental do Next.
 - **Login pelo navegador.** `signInWithPassword` e o MFA rodam no navegador para que os limites por IP do Supabase valham para o IP real. O servidor revalida tudo com `getClaims()` e o banco.
 - **Recuperação do MFA** é manual e documentada; os *recovery codes* do Supabase ainda são experimentais.
-- **Tipos do banco** foram escritos à mão na etapa 1. Regenerar com `npm run db:types` depois de vincular a CLI.
+- **Tipos do banco** são gerados por `npm run db:types` (não editar à mão).
+- **Leituras públicas** usam `'use cache'` com a tag `content`; qualquer publicação invalida todo o conteúdo público (site pequeno, sem risco de dependência esquecida).
+- **Login com MFA não é testável automaticamente** (o Supabase Auth é remoto e o segundo fator é TOTP). Os fluxos logados do painel são verificados manualmente.
 - **`npm audit`** acusa `braces` (DoS por padrão aninhado) via `eslint-config-next`, uma dependência só de desenvolvimento. Não vai para o bundle; acompanhar a correção upstream. O `npm audit fix --force` sugerido rebaixaria o eslint-config-next para a versão 14 e não deve ser usado.
