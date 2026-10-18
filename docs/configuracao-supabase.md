@@ -20,6 +20,10 @@ Dashboard → **Project Settings → API Keys**:
 
 Copie `.env.example` para `.env.local` e preencha. `.env.local` está no `.gitignore`.
 
+Na `DATABASE_URL`, substitua `[YOUR-PASSWORD]` **inclusive os colchetes**
+pela senha do banco. Se a senha tiver `@ # / ? % :`, codifique esses
+caracteres (ex.: `@` → `%40`) ou gere uma senha só com letras e números.
+
 ## 2. Aplicar as migrações
 
 Opção A — CLI (recomendada):
