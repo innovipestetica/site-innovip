@@ -10,8 +10,8 @@ Arquitetura: **Domínio/DNS (Locaweb) → Vercel → Next.js → Supabase**.
 | Etapa | Situação |
 |---|---|
 | 1. Fundação e segurança | **Concluída (18/10/2026).** Migração aplicada no projeto `nkrqpebfolrbybhaovqy`; testes unitários, E2E e de RLS (banco real, papéis reais) passando; administrador provisionado e login com MFA (TOTP, `aal2`) verificado ponta a ponta |
-| 2. Banco e CMS | **Implementada (18/10/2026).** Modelo de conteúdo versionado, RLS, Storage, painel completo e mídia. 60 testes unitários, 28 de banco e 24 E2E passando. Pendente: teste manual do painel logado (login com MFA não é automatizável) |
-| 3. Páginas públicas | pendente |
+| 2. Banco e CMS | **Implementada (18/10/2026).** Modelo de conteúdo versionado, RLS, Storage, painel completo e mídia. Pendente: teste manual do painel logado (login com MFA não é automatizável) |
+| 3. Páginas públicas | **Implementada (18/10/2026).** Home, páginas, tratamentos (catálogo/categoria/detalhe), promoções, landing pages, blog, sitemap e SEO. Testes: 64 unitários, 28 de banco, 34 E2E. Pendente: verificação visual com conteúdo real ou de demonstração; `/agendar-avaliacao` chega na etapa 4 |
 | 4. Leads e promoções | pendente |
 | 5. Integrações (consentimento, GTM/GA4, Meta) | pendente |
 | 6. Testes finais e deploy | pendente |
@@ -114,6 +114,8 @@ Ver [.env.example](.env.example).
 - **Login pelo navegador.** `signInWithPassword` e o MFA rodam no navegador para que os limites por IP do Supabase valham para o IP real. O servidor revalida tudo com `getClaims()` e o banco.
 - **Recuperação do MFA** é manual e documentada; os *recovery codes* do Supabase ainda são experimentais.
 - **Tipos do banco** são gerados por `npm run db:types` (não editar à mão).
-- **Leituras públicas** (etapa 3) vão usar `'use cache'` com a tag `content`. Desde a etapa 2, toda publicação já invalida essa tag (todo o conteúdo público de uma vez: site pequeno, sem risco de dependência esquecida).
+- **Leituras públicas** usam `'use cache'` com a tag `content` (e settings/taxonomies/media/redirects); toda publicação invalida todo o conteúdo público de uma vez (site pequeno, sem risco de dependência esquecida). Rede de segurança: expiração de 1 h.
+- **`partialPrefetching` desligado**: com ele, endereço não gerado no build recebia a casca da página com HTTP 200; sem ele, slug inexistente responde 404 real e redirecionamentos saem como HTTP (308/307, equivalentes a 301/302).
+- **Vigência de promoções** é calculada na requisição (`connection()`), fora do cache.
 - **Login com MFA não é testável automaticamente** (o Supabase Auth é remoto e o segundo fator é TOTP). Os fluxos logados do painel são verificados manualmente.
 - **`npm audit`** acusa `braces` (DoS por padrão aninhado) via `eslint-config-next`, uma dependência só de desenvolvimento. Não vai para o bundle; acompanhar a correção upstream. O `npm audit fix --force` sugerido rebaixaria o eslint-config-next para a versão 14 e não deve ser usado.
