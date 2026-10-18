@@ -4,16 +4,22 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { safeAdminPath } from "@/lib/security/redirect";
 import { ADMIN_LOGIN_PATH } from "@/lib/auth/routes";
 
-const ALLOWED_OTP_TYPES: ReadonlySet<EmailOtpType> = new Set(["recovery", "email", "email_change"]);
+const ALLOWED_OTP_TYPES: ReadonlySet<EmailOtpType> = new Set(["recovery", "invite", "email", "email_change"]);
 
 /**
- * Retorno dos e-mails do Supabase Auth (recuperação de senha).
+ * Retorno dos e-mails do Supabase Auth (recuperação de senha e convite).
  * Aceita o fluxo PKCE (?code=) e o fluxo por token_hash (template de e-mail
  * customizado). O destino passa pela allowlist do painel (sem open redirect).
+ *
+ * Padrão: "definir nova senha" (que exige MFA antes). O e-mail não envia
+ * ?next= porque a URL de retorno precisa bater exatamente com a lista de
+ * Redirect URLs do Supabase.
  */
+const DEFAULT_NEXT = "/admin/redefinir-senha";
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
-  const next = safeAdminPath(searchParams.get("next"));
+  const next = safeAdminPath(searchParams.get("next"), DEFAULT_NEXT);
   const code = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;

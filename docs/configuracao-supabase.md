@@ -60,7 +60,15 @@ em transação com ROLLBACK).
   - `http://localhost:3000/auth/confirm`
   - `https://<preview-protegido>.vercel.app/auth/confirm` (staging, se usado)
   - `https://<dominio-confirmado>/auth/confirm` (produção)
+- O app envia exatamente `<origem>/auth/confirm`, sem query string. Uma
+  entrada só com o domínio (`https://dominio.com.br`) **não** cobre esse
+  caminho: o Supabase cairia na Site URL e o link de recuperação quebraria.
 - Não usar curingas amplos (`https://*.vercel.app/**`) em produção.
+
+Estado atual (18/10/2026): Site URL `http://localhost:3000`; Redirect URLs
+`http://localhost:3000/auth/confirm` e `https://innovip.com.br`. A segunda
+precisa virar `https://innovip.com.br/auth/confirm` (e `www`, se for o
+canônico) antes do lançamento.
 
 ## 6. SMTP (obrigatório antes de produção)
 

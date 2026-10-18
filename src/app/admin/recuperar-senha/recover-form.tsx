@@ -28,8 +28,9 @@ export function RecoverForm() {
     setStatus("pending");
 
     const supabase = createSupabaseBrowserClient();
-    // O destino precisa estar na lista de Redirect URLs do Supabase Auth.
-    const redirectTo = `${window.location.origin}/auth/confirm?next=/admin/redefinir-senha`;
+    // Precisa bater EXATAMENTE com uma Redirect URL do Supabase Auth (sem
+    // query string). O /auth/confirm leva para "definir nova senha".
+    const redirectTo = `${window.location.origin}/auth/confirm`;
     const { error } = await supabase.auth.resetPasswordForEmail(parsed.data, { redirectTo });
 
     setStatus(error?.status === 429 ? "limited" : "sent");
