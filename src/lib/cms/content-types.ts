@@ -69,6 +69,16 @@ export const slugSchema = z
   .max(120)
   .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Use letras minúsculas sem acento, números e hífens.");
 
+/** Slugs que colidiriam com rotas do sistema (páginas usam /<slug>). */
+export const RESERVED_PAGE_SLUGS = [
+  "admin", "auth", "api", "tratamentos", "promocoes", "blog", "lp", "agendar-avaliacao",
+  "obrigado", "home", "sitemap-xml", "robots-txt", "brand", "_next",
+] as const;
+
+export function isReservedSlug(type: ContentType, slug: string): boolean {
+  return type === "page" && (RESERVED_PAGE_SLUGS as readonly string[]).includes(slug);
+}
+
 /** Converte um título em slug (minúsculo, sem acentos, hífens). */
 export function slugify(input: string): string {
   return input

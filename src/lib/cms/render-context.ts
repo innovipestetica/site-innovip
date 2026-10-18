@@ -29,6 +29,7 @@ export type RenderTaxonomy = { id: string; name: string; slug: string; descripti
 
 export type RenderPromotion = {
   entry: RenderEntry;
+  startsAt: string;
   endsAt: string;
   priceCents: number | null;
   originalPriceCents: number | null;
@@ -41,8 +42,17 @@ export type RenderContext = {
   settings: SiteSettings;
   categories: RenderTaxonomy[];
   concerns: RenderTaxonomy[];
-  activePromotions: RenderPromotion[];
+  /** Promoções publicadas (com datas). A vigência é filtrada na hora da
+   *  requisição (activePromotions), nunca dentro do cache. */
+  promotions: RenderPromotion[];
 };
+
+/** Promoções vigentes no instante informado, ordenadas pelo fim mais próximo. */
+export function activePromotions(promotions: RenderPromotion[], nowMs: number): RenderPromotion[] {
+  return promotions
+    .filter((p) => Date.parse(p.startsAt) <= nowMs && Date.parse(p.endsAt) > nowMs)
+    .sort((a, b) => a.endsAt.localeCompare(b.endsAt));
+}
 
 /** Coleta ids referenciados (mesma convenção do banco). */
 export function collectRefs(value: unknown, acc = { entries: new Set<string>(), media: new Set<string>() }) {

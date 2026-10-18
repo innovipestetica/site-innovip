@@ -67,7 +67,11 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
-  partialPrefetching: true,
+  // Desligado de propósito: com ele, endereços não gerados no build recebem
+  // a casca da página com status 200 antes de saber se o conteúdo existe.
+  // Sem ele, slug inexistente responde 404 e redirecionamentos saem como
+  // HTTP (não meta refresh). As páginas continuam em cache (use cache).
+  partialPrefetching: false,
   poweredByHeader: false,
   reactStrictMode: true,
   turbopack: {

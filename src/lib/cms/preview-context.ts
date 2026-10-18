@@ -72,28 +72,27 @@ export async function loadPreviewContext(doc: unknown): Promise<RenderContext> {
     }
   }
 
-  // Promoções vigentes (publicadas e dentro do prazo).
-  const nowIso = new Date().toISOString();
+  // Promoções publicadas (a vigência é filtrada na renderização).
   const { data: promoRows } = await supabase
     .from("content_entries")
     .select("id, slug, published_version_id, content_versions!content_entries_published_version_fk(title, summary, data, promotion_details(starts_at, ends_at, price_cents, original_price_cents))")
     .eq("type", "promotion")
     .eq("lifecycle_status", "published");
-  const activePromotions: RenderContext["activePromotions"] = [];
+  const promotions: RenderContext["promotions"] = [];
   for (const p of promoRows ?? []) {
     const v = (Array.isArray(p.content_versions) ? p.content_versions[0] : p.content_versions) as
       | { title: string; summary: string | null; data: Record<string, unknown>; promotion_details: { starts_at: string | null; ends_at: string | null; price_cents: number | null; original_price_cents: number | null } | null }
       | null;
     const d = v?.promotion_details;
-    if (!v || !d?.starts_at || !d.ends_at || d.starts_at > nowIso || d.ends_at <= nowIso) continue;
-    activePromotions.push({
+    if (!v || !d?.starts_at || !d.ends_at) continue;
+    promotions.push({
       entry: { id: p.id, type: "promotion", slug: p.slug, title: v.title, summary: v.summary, data: v.data ?? {}, published: true },
+      startsAt: d.starts_at,
       endsAt: d.ends_at,
       priceCents: d.price_cents,
       originalPriceCents: d.original_price_cents,
     });
   }
-  activePromotions.sort((a, b) => a.endsAt.localeCompare(b.endsAt));
 
   const pub = <T extends { status: string }>(rows: T[]) => rows.filter((r) => r.status === "published");
   return {
@@ -103,6 +102,6 @@ export async function loadPreviewContext(doc: unknown): Promise<RenderContext> {
     settings: parseSettings(settingsRow.data),
     categories: pub(taxonomies.categories).map((c) => ({ id: c.id, name: c.name, slug: c.slug, description: c.description })),
     concerns: pub(taxonomies.concerns).map((c) => ({ id: c.id, name: c.name, slug: c.slug, description: c.description, area: c.area })),
-    activePromotions,
+    promotions,
   };
 }

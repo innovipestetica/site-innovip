@@ -1,8 +1,10 @@
+import { Suspense } from "react";
 import Link from "next/link";
+import { requestNow } from "@/lib/request-time";
 import type { Block, CtaAction } from "@/lib/cms/blocks";
 import { publicPath } from "@/lib/cms/content-types";
 import { formatCents } from "@/lib/cms/format";
-import type { RenderContext, RenderEntry, RenderMedia } from "@/lib/cms/render-context";
+import { activePromotions, type RenderContext, type RenderEntry, type RenderMedia } from "@/lib/cms/render-context";
 import { phoneHref, whatsappHref } from "@/lib/cms/settings";
 import { RichText } from "./rich-text";
 
@@ -23,7 +25,7 @@ function PreviewNote({ ctx, children }: { ctx: RenderContext; children: React.Re
   );
 }
 
-function Picture({ media, sizes, priority }: { media: RenderMedia; sizes: string; priority?: boolean }) {
+export function Picture({ media, sizes, priority }: { media: RenderMedia; sizes: string; priority?: boolean }) {
   const largest = media.sources.at(-1);
   if (!largest) return null;
   return (
@@ -81,7 +83,7 @@ function resolveEntries(ids: string[], ctx: RenderContext): RenderEntry[] {
   return ids.map((id) => ctx.entries.get(id)).filter((e): e is RenderEntry => !!e && (e.published || ctx.mode === "preview"));
 }
 
-function EntryCard({ entry, ctx }: { entry: RenderEntry; ctx: RenderContext }) {
+export function EntryCard({ entry, ctx }: { entry: RenderEntry; ctx: RenderContext }) {
   const href = publicPath(entry.type, entry.slug);
   const cover = typeof entry.data.mediaId === "string" ? ctx.media.get(entry.data.mediaId) : undefined;
   const body = (
@@ -268,31 +270,13 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
         </section>
       );
     }
-    case "promotion_list": {
-      const promos = ctx.activePromotions.slice(0, b.limit);
-      if (promos.length === 0) return <PreviewNote ctx={ctx}>nenhuma promoção vigente agora (seção fica oculta).</PreviewNote>;
+    case "promotion_list":
       return (
-        <section aria-labelledby={headingId} className={section}>
-          <Heading text={b.heading ?? "Promoções"} id={headingId} />
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {promos.map((p) => (
-              <li key={p.entry.id} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5">
-                <Link href={`/promocoes/${p.entry.slug}`} className="block">
-                  <h3 className="font-semibold text-brand-800">{p.entry.title}</h3>
-                  {p.priceCents !== null ? (
-                    <p className="mt-2 text-lg font-bold text-ink">
-                      {p.originalPriceCents !== null ? <s className="mr-2 text-sm font-normal text-muted">{formatCents(p.originalPriceCents)}</s> : null}
-                      {formatCents(p.priceCents)}
-                    </p>
-                  ) : null}
-                  <p className="mt-1 text-xs text-muted">Consulte as condições.</p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+        // Vigência calculada na hora da requisição (fora do cache).
+        <Suspense fallback={null}>
+          <ActivePromotionList heading={b.heading} limit={b.limit} headingId={headingId} ctx={ctx} />
+        </Suspense>
       );
-    }
     case "gallery": {
       const items = b.mediaIds.map((id) => ctx.media.get(id)).filter((m): m is RenderMedia => !!m);
       if (items.length === 0) return <PreviewNote ctx={ctx}>imagens ainda não disponíveis.</PreviewNote>;
@@ -348,4 +332,37 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
       );
     }
   }
+}
+
+async function ActivePromotionList(props: { heading?: string; limit: number; headingId: string; ctx: RenderContext }) {
+  const promos = activePromotions(props.ctx.promotions, await requestNow()).slice(0, props.limit);
+  if (promos.length === 0) return <PreviewNote ctx={props.ctx}>nenhuma promoção vigente agora (seção fica oculta).</PreviewNote>;
+  return (
+    <section aria-labelledby={props.headingId} className={section}>
+      <Heading text={props.heading ?? "Promoções"} id={props.headingId} />
+      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {promos.map((p) => <PromotionCard key={p.entry.id} promotion={p} ctx={props.ctx} />)}
+      </ul>
+    </section>
+  );
+}
+
+export function PromotionCard({ promotion: p, ctx }: { promotion: RenderContext["promotions"][number]; ctx: RenderContext }) {
+  const cover = typeof p.entry.data.mediaId === "string" ? ctx.media.get(p.entry.data.mediaId) : undefined;
+  return (
+    <li className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5">
+      <Link href={`/promocoes/${p.entry.slug}`} className="block">
+        {cover ? <Picture media={cover} sizes="(min-width: 1024px) 320px, 100vw" /> : null}
+        <h3 className="mt-3 font-semibold text-brand-800">{p.entry.title}</h3>
+        {p.entry.summary ? <p className="mt-1 text-sm text-muted">{p.entry.summary}</p> : null}
+        {p.priceCents !== null ? (
+          <p className="mt-2 text-lg font-bold text-ink">
+            {p.originalPriceCents !== null ? <s className="mr-2 text-sm font-normal text-muted">{formatCents(p.originalPriceCents)}</s> : null}
+            {formatCents(p.priceCents)}
+          </p>
+        ) : null}
+        <p className="mt-1 text-xs text-muted">Consulte as condições.</p>
+      </Link>
+    </li>
+  );
 }

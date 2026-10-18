@@ -8,6 +8,7 @@ import { TAG } from "@/lib/cms/cache-tags";
 import {
   CONTENT_TYPE_LIST,
   initialPayload,
+  isReservedSlug,
   slugSchema,
   validatePayload,
   type ContentType,
@@ -69,6 +70,9 @@ export async function createEntryAction(input: {
     };
   }
   const { type, title, slug } = parsed.data;
+  if (isReservedSlug(type, slug)) {
+    return { ok: false, kind: "invalid", message: "Este endereço é reservado pelo sistema. Escolha outro.", issues: [{ path: "slug", message: "Endereço reservado." }] };
+  }
   const payload = initialPayload(type, title, newBlockId);
 
   const supabase = await createSupabaseServerClient();
@@ -184,6 +188,10 @@ export async function changeSlugAction(entryId: string, newSlug: string): Promis
     return { ok: false, kind: "invalid", message: slug.success ? "Requisição inválida." : slug.error.issues[0]!.message };
   }
   const supabase = await createSupabaseServerClient();
+  const { data: current } = await supabase.from("content_entries").select("type").eq("id", entryId).maybeSingle();
+  if (current && isReservedSlug(current.type, slug.data)) {
+    return { ok: false, kind: "invalid", message: "Este endereço é reservado pelo sistema. Escolha outro." };
+  }
   const { error } = await supabase.rpc("cms_change_slug", { p_entry_id: entryId, p_new_slug: slug.data });
   if (error) return mapDbError(error);
   invalidatePublic(TAG.redirects);
