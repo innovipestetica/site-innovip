@@ -14,7 +14,8 @@
     "check": "npm run typecheck && npm run lint && npm run test",
     "db:push": "supabase db push",
     "db:types": "supabase gen types typescript --linked --schema public > src/lib/supabase/database.types.ts",
-    "admin:provision": "tsx scripts/provision-admin.ts"
+    "admin:provision": "tsx scripts/provision-admin.ts",
+    "db:migrate": "tsx scripts/db-migrate.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
