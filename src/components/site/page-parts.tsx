@@ -52,13 +52,13 @@ export function PageIntro({
   children?: React.ReactNode;
 }) {
   return (
-    <header className="mx-auto grid w-full max-w-5xl items-center gap-8 px-4 pb-4 pt-6 md:grid-cols-[1.2fr_1fr] md:pt-10">
-      <div>
-        <h1 className="text-3xl font-bold text-brand-800 sm:text-4xl">{title}</h1>
-        {summary ? <p className="mt-4 text-lg text-muted">{summary}</p> : null}
-        {children ? <div className="mt-6">{children}</div> : null}
+    <header className="mx-auto flex w-full max-w-5xl flex-col items-center gap-8 px-4 pb-4 pt-6 text-center md:pt-10">
+      <div className="mx-auto max-w-3xl">
+        <h1 className="text-3xl font-bold text-brand-800 sm:text-5xl sm:leading-tight">{title}</h1>
+        {summary ? <p className="mx-auto mt-4 max-w-2xl text-lg text-muted">{summary}</p> : null}
+        {children ? <div className="mt-6 flex flex-col items-center">{children}</div> : null}
       </div>
-      {media ? <Picture media={media} sizes="(min-width: 768px) 40vw, 100vw" priority /> : null}
+      {media ? <div className="w-full max-w-3xl"><Picture media={media} sizes="(min-width: 768px) 768px, 100vw" priority /></div> : null}
     </header>
   );
 }

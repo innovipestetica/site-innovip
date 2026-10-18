@@ -27,8 +27,8 @@ export default async function TreatmentsPage({ searchParams }: PageProps<"/trata
     <main id="conteudo" className="flex-1">
       <Breadcrumbs items={[{ label: "Início", href: "/" }, { label: "Tratamentos", href: "/tratamentos" }]} />
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
-        <h1 className="text-3xl font-bold text-brand-800 sm:text-4xl">Tratamentos</h1>
-        <p className="mt-3 max-w-2xl text-lg text-muted">
+        <h1 className="text-center text-3xl font-bold text-brand-800 sm:text-5xl">Tratamentos</h1>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-lg text-muted">
           Não sabe o nome do procedimento? Filtre pelo que você deseja tratar. A indicação final é feita na avaliação individual.
         </p>
 

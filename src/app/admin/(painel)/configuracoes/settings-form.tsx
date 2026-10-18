@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, buttonPrimary, buttonSecondary } from "@/components/ui/form";
 import { useHydrated } from "@/components/ui/use-hydrated";
-import { TextArea, TextInput } from "@/components/admin/editor/fields";
+import { Select, TextArea, TextInput } from "@/components/admin/editor/fields";
 import { DEFAULT_WHATSAPP_MESSAGE, type SiteSettings } from "@/lib/cms/settings";
 import { saveSettingsAction } from "./actions";
 
@@ -73,6 +73,35 @@ export function SettingsForm({ revision, initial }: { revision: number; initial:
         <TextInput label="Mensagem inicial do WhatsApp" value={s.whatsapp_message} maxLength={200}
           hint={`Genérica, sem dados pessoais. Padrão: “${DEFAULT_WHATSAPP_MESSAGE}”`} onChange={(v) => set("whatsapp_message", v)} />
         <TextInput label="E-mail" type="email" value={s.email} maxLength={254} error={issues.email} onChange={(v) => set("email", v)} />
+      </section>
+
+      <section className={card}>
+        <h2 className={h2}>Botão “Agendar avaliação”</h2>
+        <p className="text-sm text-muted">
+          Vale para todos os botões de agendamento do site (cabeçalho, páginas, promoções e contato).
+          WhatsApp e link externo abrem em nova aba; o WhatsApp sempre usa a mensagem genérica, sem citar tratamentos.
+        </p>
+        <Select
+          label="Destino"
+          value={s.evaluation_cta?.mode ?? (s.whatsapp ? "whatsapp" : "form")}
+          options={[
+            { value: "whatsapp", label: "WhatsApp (número acima)" },
+            { value: "link", label: "Link personalizado (ex.: plataforma de agendamento)" },
+            { value: "form", label: "Formulário do site" },
+          ]}
+          error={issues["evaluation_cta.mode"]}
+          onChange={(mode) => mode && set("evaluation_cta", { ...s.evaluation_cta, mode })}
+        />
+        {s.evaluation_cta?.mode === "whatsapp" && !s.whatsapp ? (
+          <p role="status" className="text-sm text-danger">Sem número de WhatsApp: os botões vão para o formulário do site.</p>
+        ) : null}
+        {s.evaluation_cta?.mode === "link" ? (
+          <TextInput label="Link (https://)" value={s.evaluation_cta.url} maxLength={500} placeholder="https://"
+            error={issues["evaluation_cta.url"]}
+            onChange={(url) => set("evaluation_cta", { ...s.evaluation_cta!, url })} />
+        ) : null}
+        <TextInput label="Texto do botão (opcional)" value={s.evaluation_cta?.label} maxLength={40} placeholder="Agendar avaliação"
+          onChange={(label) => set("evaluation_cta", { mode: s.evaluation_cta?.mode ?? (s.whatsapp ? "whatsapp" : "form"), ...s.evaluation_cta, label })} />
       </section>
 
       <section className={card}>

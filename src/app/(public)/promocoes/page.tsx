@@ -8,6 +8,8 @@ import { getPublishedPromotions, loadPublicContext } from "@/lib/cms/public-data
 import { activePromotions, type RenderContext } from "@/lib/cms/render-context";
 import { resolveMissing } from "@/lib/cms/resolve-missing";
 import { buildMetadata } from "@/lib/seo";
+import { evaluationTarget } from "@/lib/cms/settings";
+import { EvaluationLink } from "@/components/site/evaluation-link";
 
 export const metadata: Metadata = buildMetadata({
   title: "Promoções",
@@ -24,8 +26,8 @@ export default async function PromotionsPage() {
     <main id="conteudo" className="flex-1">
       <Breadcrumbs items={[{ label: "Início", href: "/" }, { label: "Promoções", href: "/promocoes" }]} />
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
-        <h1 className="text-3xl font-bold text-brand-800 sm:text-4xl">Promoções</h1>
-        <p className="mt-3 max-w-2xl text-lg text-muted">Ofertas por tempo determinado. Todas incluem avaliação individual.</p>
+        <h1 className="text-center text-3xl font-bold text-brand-800 sm:text-5xl">Promoções</h1>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-lg text-muted">Ofertas por tempo determinado. Todas incluem avaliação individual.</p>
         <div className="mt-8">
           <Suspense fallback={<p className="text-muted" role="status">Carregando promoções vigentes…</p>}>
             <ActiveList ctx={ctx} />
@@ -45,7 +47,7 @@ async function ActiveList({ ctx }: { ctx: RenderContext }) {
         <p className="font-semibold text-ink">No momento não há promoções vigentes.</p>
         <p className="mt-2 text-sm text-muted">
           Veja os <Link href="/tratamentos" className="font-semibold text-brand-800 underline">tratamentos</Link> ou{" "}
-          <Link href="/agendar-avaliacao" className="font-semibold text-brand-800 underline">solicite uma avaliação</Link>.
+          <EvaluationLink target={evaluationTarget(ctx.settings)} location="promotions_empty" className="font-semibold text-brand-800 underline">solicite uma avaliação</EvaluationLink>.
         </p>
       </div>
     );

@@ -26,13 +26,13 @@ export default async function BlogPage() {
     <main id="conteudo" className="flex-1">
       <Breadcrumbs items={[{ label: "Início", href: "/" }, { label: "Blog", href: "/blog" }]} />
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
-        <h1 className="text-3xl font-bold text-brand-800 sm:text-4xl">Blog</h1>
+        <h1 className="text-center text-3xl font-bold text-brand-800 sm:text-5xl">Blog</h1>
         <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((p) => {
             const cover = typeof p.data.mediaId === "string" ? ctx.media.get(p.data.mediaId) : undefined;
             return (
               <li key={p.id}>
-                <article className="flex h-full flex-col rounded-[var(--radius-card)] border border-line bg-surface-raised p-4">
+                <article className="flex h-full flex-col rounded-[var(--radius-card)] border border-line bg-surface-raised p-4 text-center">
                   {cover ? <Picture media={cover} sizes="(min-width: 1024px) 320px, (min-width: 640px) 50vw, 100vw" /> : null}
                   <h2 className="mt-3 text-lg font-semibold text-brand-800">
                     <Link href={`/blog/${p.slug}`} className="hover:underline">{p.title}</Link>

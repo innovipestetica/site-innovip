@@ -5,7 +5,8 @@ import type { Block, CtaAction } from "@/lib/cms/blocks";
 import { publicPath } from "@/lib/cms/content-types";
 import { formatCents } from "@/lib/cms/format";
 import { activePromotions, type RenderContext, type RenderEntry, type RenderMedia } from "@/lib/cms/render-context";
-import { phoneHref, whatsappHref } from "@/lib/cms/settings";
+import { evaluationTarget, phoneHref, whatsappHref } from "@/lib/cms/settings";
+import { EvaluationLink } from "@/components/site/evaluation-link";
 import { RichText } from "./rich-text";
 
 /**
@@ -49,7 +50,7 @@ export function Picture({ media, sizes, priority }: { media: RenderMedia; sizes:
 function ctaHref(action: CtaAction, ctx: RenderContext): string | null {
   switch (action.kind) {
     case "evaluation":
-      return "/agendar-avaliacao";
+      return evaluationTarget(ctx.settings).href;
     case "whatsapp":
       return whatsappHref(ctx.settings);
     case "link":
@@ -70,16 +71,19 @@ function CtaButton({ action, ctx, variant = "primary" }: { action: CtaAction; ct
           "inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-surface px-6 font-semibold text-brand-800 hover:bg-gold-100"
         : "inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-brand-700 px-6 font-semibold text-brand-800 hover:bg-brand-50";
   const external = href.startsWith("https://");
+  const target = action.kind === "evaluation" ? evaluationTarget(ctx.settings).mode : undefined;
   return external ? (
-    <a href={href} className={cls} target="_blank" rel="noopener noreferrer" data-cta={action.kind}>{action.label}</a>
+    <a href={href} className={cls} target="_blank" rel="noopener noreferrer" data-cta={action.kind} data-cta-target={target}>
+      {action.label}<span className="sr-only"> (abre em nova aba)</span>
+    </a>
   ) : (
-    <Link href={href} className={cls} data-cta={action.kind}>{action.label}</Link>
+    <Link href={href} className={cls} data-cta={action.kind} data-cta-target={target}>{action.label}</Link>
   );
 }
 
 function Heading({ text, id }: { text?: string; id?: string }) {
   if (!text) return null;
-  return <h2 id={id} className="mb-6 text-2xl font-bold text-brand-800 sm:text-3xl">{text}</h2>;
+  return <h2 id={id} className="mb-8 text-center text-2xl font-bold text-brand-800 sm:text-3xl">{text}</h2>;
 }
 
 function resolveEntries(ids: string[], ctx: RenderContext): RenderEntry[] {
@@ -98,7 +102,7 @@ export function EntryCard({ entry, ctx }: { entry: RenderEntry; ctx: RenderConte
     </>
   );
   return (
-    <li className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-4">
+    <li className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-4 text-center">
       {href ? <Link href={href} className="block">{body}</Link> : body}
     </li>
   );
@@ -122,16 +126,16 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
       const Title = first ? "h1" : "h2";
       return (
         <section className="bg-gold-100/50">
-          <div className={`${section} grid items-center gap-8 md:grid-cols-2`}>
-            <div>
-              <Title className="text-3xl font-bold text-brand-800 sm:text-4xl">{b.heading}</Title>
-              {b.subheading ? <p className="mt-4 text-lg text-muted">{b.subheading}</p> : null}
-              <div className="mt-6 flex flex-wrap gap-3">
+          <div className={`${section} flex flex-col items-center gap-10 text-center`}>
+            <div className="mx-auto max-w-3xl">
+              <Title className="text-3xl font-bold text-brand-800 sm:text-5xl sm:leading-tight">{b.heading}</Title>
+              {b.subheading ? <p className="mx-auto mt-5 max-w-2xl text-lg text-muted">{b.subheading}</p> : null}
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
                 {b.primary ? <CtaButton action={b.primary} ctx={ctx} /> : null}
                 {b.secondary ? <CtaButton action={b.secondary} ctx={ctx} variant="secondary" /> : null}
               </div>
             </div>
-            {media ? <Picture media={media} sizes="(min-width: 768px) 50vw, 100vw" priority={first} /> : null}
+            {media ? <div className="w-full max-w-4xl"><Picture media={media} sizes="(min-width: 1024px) 896px, 100vw" priority={first} /></div> : null}
             {b.mediaId && !media ? <PreviewNote ctx={ctx}>imagem ainda não disponível.</PreviewNote> : null}
           </div>
         </section>
@@ -141,7 +145,8 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
       return (
         <section aria-labelledby={b.heading ? headingId : undefined} className={section}>
           <Heading text={b.heading} id={headingId} />
-          <div className="max-w-3xl"><RichText doc={b.body} /></div>
+          {/* Coluna centralizada; parágrafos longos alinhados à esquerda para leitura. */}
+          <div className="mx-auto max-w-3xl"><RichText doc={b.body} /></div>
         </section>
       );
     case "image": {
@@ -150,15 +155,15 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
       return (
         <figure className={section}>
           <Picture media={media} sizes="(min-width: 1024px) 1024px, 100vw" priority={first} />
-          {b.caption ? <figcaption className="mt-2 text-sm text-muted">{b.caption}</figcaption> : null}
+          {b.caption ? <figcaption className="mt-2 text-center text-sm text-muted">{b.caption}</figcaption> : null}
         </figure>
       );
     }
     case "cta":
       return (
         <section className="bg-brand-800 text-white">
-          <div className={`${section} flex flex-col items-start gap-4`}>
-            <h2 className="text-2xl font-bold">{b.heading}</h2>
+          <div className={`${section} flex flex-col items-center gap-4 text-center`}>
+            <h2 className="text-2xl font-bold sm:text-3xl">{b.heading}</h2>
             {b.text ? <p className="max-w-2xl text-white/90">{b.text}</p> : null}
             <CtaButton action={b.action} ctx={ctx} variant="onDark" />
           </div>
@@ -172,7 +177,7 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
           {b.type === "steps" ? (
             <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {b.items.map((it, i) => (
-                <li key={i} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5">
+                <li key={i} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
                   <span className="text-sm font-semibold text-gold-700">Etapa {i + 1}</span>
                   <h3 className="mt-1 font-semibold text-brand-800">{it.title}</h3>
                   {it.text ? <p className="mt-1 text-sm text-muted">{it.text}</p> : null}
@@ -182,7 +187,7 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
           ) : (
             <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {b.items.map((it, i) => (
-                <li key={i} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5">
+                <li key={i} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
                   <h3 className="font-semibold text-brand-800">{it.title}</h3>
                   {it.text ? <p className="mt-1 text-sm text-muted">{it.text}</p> : null}
                 </li>
@@ -194,7 +199,7 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
     case "notice":
       return (
         <div className={section}>
-          <p role="note" className={`rounded-[var(--radius-card)] border-l-4 p-4 ${b.tone === "important" ? "border-gold-700 bg-gold-100" : "border-brand-500 bg-brand-50"}`}>
+          <p role="note" className={`mx-auto max-w-3xl rounded-[var(--radius-card)] border-t-4 p-5 text-center ${b.tone === "important" ? "border-gold-700 bg-gold-100" : "border-brand-500 bg-brand-50"}`}>
             {b.text}
           </p>
         </div>
@@ -205,7 +210,7 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
       return (
         <section aria-labelledby={headingId} className={section}>
           <Heading text={b.heading ?? "Perguntas frequentes"} id={headingId} />
-          <div className="flex flex-col gap-2">
+          <div className="mx-auto flex max-w-3xl flex-col gap-2">
             {faqs.map((f) => (
               <details key={f.id} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-4">
                 <summary className="min-h-11 cursor-pointer content-center font-semibold text-brand-800">{f.title}</summary>
@@ -227,12 +232,12 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((e) =>
               b.type === "testimonial_list" ? (
-                <li key={e.id} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5">
+                <li key={e.id} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
                   <blockquote className="text-ink">“{String(e.data.quote ?? "")}”</blockquote>
                   {e.data.author_display ? <p className="mt-2 text-sm text-muted">— {String(e.data.author_display)}</p> : null}
                 </li>
               ) : b.type === "team_list" ? (
-                <li key={e.id} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5">
+                <li key={e.id} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
                   {typeof e.data.mediaId === "string" && ctx.media.get(e.data.mediaId) ? (
                     <Picture media={ctx.media.get(e.data.mediaId)!} sizes="320px" />
                   ) : null}
@@ -246,7 +251,7 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
             )}
           </ul>
           {b.type === "testimonial_list" ? (
-            <p className="mt-4 text-sm text-muted">Resultados variam de pessoa para pessoa.</p>
+            <p className="mt-4 text-center text-sm text-muted">Resultados variam de pessoa para pessoa.</p>
           ) : null}
         </section>
       );
@@ -261,7 +266,7 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
       return (
         <section aria-labelledby={headingId} className={section}>
           <Heading text={b.heading ?? (b.type === "concern_list" ? "O que você deseja tratar?" : "Categorias")} id={headingId} />
-          <ul className="flex flex-wrap gap-3">
+          <ul className="flex flex-wrap justify-center gap-3">
             {items.map((t) => (
               <li key={t.id}>
                 <Link href={`${base}${t.slug}`} className="inline-flex min-h-11 items-center rounded-full border border-brand-300 bg-surface-raised px-4 font-semibold text-brand-800 hover:bg-brand-50">
@@ -306,8 +311,8 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
       return (
         <section aria-labelledby={headingId} className={section}>
           <Heading text={b.heading ?? "Contato"} id={headingId} />
-          <div className="grid gap-6 md:grid-cols-2">
-            <ul className="flex flex-col gap-3">
+          <div className="grid justify-items-center gap-6 text-center md:grid-cols-2">
+            <ul className="flex flex-col items-center gap-3">
               {wa ? <li><a href={wa} target="_blank" rel="noopener noreferrer" data-cta="whatsapp" className="inline-flex min-h-11 items-center font-semibold text-brand-800 underline underline-offset-4">WhatsApp</a></li> : null}
               {tel ? <li><a href={tel} className="inline-flex min-h-11 items-center font-semibold text-brand-800 underline underline-offset-4">Telefone</a></li> : null}
               {s.email ? <li><a href={`mailto:${s.email}`} className="inline-flex min-h-11 items-center font-semibold text-brand-800 underline underline-offset-4">{s.email}</a></li> : null}
@@ -317,7 +322,7 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
               ) : null}
             </ul>
             {s.hours?.length ? (
-              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+              <dl className="grid grid-cols-[auto_auto] gap-x-4 gap-y-1 text-left text-sm">
                 {s.hours.map((h, i) => (
                   <div key={i} className="contents"><dt className="font-semibold">{h.label}</dt><dd>{h.value}</dd></div>
                 ))}
@@ -325,10 +330,11 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
             ) : null}
           </div>
           {b.showForm ? (
-            <p className="mt-6">
-              <Link href="/agendar-avaliacao" className="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-brand-700 px-6 font-semibold text-white hover:bg-brand-800">
+            <p className="mt-8 text-center">
+              <EvaluationLink target={evaluationTarget(s)} location="contact_block"
+                className="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-brand-700 px-6 font-semibold text-white hover:bg-brand-800">
                 Solicitar contato
-              </Link>
+              </EvaluationLink>
             </p>
           ) : null}
         </section>
@@ -353,7 +359,7 @@ async function ActivePromotionList(props: { heading?: string; limit: number; hea
 export function PromotionCard({ promotion: p, ctx }: { promotion: RenderContext["promotions"][number]; ctx: RenderContext }) {
   const cover = typeof p.entry.data.mediaId === "string" ? ctx.media.get(p.entry.data.mediaId) : undefined;
   return (
-    <li className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5">
+    <li className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
       <Link href={`/promocoes/${p.entry.slug}`} className="block">
         {cover ? <Picture media={cover} sizes="(min-width: 1024px) 320px, 100vw" /> : null}
         <h3 className="mt-3 font-semibold text-brand-800">{p.entry.title}</h3>

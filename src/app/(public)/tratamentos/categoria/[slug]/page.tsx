@@ -46,8 +46,8 @@ export default async function CategoryPage({ params }: PageProps<"/tratamentos/c
         ]}
       />
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
-        <h1 className="text-3xl font-bold text-brand-800 sm:text-4xl">{data.category.name}</h1>
-        {data.category.description ? <p className="mt-3 max-w-2xl text-lg text-muted">{data.category.description}</p> : null}
+        <h1 className="text-center text-3xl font-bold text-brand-800 sm:text-5xl">{data.category.name}</h1>
+        {data.category.description ? <p className="mx-auto mt-3 max-w-2xl text-center text-lg text-muted">{data.category.description}</p> : null}
         <div className="mt-8">
           <TreatmentGrid items={data.items} media={ctx.media} />
         </div>

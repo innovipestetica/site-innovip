@@ -59,8 +59,25 @@ Parágrafo com **negrito**, *itálico* e [link](/contato).
 
 Links aceitos: `https://…`, `tel:`, `mailto:` e caminhos do site (`/contato`).
 
-Botões usam **ações**, sem número fixo: "Agendar avaliação" (formulário),
-"WhatsApp" (número de Configurações públicas) ou um link.
+Botões usam **ações**, sem número fixo: "Agendar avaliação", "WhatsApp"
+(número de Configurações públicas) ou um link.
+
+### Destino do "Agendar avaliação"
+
+Em **Configurações públicas → Botão "Agendar avaliação"** você escolhe para
+onde vão TODOS os botões de agendamento do site (cabeçalho, menu do celular,
+blocos, páginas de tratamento, "Quero aproveitar" das promoções e contato):
+
+- **WhatsApp**: abre o WhatsApp da clínica com a mensagem genérica. A mensagem
+  nunca cita o tratamento (pode ser dado de saúde).
+- **Link personalizado**: qualquer endereço `https://` (ex.: plataforma de
+  agendamento). Abre em nova aba.
+- **Formulário do site**: `/agendar-avaliacao` (etapa 4), já com o tratamento
+  ou a promoção de interesse pré-selecionados.
+
+Também dá para trocar o texto do botão. Padrão: WhatsApp quando houver número;
+sem número, formulário. Clicar no botão não é agendamento confirmado: a equipe
+confirma o horário.
 
 ## Endereços (slug)
 

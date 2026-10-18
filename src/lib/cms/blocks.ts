@@ -22,7 +22,7 @@ const blockId = z.string().regex(/^[a-z0-9]{6,24}$/);
 
 /** Ação de um botão: sem telefone ou URL fixos dentro do bloco. */
 export const ctaActionSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("evaluation"), label: shortText(40) }), // /agendar-avaliacao
+  z.object({ kind: z.literal("evaluation"), label: shortText(40) }), // destino nas Configurações públicas
   z.object({ kind: z.literal("whatsapp"), label: shortText(40) }), // número das configurações
   z.object({ kind: z.literal("link"), label: shortText(40), href: safeHrefSchema }),
 ]);

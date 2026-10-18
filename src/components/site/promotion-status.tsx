@@ -4,6 +4,8 @@ import { PromotionCard } from "@/components/blocks/render-blocks";
 import { formatCents } from "@/lib/cms/format";
 import type { PublishedEntry } from "@/lib/cms/public-data";
 import { activePromotions, type RenderContext } from "@/lib/cms/render-context";
+import { evaluationTarget } from "@/lib/cms/settings";
+import { EvaluationLink } from "./evaluation-link";
 import { ctaPrimary } from "./page-parts";
 
 const dateFmt = new Intl.DateTimeFormat("pt-BR", {
@@ -33,7 +35,7 @@ export async function PromotionStatus({
 
   if (now < starts) {
     return (
-      <div role="status" className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5">
+      <div role="status" className="mx-auto w-full max-w-2xl rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
         <p className="font-semibold text-brand-800">Esta oferta começa em {dateFmt.format(starts)} (horário de Brasília).</p>
       </div>
     );
@@ -44,14 +46,14 @@ export async function PromotionStatus({
     const related = p.treatmentIds.map((id) => ctx.entries.get(id)).filter((e) => !!e);
     return (
       <div className="flex flex-col gap-6">
-        <div role="status" className="rounded-[var(--radius-card)] border-l-4 border-gold-700 bg-gold-100 p-5">
+        <div role="status" className="mx-auto w-full max-w-2xl rounded-[var(--radius-card)] border-t-4 border-gold-700 bg-gold-100 p-5 text-center">
           <p className="text-lg font-bold text-ink">Oferta encerrada</p>
           <p className="mt-1 text-sm text-muted">Esta promoção terminou em {dateFmt.format(ends)}.</p>
         </div>
         {related.length ? (
           <div>
-            <h2 className="mb-3 text-xl font-bold text-brand-800">Conheça os tratamentos</h2>
-            <ul className="flex flex-wrap gap-2">
+            <h2 className="mb-3 text-center text-xl font-bold text-brand-800">Conheça os tratamentos</h2>
+            <ul className="flex flex-wrap justify-center gap-2">
               {related.map((e) => (
                 <li key={e!.id}>
                   <Link href={`/tratamentos/${e!.slug}`} className="inline-flex min-h-11 items-center rounded-full bg-brand-50 px-4 font-semibold text-brand-800 hover:bg-brand-100">
@@ -64,7 +66,7 @@ export async function PromotionStatus({
         ) : null}
         {others.length ? (
           <div>
-            <h2 className="mb-3 text-xl font-bold text-brand-800">Promoções vigentes</h2>
+            <h2 className="mb-3 text-center text-xl font-bold text-brand-800">Promoções vigentes</h2>
             <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {others.map((o) => <PromotionCard key={o.entry.id} promotion={o} ctx={ctx} />)}
             </ul>
@@ -75,7 +77,7 @@ export async function PromotionStatus({
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-line bg-surface-raised p-5">
+    <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-4 rounded-[var(--radius-card)] border border-line bg-surface-raised p-6 text-center">
       {p.priceCents !== null ? (
         <p className="text-3xl font-bold text-ink">
           {p.originalPriceCents !== null ? (
@@ -85,14 +87,13 @@ export async function PromotionStatus({
         </p>
       ) : null}
       <p className="text-sm text-muted">Válida até {dateFmt.format(ends)} (horário de Brasília). Consulte as condições.</p>
-      <Link
-        href={`/agendar-avaliacao?promocao=${encodeURIComponent(promo.slug)}`}
-        className={`${ctaPrimary} self-start`}
-        data-cta="evaluation"
-        data-cta-location={ctaLocation}
+      <EvaluationLink
+        target={evaluationTarget(ctx.settings, { promotion: promo.slug })}
+        className={ctaPrimary}
+        location={ctaLocation}
       >
         Quero aproveitar
-      </Link>
+      </EvaluationLink>
     </div>
   );
 }
@@ -100,7 +101,7 @@ export async function PromotionStatus({
 export function PromotionTerms({ terms }: { terms: string | null | undefined }) {
   if (!terms) return null;
   return (
-    <details className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-4">
+    <details className="mx-auto w-full max-w-2xl rounded-[var(--radius-card)] border border-line bg-surface-raised p-4">
       <summary className="min-h-11 cursor-pointer content-center font-semibold text-brand-800">Condições da oferta</summary>
       <p className="mt-2 whitespace-pre-line text-sm text-ink">{terms}</p>
     </details>

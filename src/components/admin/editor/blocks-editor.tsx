@@ -158,7 +158,7 @@ function CtaEditor(props: { label: string; value: CtaAction | undefined; onChang
         value={v?.kind}
         emptyLabel={props.optional ? "Sem botão" : undefined}
         options={[
-          { value: "evaluation", label: "Agendar avaliação (formulário)" },
+          { value: "evaluation", label: "Agendar avaliação (destino definido em Configurações públicas)" },
           { value: "whatsapp", label: "WhatsApp (número das configurações)" },
           { value: "link", label: "Link" },
         ]}

@@ -118,3 +118,32 @@ describe("validação de conteúdo", () => {
     expect(res.ok && res.payload.relations.categories).toEqual([]);
   });
 });
+
+describe("destino do botão Agendar avaliação", async () => {
+  const { evaluationTarget } = await import("@/lib/cms/settings");
+
+  it("padrão: WhatsApp quando há número, senão formulário", () => {
+    expect(evaluationTarget({ whatsapp: "5511999999999" }).mode).toBe("whatsapp");
+    expect(evaluationTarget({}).href).toBe("/agendar-avaliacao");
+  });
+
+  it("link personalizado abre fora do site", () => {
+    const t = evaluationTarget({ evaluation_cta: { mode: "link", url: "https://agenda.exemplo.com/innovip" } });
+    expect(t).toMatchObject({ href: "https://agenda.exemplo.com/innovip", external: true });
+  });
+
+  it("WhatsApp nunca leva o tratamento na mensagem", () => {
+    const t = evaluationTarget({ whatsapp: "5511999999999", evaluation_cta: { mode: "whatsapp" } }, { interest: "peeling" });
+    expect(t.href).toMatch(/^https:\/\/wa\.me\/5511999999999\?text=/);
+    expect(decodeURIComponent(t.href)).not.toContain("peeling");
+  });
+
+  it("WhatsApp escolhido sem número cai no formulário com o interesse", () => {
+    const t = evaluationTarget({ evaluation_cta: { mode: "whatsapp" } }, { interest: "peeling" });
+    expect(t).toMatchObject({ mode: "form", href: "/agendar-avaliacao?interesse=peeling", external: false });
+  });
+
+  it("rótulo personalizado", () => {
+    expect(evaluationTarget({ evaluation_cta: { mode: "form", label: "Quero ser atendida" } }).label).toBe("Quero ser atendida");
+  });
+});

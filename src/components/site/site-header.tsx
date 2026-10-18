@@ -3,14 +3,15 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { getNavigation } from "@/lib/cms/navigation";
 import { getPublicSettings } from "@/lib/cms/public-data";
+import { evaluationTarget } from "@/lib/cms/settings";
+import { EvaluationLink } from "./evaluation-link";
 import { MobileNav } from "./mobile-nav";
-
-const EVALUATION_HREF = "/agendar-avaliacao";
 
 /** Cabeçalho do site. `reduced` = campanha: só logo e CTA. */
 export async function SiteHeader({ reduced = false }: { reduced?: boolean }) {
   const [items, settings] = await Promise.all([reduced ? Promise.resolve([]) : getNavigation(), getPublicSettings()]);
   const name = settings.business_name || "Innovip";
+  const evaluation = evaluationTarget(settings);
 
   return (
     <header className="relative z-30 border-b border-line bg-surface-raised/95 backdrop-blur">
@@ -35,17 +36,14 @@ export async function SiteHeader({ reduced = false }: { reduced?: boolean }) {
         ) : null}
 
         <div className="flex items-center gap-2">
-          <Link
-            href={EVALUATION_HREF}
-            data-cta="evaluation"
-            data-cta-location="header"
+          <EvaluationLink
+            target={evaluation}
+            location="header"
             className={`${reduced ? "inline-flex" : "hidden sm:inline-flex"} min-h-11 items-center rounded-[var(--radius-control)] bg-brand-700 px-4 text-sm font-semibold text-white hover:bg-brand-800`}
-          >
-            Agendar avaliação
-          </Link>
+          />
           {/* usePathname no menu móvel exige Suspense. */}
           <Suspense fallback={null}>
-            <MobileNav items={items} ctaHref={EVALUATION_HREF} />
+            <MobileNav items={items} cta={{ href: evaluation.href, external: evaluation.external, label: evaluation.label, mode: evaluation.mode }} />
           </Suspense>
         </div>
       </div>
