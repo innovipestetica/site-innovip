@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useHydrated } from "@/components/ui/use-hydrated";
 import { restoreVersionAction } from "../../../actions";
+import { confirmDialog } from "@/components/admin/dialog";
 
 export function RestoreButton(props: {
   entryId: string;
@@ -18,7 +19,7 @@ export function RestoreButton(props: {
   const [error, setError] = useState<string | null>(null);
 
   async function onClick() {
-    if (!window.confirm(`Criar uma revisão nova com o conteúdo da revisão ${props.revision}?`)) return;
+    if (!(await confirmDialog(`Criar uma revisão nova com o conteúdo da revisão ${props.revision}?`, { confirmLabel: "Criar revisão" }))) return;
     setPending(true);
     const res = await restoreVersionAction(props.entryId, props.versionId, props.baseRevision);
     setPending(false);

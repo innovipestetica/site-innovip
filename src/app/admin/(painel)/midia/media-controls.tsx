@@ -14,6 +14,7 @@ import {
   unpublishMediaAction,
   updateAltAction,
 } from "./actions";
+import { confirmDialog } from "@/components/admin/dialog";
 
 const ACCEPT = "image/jpeg,image/png,image/webp,image/avif";
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -190,8 +191,8 @@ export function MediaCard({ asset, thumbUrl, usedIn }: { asset: Asset; thumbUrl:
 
           {asset.status === "published" ? (
             <button type="button" className={buttonSecondary} disabled={busy}
-              onClick={() => {
-                if (!window.confirm("Tirar a imagem do site? Cópias já distribuídas podem continuar em caches por algum tempo.")) return;
+              onClick={async () => {
+                if (!(await confirmDialog("Tirar a imagem do site? Cópias já distribuídas podem continuar em caches por algum tempo.", { confirmLabel: "Tirar do site", danger: true }))) return;
                 void act(() => unpublishMediaAction(asset.id), "Imagem retirada do site.");
               }}>
               Tirar do site
@@ -199,8 +200,8 @@ export function MediaCard({ asset, thumbUrl, usedIn }: { asset: Asset; thumbUrl:
           ) : null}
 
           <button type="button" className="min-h-11 rounded px-3 text-sm font-semibold text-danger hover:bg-danger-bg" disabled={busy}
-            onClick={() => {
-              if (!window.confirm("Excluir esta imagem? Se houver registro de licença, ela será arquivada (a evidência fica guardada).")) return;
+            onClick={async () => {
+              if (!(await confirmDialog("Excluir esta imagem? Se houver registro de licença, ela será arquivada (a evidência fica guardada).", { confirmLabel: "Excluir", danger: true }))) return;
               void act(() => deleteMediaAction(asset.id), "Imagem removida.");
             }}>
             Excluir

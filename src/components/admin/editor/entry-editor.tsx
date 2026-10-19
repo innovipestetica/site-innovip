@@ -37,6 +37,7 @@ import {
   type MediaOption,
   type RefOption,
 } from "./fields";
+import { confirmDialog, promptDialog } from "@/components/admin/dialog";
 
 export type Taxonomy = { id: string; name: string; status: string };
 
@@ -131,7 +132,7 @@ export function EntryEditor(props: EditorProps) {
       if (check.data.problems.length) {
         return setMessage({ tone: "error", text: "Ainda não dá para publicar:", list: check.data.problems });
       }
-      if (!window.confirm(`Publicar a revisão ${revision}? Ela substituirá a versão no ar em até 1 minuto.`)) return;
+      if (!(await confirmDialog(`Publicar a revisão ${revision}? Ela substituirá a versão no ar em até 1 minuto.`, { confirmLabel: "Publicar" }))) return;
       const res = await publishAction(entry.id, versionId);
       if (!res.ok) return setMessage({ tone: "error", text: res.message, list: res.problems });
       setMessage({ tone: "success", text: `Revisão ${revision} publicada.` });
@@ -145,7 +146,7 @@ export function EntryEditor(props: EditorProps) {
       archive: "Arquivar? O conteúdo sai do site e da lista principal.",
       unarchive: "Tirar do arquivo? Ele volta como despublicado/rascunho.",
     }[kind];
-    if (!window.confirm(confirmText)) return;
+    if (!(await confirmDialog(confirmText, { confirmLabel: { unpublish: "Despublicar", archive: "Arquivar", unarchive: "Tirar do arquivo" }[kind], danger: kind !== "unarchive" }))) return;
     await run(kind, async () => {
       const fn = { unpublish: unpublishAction, archive: archiveAction, unarchive: unarchiveAction }[kind];
       const res = await fn(entry.id);
@@ -156,7 +157,7 @@ export function EntryEditor(props: EditorProps) {
   }
 
   async function onDuplicate() {
-    const slug = window.prompt("Endereço (slug) da cópia:", `${entry.slug}-copia`);
+    const slug = await promptDialog("Endereço (slug) da cópia:", `${entry.slug}-copia`, "Endereço (slug)");
     if (!slug) return;
     await run("duplicate", async () => {
       const res = await duplicateAction(entry.id, slug);
@@ -166,9 +167,10 @@ export function EntryEditor(props: EditorProps) {
   }
 
   async function onChangeSlug() {
-    const slug = window.prompt(
+    const slug = await promptDialog(
       "Novo endereço (slug). Se já foi publicado, o endereço antigo redirecionará (301) para o novo.",
       entry.slug,
+      "Endereço (slug)",
     );
     if (!slug || slug === entry.slug) return;
     await run("slug", async () => {

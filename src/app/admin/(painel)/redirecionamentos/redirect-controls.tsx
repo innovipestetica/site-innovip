@@ -6,6 +6,7 @@ import { Alert, buttonPrimary } from "@/components/ui/form";
 import { useHydrated } from "@/components/ui/use-hydrated";
 import { Select, TextInput } from "@/components/admin/editor/fields";
 import { addRedirectAction, deleteRedirectAction } from "./actions";
+import { alertDialog, confirmDialog } from "@/components/admin/dialog";
 
 export function AddRedirectForm() {
   const router = useRouter();
@@ -53,11 +54,11 @@ export function DeleteRedirectButton({ id, source }: { id: string; source: strin
       disabled={pending}
       className="min-h-11 self-start rounded px-3 text-sm font-semibold text-danger hover:bg-danger-bg"
       onClick={async () => {
-        if (!window.confirm(`Remover o redirecionamento de ${source}? Links antigos passarão a dar 404.`)) return;
+        if (!(await confirmDialog(`Remover o redirecionamento de ${source}? Links antigos passarão a dar 404.`, { confirmLabel: "Remover", danger: true }))) return;
         setPending(true);
         const res = await deleteRedirectAction(id);
         setPending(false);
-        if (!res.ok) window.alert(res.message);
+        if (!res.ok) await alertDialog(res.message);
         else router.refresh();
       }}
     >

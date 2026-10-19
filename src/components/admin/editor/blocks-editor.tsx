@@ -14,6 +14,7 @@ import {
   type MediaOption,
   type RefOption,
 } from "./fields";
+import { confirmDialog } from "@/components/admin/dialog";
 
 type Issues = Record<string, string>;
 
@@ -94,7 +95,9 @@ export function BlocksEditor(props: {
                   onChange([...blocks.slice(0, idx + 1), copy, ...blocks.slice(idx + 1)]);
                 }}>⧉</IconButton>
                 <IconButton label={`Remover bloco ${idx + 1}`} onClick={() => {
-                  if (window.confirm(`Remover o bloco "${BLOCK_META[block.type].label}"?`)) onChange(blocks.filter((_, i) => i !== idx));
+                  void confirmDialog(`Remover o bloco "${BLOCK_META[block.type].label}"?`, { confirmLabel: "Remover", danger: true }).then(
+                    (yes) => yes && onChange(blocks.filter((_, i) => i !== idx)),
+                  );
                 }}>✕</IconButton>
               </div>
             </div>
@@ -353,7 +356,7 @@ function BannerSlidesEditor(props: {
                 <IconButton label={`Mover banner ${i + 1} para cima`} disabled={i === 0} onClick={() => move(i, -1)}>↑</IconButton>
                 <IconButton label={`Mover banner ${i + 1} para baixo`} disabled={i === b.slides.length - 1} onClick={() => move(i, 1)}>↓</IconButton>
                 <IconButton label={`Remover banner ${i + 1}`} disabled={b.slides.length === 1}
-                  onClick={() => window.confirm(`Remover o banner ${i + 1}?`) && setSlides(b.slides.filter((_, j) => j !== i))}>✕</IconButton>
+                  onClick={() => void confirmDialog(`Remover o banner ${i + 1}?`, { confirmLabel: "Remover", danger: true }).then((yes) => yes && setSlides(b.slides.filter((_, j) => j !== i)))}>✕</IconButton>
               </span>
             </div>
             <MediaPicker label="Imagem (computador)" value={slide.mediaId || undefined} options={props.mediaOptions}
