@@ -130,11 +130,16 @@ export function EntryCard({ entry, ctx }: { entry: RenderEntry; ctx: RenderConte
   );
 }
 
-export function RenderBlocks({ blocks, ctx }: { blocks: Block[]; ctx: RenderContext }) {
+/**
+ * `pageHasTitle`: a página já tem o título principal (h1) acima dos blocos
+ * (tratamento, promoção, post). Aí um Destaque no início usa h2, para não
+ * haver dois h1.
+ */
+export function RenderBlocks({ blocks, ctx, pageHasTitle = false }: { blocks: Block[]; ctx: RenderContext; pageHasTitle?: boolean }) {
   return (
     <>
       {blocks.map((block, idx) => {
-        const content = <RenderBlock block={block} ctx={ctx} first={idx === 0} />;
+        const content = <RenderBlock block={block} ctx={ctx} first={idx === 0} pageHasTitle={pageHasTitle} />;
         // Cores escolhidas no painel: invólucro com variáveis CSS (globals.css).
         const styled = blockStyleAttrs(block.style);
         return styled ? <div key={block.id} {...styled}>{content}</div> : <Fragment key={block.id}>{content}</Fragment>;
@@ -143,12 +148,12 @@ export function RenderBlocks({ blocks, ctx }: { blocks: Block[]; ctx: RenderCont
   );
 }
 
-function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContext; first: boolean }) {
+function RenderBlock({ block: b, ctx, first, pageHasTitle }: { block: Block; ctx: RenderContext; first: boolean; pageHasTitle: boolean }) {
   const headingId = `bloco-${b.id}`;
   switch (b.type) {
     case "hero": {
       const media = b.mediaId ? ctx.media.get(b.mediaId) : undefined;
-      const Title = first ? "h1" : "h2";
+      const Title = first && !pageHasTitle ? "h1" : "h2";
       return (
         <section className="bg-gold-100/50">
           <div className={`${section} flex flex-col items-center gap-10 text-center`}>

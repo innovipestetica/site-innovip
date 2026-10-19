@@ -47,7 +47,7 @@ export default async function BlogPostPage({ params }: PageProps<"/blog/[slug]">
             </p>
           ) : null}
         </PageIntro>
-        <RenderBlocks blocks={post.blocks} ctx={ctx} />
+        <RenderBlocks blocks={post.blocks} ctx={ctx} pageHasTitle />
       </article>
       <JsonLd
         data={{

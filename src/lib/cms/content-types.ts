@@ -20,21 +20,21 @@ type TypeMeta = {
   defaultNoindex: boolean;
 };
 
+/** Todos os tipos com blocos aceitam a biblioteca inteira (páginas personalizáveis). */
 const ALL_BLOCKS: BlockType[] = [
   "hero", "banner_carousel", "rich_text", "image", "cta", "features", "steps", "steps_carousel", "care_flow", "notice", "faq_list",
   "treatment_list", "category_list", "concern_list", "promotion_list",
   "testimonial_list", "team_list", "gallery", "contact",
 ];
-const ARTICLE_BLOCKS: BlockType[] = ["rich_text", "image", "steps", "notice", "cta", "faq_list", "gallery"];
 
 export const CONTENT_TYPES: Record<ContentType, TypeMeta> = {
   home: { label: "Home", plural: "Home", segment: "home", publicPrefix: "/", usesBlocks: true, allowedBlocks: ALL_BLOCKS, defaultNoindex: false },
   page: { label: "Página", plural: "Páginas", segment: "paginas", publicPrefix: "/", usesBlocks: true, allowedBlocks: ALL_BLOCKS, defaultNoindex: false },
-  treatment: { label: "Tratamento", plural: "Tratamentos", segment: "tratamentos", publicPrefix: "/tratamentos/", usesBlocks: true, allowedBlocks: ARTICLE_BLOCKS, defaultNoindex: false },
-  technology: { label: "Tecnologia", plural: "Tecnologias", segment: "tecnologias", publicPrefix: null, usesBlocks: true, allowedBlocks: ARTICLE_BLOCKS, defaultNoindex: false },
-  promotion: { label: "Promoção", plural: "Promoções", segment: "promocoes", publicPrefix: "/promocoes/", usesBlocks: true, allowedBlocks: ARTICLE_BLOCKS, defaultNoindex: false },
+  treatment: { label: "Tratamento", plural: "Tratamentos", segment: "tratamentos", publicPrefix: "/tratamentos/", usesBlocks: true, allowedBlocks: ALL_BLOCKS, defaultNoindex: false },
+  technology: { label: "Tecnologia", plural: "Tecnologias", segment: "tecnologias", publicPrefix: null, usesBlocks: true, allowedBlocks: ALL_BLOCKS, defaultNoindex: false },
+  promotion: { label: "Promoção", plural: "Promoções", segment: "promocoes", publicPrefix: "/promocoes/", usesBlocks: true, allowedBlocks: ALL_BLOCKS, defaultNoindex: false },
   landing: { label: "Landing page", plural: "Landing pages", segment: "landing-pages", publicPrefix: "/lp/", usesBlocks: true, allowedBlocks: ALL_BLOCKS, defaultNoindex: true },
-  blog_post: { label: "Post do blog", plural: "Blog", segment: "blog", publicPrefix: "/blog/", usesBlocks: true, allowedBlocks: ARTICLE_BLOCKS, defaultNoindex: false },
+  blog_post: { label: "Post do blog", plural: "Blog", segment: "blog", publicPrefix: "/blog/", usesBlocks: true, allowedBlocks: ALL_BLOCKS, defaultNoindex: false },
   faq: { label: "Pergunta frequente", plural: "FAQs", segment: "faqs", publicPrefix: null, usesBlocks: false, allowedBlocks: [], defaultNoindex: false },
   team_member: { label: "Profissional", plural: "Equipe", segment: "equipe", publicPrefix: null, usesBlocks: false, allowedBlocks: [], defaultNoindex: false },
   testimonial: { label: "Depoimento", plural: "Depoimentos", segment: "depoimentos", publicPrefix: null, usesBlocks: false, allowedBlocks: [], defaultNoindex: false },

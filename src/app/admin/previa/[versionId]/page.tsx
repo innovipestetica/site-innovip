@@ -11,7 +11,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatCents } from "@/lib/cms/format";
 import { formatDateTime } from "@/components/admin/ui";
 import { RenderBlocks } from "@/components/blocks/render-blocks";
-import { PageOpening } from "@/components/site/page-parts";
+import { PageIntro, PageOpening } from "@/components/site/page-parts";
 
 // Prévia: autenticada, dinâmica e fora de qualquer cache público (o proxy
 // também envia no-store/noindex para /admin).
@@ -48,6 +48,8 @@ async function Preview({ params }: { params: PageProps<"/admin/previa/[versionId
   const ctx = await loadPreviewContext({ blocks: payload.blocks, data: payload.data, seo: payload.seo });
   const meta = CONTENT_TYPES[entry.type];
   const isLive = entry.published_version_id === version.id;
+  // Tratamento, promoção e post têm título próprio no topo (como no site).
+  const ownTitle = entry.type === "treatment" || entry.type === "promotion" || entry.type === "blog_post";
   const promo = entry.type === "promotion" ? (payload.details as Record<string, string | number | undefined>) : null;
 
   return (
@@ -62,7 +64,11 @@ async function Preview({ params }: { params: PageProps<"/admin/previa/[versionId
         </Link>
       </div>
       <main id="conteudo" className="flex-1">
-        <PageOpening firstBlockType={payload.blocks[0]?.type} title={payload.title} summary={payload.summary} />
+        {ownTitle ? (
+          <PageIntro title={payload.title} summary={payload.summary} />
+        ) : (
+          <PageOpening firstBlockType={payload.blocks[0]?.type} title={payload.title} summary={payload.summary} />
+        )}
 
         {promo ? (
           <section className="mx-auto w-full max-w-5xl px-4 pt-6">
@@ -88,7 +94,7 @@ async function Preview({ params }: { params: PageProps<"/admin/previa/[versionId
           <p className="mx-auto max-w-5xl whitespace-pre-line px-4 py-6">{String(payload.data.answer ?? "")}</p>
         ) : null}
 
-        <RenderBlocks blocks={payload.blocks} ctx={ctx} />
+        <RenderBlocks blocks={payload.blocks} ctx={ctx} pageHasTitle={ownTitle} />
       </main>
     </div>
   );

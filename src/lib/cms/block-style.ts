@@ -73,10 +73,12 @@ const PAGE_BG = "#fbf8f2";
 const CARD_BG = "#ffffff";
 const DEFAULT_HEADING = "#22574a";
 const DEFAULT_TEXT = "#1e2b27";
+const DEFAULT_ACCENT = "#8a6a2a";
 
 /**
- * Avisos de leitura: texto ≥ 4,5:1 e títulos ≥ 3:1 (texto grande), contra o
- * fundo do bloco e o dos cartões.
+ * Avisos de leitura (WCAG AA), contra o fundo do bloco e o dos cartões:
+ * textos e etiquetas ≥ 4,5:1; título da seção ≥ 3:1 (texto grande); títulos
+ * dos cartões ≥ 4,5:1 (são menores).
  */
 export function styleWarnings(style: BlockStyle | undefined): string[] {
   if (!style) return [];
@@ -84,6 +86,7 @@ export function styleWarnings(style: BlockStyle | undefined): string[] {
   const card = style.card ?? CARD_BG;
   const heading = style.heading ?? DEFAULT_HEADING;
   const text = style.text ?? DEFAULT_TEXT;
+  const accent = style.accent ?? DEFAULT_ACCENT;
   const out: string[] = [];
   const check = (fg: string, back: string, min: number, what: string, where: string) => {
     const r = contrastRatio(fg, back);
@@ -91,7 +94,9 @@ export function styleWarnings(style: BlockStyle | undefined): string[] {
   };
   if (style.background || style.heading) check(heading, bg, 3, "Títulos", "o fundo do bloco");
   if (style.background || style.text) check(text, bg, 4.5, "Textos", "o fundo do bloco");
-  if (style.card || style.heading) check(heading, card, 3, "Títulos", "os cartões");
+  if (style.card || style.heading) check(heading, card, 4.5, "Títulos dos cartões", "os cartões");
   if (style.card || style.text) check(text, card, 4.5, "Textos", "os cartões");
+  if (style.background || style.accent) check(accent, bg, 4.5, "Destaques (ex.: “Etapa 01”)", "o fundo do bloco");
+  if (style.card || style.accent) check(accent, card, 4.5, "Destaques (ex.: “Etapa 01”)", "os cartões");
   return out;
 }

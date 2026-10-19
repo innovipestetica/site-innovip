@@ -100,7 +100,7 @@ describe("validação de conteúdo", () => {
     expect(initialPayload("landing", "LP", () => "abcdef1").seo.noindex).toBe(true);
   });
 
-  it("bloco não permitido no tipo e datas invertidas são recusados", () => {
+  it("datas invertidas são recusadas; todos os blocos valem na promoção", () => {
     const base = initialPayload("promotion", "Promo", () => "abcdef1");
     const res = validatePayload("promotion", {
       ...base,
@@ -109,7 +109,8 @@ describe("validação de conteúdo", () => {
     });
     expect(res.ok).toBe(false);
     if (!res.ok) {
-      expect(res.issues.map((i) => i.path)).toEqual(expect.arrayContaining(["blocks.0", "details.ends_at"]));
+      expect(res.issues.map((i) => i.path)).toContain("details.ends_at");
+      expect(res.issues.map((i) => i.path)).not.toContain("blocks.0");
     }
   });
 
@@ -174,11 +175,14 @@ describe("carrossel de banners", () => {
     expect(blockSchema.safeParse({ id: "abcdef1", type: "banner_carousel", slides: [bad] }).success).toBe(false);
   });
 
-  it("permitido na Home, páginas e landing; não em tratamento", () => {
+  it("permitido em todos os tipos com blocos (inclusive tratamento)", () => {
     const base = initialPayload("home", "Home", () => "abcdef1");
     const block = { id: "abcdef2", type: "banner_carousel", slides: [slide(1)] };
     expect(validatePayload("home", { ...base, blocks: [block] }).ok).toBe(true);
-    expect(validatePayload("treatment", { ...initialPayload("treatment", "T", () => "abcdef3"), blocks: [block] }).ok).toBe(false);
+    expect(validatePayload("treatment", { ...initialPayload("treatment", "T", () => "abcdef3"), blocks: [block] }).ok).toBe(true);
+    expect(validatePayload("blog_post", { ...initialPayload("blog_post", "P", () => "abcdef4"), blocks: [block] }).ok).toBe(true);
+    // FAQ não usa blocos: continua recusando.
+    expect(validatePayload("faq", { ...initialPayload("faq", "F", () => "abcdef5"), blocks: [block] }).ok).toBe(false);
   });
 });
 

@@ -49,7 +49,7 @@ export default async function PromotionPage({ params }: PageProps<"/promocoes/[s
         </Suspense>
         <PromotionTerms terms={promo.promotion?.terms} />
       </div>
-      <RenderBlocks blocks={promo.blocks} ctx={ctx} />
+      <RenderBlocks blocks={promo.blocks} ctx={ctx} pageHasTitle />
     </main>
   );
 }

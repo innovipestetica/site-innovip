@@ -71,7 +71,7 @@ export default async function TreatmentPage({ params }: PageProps<"/tratamentos/
         </section>
       ) : null}
 
-      <RenderBlocks blocks={t.blocks} ctx={ctx} />
+      <RenderBlocks blocks={t.blocks} ctx={ctx} pageHasTitle />
 
       {t.treatment?.requiresEvaluation && !hasNotice ? (
         <div className="mx-auto w-full max-w-5xl px-4 py-6">

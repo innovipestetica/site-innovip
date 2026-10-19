@@ -94,7 +94,8 @@ export function CardCarousel({
       }}
     >
       <div className="overflow-hidden py-2">
-        <ul
+        {/* div (não ul/li): os itens têm papel "group" de slide, o que quebraria a lista. */}
+        <div
           id={regionId}
           aria-live={running ? "off" : "polite"}
           className={`flex transition-transform duration-500 ease-out motion-reduce:transition-none ${movable ? "" : "justify-center"}`}
@@ -103,7 +104,7 @@ export function CardCarousel({
           {items.map((item, i) => {
             const visible = i >= current && i < current + perView;
             return (
-              <li
+              <div
                 key={i}
                 role="group"
                 aria-roledescription="item"
@@ -113,10 +114,10 @@ export function CardCarousel({
                 className="flex w-full shrink-0 px-2 md:w-1/2 lg:w-1/3"
               >
                 {item}
-              </li>
+              </div>
             );
           })}
-        </ul>
+        </div>
       </div>
 
       {movable ? (

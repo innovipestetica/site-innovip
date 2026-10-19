@@ -34,7 +34,7 @@ describe("cores por bloco", () => {
   it("avisa contraste baixo e calcula a razão WCAG", () => {
     expect(contrastRatio("#ffffff", "#000000")).toBeCloseTo(21, 0);
     expect(styleWarnings({ background: "#ffffff", text: "#eeeeee" })).not.toHaveLength(0);
-    expect(styleWarnings({ background: "#183f35", text: "#ffffff", heading: "#f6edda", card: "#22574a" })).toHaveLength(0);
+    expect(styleWarnings({ background: "#183f35", text: "#ffffff", heading: "#f6edda", card: "#22574a", accent: "#e5c88b" })).toHaveLength(0);
   });
 });
 
@@ -105,5 +105,24 @@ describe("perguntas frequentes", () => {
     const out = renderToStaticMarkup(<RenderBlocks blocks={[{ id: "abcdef1", type: "faq_list", entryIds: [F] } as Block]} ctx={faqCtx} />);
     expect(out).toContain("lg:grid-cols-2");
     expect(out).toContain("Dói?");
+  });
+});
+
+describe("todos os blocos em todas as páginas", () => {
+  it("Destaque no início vira h2 quando a página já tem título (tratamento, promoção, post)", () => {
+    const hero = [{ id: "abcdef1", type: "hero", heading: "Bem-vinda" } as Block];
+    expect(renderToStaticMarkup(<RenderBlocks blocks={hero} ctx={ctx} />)).toMatch(/<h1[^>]*>Bem-vinda/);
+    const inPage = renderToStaticMarkup(<RenderBlocks blocks={hero} ctx={ctx} pageHasTitle />);
+    expect(inPage).toMatch(/<h2[^>]*>Bem-vinda/);
+    expect(inPage).not.toContain("<h1");
+  });
+});
+
+describe("aviso de contraste dos cartões e destaques", () => {
+  it("pega título e etiqueta difíceis de ler sobre cartão dourado", () => {
+    const w = styleWarnings({ card: "#e5c88b", text: "#1e2b27", heading: "#2b6b59", background: "#2b6b59" });
+    expect(w.some((x) => x.startsWith("Títulos dos cartões"))).toBe(true);
+    expect(w.some((x) => x.startsWith("Destaques"))).toBe(true);
+    expect(styleWarnings({ card: "#e5c88b", heading: "#183f35", accent: "#183f35", text: "#1e2b27" })).toHaveLength(0);
   });
 });
