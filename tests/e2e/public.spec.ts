@@ -42,4 +42,23 @@ test.describe("site público", () => {
     expect(robots.length).toBeGreaterThan(0);
     for (const r of robots) expect(r).toMatch(/noindex/);
   });
+
+  test("agendamento externo: /agendar-avaliacao redireciona para fora ou 404; botões coerentes", async ({ page, request }) => {
+    const res = await request.get("/agendar-avaliacao", { maxRedirects: 0 });
+    await page.goto("/");
+    const buttons = page.locator('a[data-cta="evaluation"]');
+    if (res.status() === 404) {
+      // Sem destino configurado: nenhum botão de agendamento quebrado no site.
+      await expect(buttons).toHaveCount(0);
+    } else {
+      expect(res.status()).toBe(307);
+      expect(res.headers()["location"]).toMatch(/^https:\/\//);
+      const count = await buttons.count();
+      expect(count).toBeGreaterThan(0);
+      for (let i = 0; i < count; i++) {
+        await expect(buttons.nth(i)).toHaveAttribute("target", "_blank");
+        await expect(buttons.nth(i)).toHaveAttribute("rel", /noopener/);
+      }
+    }
+  });
 });

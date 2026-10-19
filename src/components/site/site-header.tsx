@@ -43,7 +43,7 @@ export async function SiteHeader({ reduced = false }: { reduced?: boolean }) {
           />
           {/* usePathname no menu móvel exige Suspense. */}
           <Suspense fallback={null}>
-            <MobileNav items={items} cta={{ href: evaluation.href, external: evaluation.external, label: evaluation.label, mode: evaluation.mode }} />
+            <MobileNav items={items} cta={evaluation} />
           </Suspense>
         </div>
       </div>

@@ -78,22 +78,22 @@ export function SettingsForm({ revision, initial }: { revision: number; initial:
       <section className={card}>
         <h2 className={h2}>Botão “Agendar avaliação”</h2>
         <p className="text-sm text-muted">
-          Vale para todos os botões de agendamento do site (cabeçalho, páginas, promoções e contato).
-          WhatsApp e link externo abrem em nova aba; o WhatsApp sempre usa a mensagem genérica, sem citar tratamentos.
+          Vale para todos os botões de agendamento do site (cabeçalho, páginas, promoções e contato) e para o
+          endereço fixo <code>/agendar-avaliacao</code> (útil em bio do Instagram e QR codes). Abre em nova aba.
+          O WhatsApp sempre usa a mensagem genérica, sem citar tratamentos. Sem destino, os botões ficam ocultos.
         </p>
         <Select
           label="Destino"
-          value={s.evaluation_cta?.mode ?? (s.whatsapp ? "whatsapp" : "form")}
+          value={s.evaluation_cta?.mode ?? "whatsapp"}
           options={[
             { value: "whatsapp", label: "WhatsApp (número acima)" },
-            { value: "link", label: "Link personalizado (ex.: plataforma de agendamento)" },
-            { value: "form", label: "Formulário do site" },
+            { value: "link", label: "Link externo (formulário ou plataforma de agendamento)" },
           ]}
           error={issues["evaluation_cta.mode"]}
           onChange={(mode) => mode && set("evaluation_cta", { ...s.evaluation_cta, mode })}
         />
         {s.evaluation_cta?.mode === "whatsapp" && !s.whatsapp ? (
-          <p role="status" className="text-sm text-danger">Sem número de WhatsApp: os botões vão para o formulário do site.</p>
+          <p role="status" className="text-sm text-danger">Sem número de WhatsApp: os botões de agendamento ficam ocultos.</p>
         ) : null}
         {s.evaluation_cta?.mode === "link" ? (
           <TextInput label="Link (https://)" value={s.evaluation_cta.url} maxLength={500} placeholder="https://"
@@ -101,7 +101,7 @@ export function SettingsForm({ revision, initial }: { revision: number; initial:
             onChange={(url) => set("evaluation_cta", { ...s.evaluation_cta!, url })} />
         ) : null}
         <TextInput label="Texto do botão (opcional)" value={s.evaluation_cta?.label} maxLength={40} placeholder="Agendar avaliação"
-          onChange={(label) => set("evaluation_cta", { mode: s.evaluation_cta?.mode ?? (s.whatsapp ? "whatsapp" : "form"), ...s.evaluation_cta, label })} />
+          onChange={(label) => set("evaluation_cta", { mode: s.evaluation_cta?.mode ?? "whatsapp", ...s.evaluation_cta, label })} />
       </section>
 
       <section className={card}>

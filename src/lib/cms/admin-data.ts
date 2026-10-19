@@ -203,6 +203,18 @@ export async function listVersions(entryId: string) {
   return data ?? [];
 }
 
+/** Datas de vigência por versão (para mostrar a situação das promoções). */
+export async function promotionWindows(versionIds: string[]) {
+  if (versionIds.length === 0) return new Map<string, { startsAt: string | null; endsAt: string | null }>();
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("promotion_details")
+    .select("version_id, starts_at, ends_at")
+    .in("version_id", versionIds);
+  if (error) throw new Error(`promotionWindows: ${error.code}`);
+  return new Map((data ?? []).map((d) => [d.version_id, { startsAt: d.starts_at, endsAt: d.ends_at }]));
+}
+
 /** Mídias disponíveis para seletores do editor. */
 export async function listMediaOptions() {
   const supabase = await createSupabaseServerClient();

@@ -1,10 +1,9 @@
-import Link from "next/link";
 import type { EvaluationTarget } from "@/lib/cms/settings";
 
 /**
  * Botão/link de "Agendar avaliação" com o destino das Configurações
- * públicas (WhatsApp, link externo ou formulário do site).
- * Externo: nova aba com rel="noopener noreferrer".
+ * públicas (WhatsApp ou link externo), em nova aba com rel="noopener noreferrer".
+ * Sem destino configurado não renderiza nada (nada de link quebrado).
  */
 export function EvaluationLink({
   target,
@@ -12,21 +11,25 @@ export function EvaluationLink({
   location,
   children,
 }: {
-  target: EvaluationTarget;
+  target: EvaluationTarget | null;
   className?: string;
   location: string;
   children?: React.ReactNode;
 }) {
+  if (!target) return null;
   const label = children ?? target.label;
-  const data = { "data-cta": "evaluation", "data-cta-target": target.mode, "data-cta-location": location };
-  return target.external ? (
-    <a href={target.href} target="_blank" rel="noopener noreferrer" className={className} {...data}>
+  return (
+    <a
+      href={target.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={className}
+      data-cta="evaluation"
+      data-cta-target={target.mode}
+      data-cta-location={location}
+    >
       {label}
       <span className="sr-only"> (abre em nova aba)</span>
     </a>
-  ) : (
-    <Link href={target.href} className={className} {...data}>
-      {label}
-    </Link>
   );
 }

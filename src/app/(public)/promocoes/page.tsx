@@ -46,8 +46,16 @@ async function ActiveList({ ctx }: { ctx: RenderContext }) {
       <div role="status" className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-6">
         <p className="font-semibold text-ink">No momento não há promoções vigentes.</p>
         <p className="mt-2 text-sm text-muted">
-          Veja os <Link href="/tratamentos" className="font-semibold text-brand-800 underline">tratamentos</Link> ou{" "}
-          <EvaluationLink target={evaluationTarget(ctx.settings)} location="promotions_empty" className="font-semibold text-brand-800 underline">solicite uma avaliação</EvaluationLink>.
+          Veja os <Link href="/tratamentos" className="font-semibold text-brand-800 underline">tratamentos</Link>
+          {evaluationTarget(ctx.settings) ? (
+            <>
+              {" "}ou{" "}
+              <EvaluationLink target={evaluationTarget(ctx.settings)} location="promotions_empty" className="font-semibold text-brand-800 underline">
+                solicite uma avaliação
+              </EvaluationLink>
+            </>
+          ) : null}
+          .
         </p>
       </div>
     );

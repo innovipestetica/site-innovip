@@ -50,7 +50,7 @@ export function Picture({ media, sizes, priority }: { media: RenderMedia; sizes:
 function ctaHref(action: CtaAction, ctx: RenderContext): string | null {
   switch (action.kind) {
     case "evaluation":
-      return evaluationTarget(ctx.settings).href;
+      return evaluationTarget(ctx.settings)?.href ?? null;
     case "whatsapp":
       return whatsappHref(ctx.settings);
     case "link":
@@ -61,7 +61,7 @@ function ctaHref(action: CtaAction, ctx: RenderContext): string | null {
 function CtaButton({ action, ctx, variant = "primary" }: { action: CtaAction; ctx: RenderContext; variant?: "primary" | "secondary" | "onDark" }) {
   const href = ctaHref(action, ctx);
   if (!href) {
-    return <PreviewNote ctx={ctx}>botão “{action.label}” oculto — configure o WhatsApp em Configurações públicas.</PreviewNote>;
+    return <PreviewNote ctx={ctx}>botão “{action.label}” oculto — configure o WhatsApp ou o destino do agendamento em Configurações públicas.</PreviewNote>;
   }
   const cls =
     variant === "primary"
@@ -71,7 +71,7 @@ function CtaButton({ action, ctx, variant = "primary" }: { action: CtaAction; ct
           "inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] bg-surface px-6 font-semibold text-brand-800 hover:bg-gold-100"
         : "inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-brand-700 px-6 font-semibold text-brand-800 hover:bg-brand-50";
   const external = href.startsWith("https://");
-  const target = action.kind === "evaluation" ? evaluationTarget(ctx.settings).mode : undefined;
+  const target = action.kind === "evaluation" ? evaluationTarget(ctx.settings)?.mode : undefined;
   return external ? (
     <a href={href} className={cls} target="_blank" rel="noopener noreferrer" data-cta={action.kind} data-cta-target={target}>
       {action.label}<span className="sr-only"> (abre em nova aba)</span>

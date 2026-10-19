@@ -16,10 +16,12 @@ test.describe("site público com demonstração", () => {
     await expect(page.locator('a[data-cta="evaluation"][href*="promocao="]')).toHaveCount(0);
   });
 
-  test("promoção vigente: preço, prazo e CTA", async ({ page }) => {
+  test("promoção vigente: preço, prazo e CTA (se houver destino de agendamento)", async ({ page, request }) => {
+    const hasDestination = (await request.get("/agendar-avaliacao", { maxRedirects: 0 })).status() === 307;
     await page.goto("/promocoes/demo-promocao-vigente");
     await expect(page.getByText(/Válida até/)).toBeVisible();
-    await expect(page.locator('a[data-cta="evaluation"][href*="promocao=demo-promocao-vigente"]')).toBeVisible();
+    const cta = page.locator('a[data-cta="evaluation"][data-cta-location="promotion_page"]');
+    await expect(cta).toHaveCount(hasDestination ? 1 : 0);
   });
 
   test("listagem de promoções exclui as encerradas", async ({ page }) => {
@@ -36,6 +38,8 @@ test.describe("site público com demonstração", () => {
 
   test("botão sobre faixa escura tem contraste", async ({ page }) => {
     await page.goto("/");
+    // Sem destino de agendamento o botão da faixa fica oculto (nada a medir).
+    test.skip((await page.locator("section.bg-brand-800 a[data-cta]").count()) === 0, "faixa sem botão (sem destino)");
     const colors = await page.locator("section.bg-brand-800 a[data-cta]").first().evaluate((a) => ({
       fg: getComputedStyle(a).color,
       bg: getComputedStyle(a).backgroundColor,

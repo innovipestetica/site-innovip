@@ -88,7 +88,7 @@ export async function PromotionStatus({
       ) : null}
       <p className="text-sm text-muted">Válida até {dateFmt.format(ends)} (horário de Brasília). Consulte as condições.</p>
       <EvaluationLink
-        target={evaluationTarget(ctx.settings, { promotion: promo.slug })}
+        target={evaluationTarget(ctx.settings)}
         className={ctaPrimary}
         location={ctaLocation}
       >

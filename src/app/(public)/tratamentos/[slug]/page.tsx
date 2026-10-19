@@ -34,10 +34,10 @@ export default async function TreatmentPage({ params }: PageProps<"/tratamentos/
   const concerns = ctx.concerns.filter((c) => t.treatment?.concernIds.includes(c.id));
   const firstCategory = ctx.categories.find((c) => t.treatment?.categoryIds.includes(c.id));
   const hasNotice = t.blocks.some((b) => b.type === "notice");
-  // Destino das Configurações; o interesse só vai para o formulário do site.
-  const evaluation = evaluationTarget(ctx.settings, { interest: t.slug });
+  // Destino externo das Configurações (WhatsApp ou link); null = sem botão.
+  const evaluation = evaluationTarget(ctx.settings);
   // Evita dois botões de WhatsApp quando o agendamento já é pelo WhatsApp.
-  const wa = evaluation.mode === "whatsapp" ? null : whatsappHref(ctx.settings);
+  const wa = evaluation?.mode === "whatsapp" ? null : whatsappHref(ctx.settings);
 
   return (
     <main id="conteudo" className="flex-1">

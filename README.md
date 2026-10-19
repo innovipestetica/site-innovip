@@ -12,7 +12,7 @@ Arquitetura: **Domínio/DNS (Locaweb) → Vercel → Next.js → Supabase**.
 | 1. Fundação e segurança | **Concluída (18/10/2026).** Migração aplicada no projeto `nkrqpebfolrbybhaovqy`; testes unitários, E2E e de RLS (banco real, papéis reais) passando; administrador provisionado e login com MFA (TOTP, `aal2`) verificado ponta a ponta |
 | 2. Banco e CMS | **Implementada (18/10/2026).** Modelo de conteúdo versionado, RLS, Storage, painel completo e mídia. Pendente: teste manual do painel logado (login com MFA não é automatizável) |
 | 3. Páginas públicas | **Implementada (18/10/2026).** Home, páginas, tratamentos (catálogo/categoria/detalhe), promoções, landing pages, blog, sitemap e SEO. Testes: 64 unitários, 28 de banco, 34 E2E. Pendente: verificação visual com conteúdo real ou de demonstração; `/agendar-avaliacao` chega na etapa 4 |
-| 4. Leads e promoções | pendente |
+| 4. Agendamento e promoções | **Concluída (18/10/2026).** Agendamento externo (WhatsApp ou link) configurável no painel; `/agendar-avaliacao` redireciona para o destino; botões ocultos sem destino; vigência das promoções no site e no painel. **Desvio da especificação, por decisão da clínica:** sem formulário/banco/painel de leads próprios |
 | 5. Integrações (consentimento, GTM/GA4, Meta) | pendente |
 | 6. Testes finais e deploy | pendente |
 
@@ -109,6 +109,8 @@ Ver [.env.example](.env.example).
 - `DATABASE_URL` é só para scripts e testes locais; não configurar na Vercel.
 
 ## Decisões e limitações conhecidas
+
+- **Agendamento externo (18/10/2026, decisão da clínica).** O site não tem formulário de leads, `POST /api/leads`, tabelas de leads, painel de leads nem `/obrigado` (seções 14 e 23 da especificação ficam fora do escopo). Os botões levam ao WhatsApp ou a um link externo configurado no painel. Consequências: o site não coleta dados pessoais de visitantes; a plataforma externa passa a ser responsável por esses dados e deve constar na política de privacidade; a medição (etapa 5) registra cliques (`cta_click`/`whatsapp_click`), que **não** comprovam agendamento nem lead; sem `generate_lead`/CAPI de lead a partir do site.
 
 - **CSP sem nonce.** Nonce obriga renderização dinâmica em todas as páginas e é incompatível com o *static shell* do Cache Components. Por isso `script-src` tem `'unsafe-inline'` (scripts de hidratação do Next). Mitigação: o React escapa a saída, o CMS não aceita HTML/JS e as demais diretivas restringem origens. `'unsafe-eval'` só em desenvolvimento. Evolução possível: SRI experimental do Next.
 - **Login pelo navegador.** `signInWithPassword` e o MFA rodam no navegador para que os limites por IP do Supabase valham para o IP real. O servidor revalida tudo com `getClaims()` e o banco.

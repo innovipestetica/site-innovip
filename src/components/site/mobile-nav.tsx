@@ -6,7 +6,7 @@ import { useEffect, useId, useRef, useState } from "react";
 
 type Item = { label: string; href: string };
 
-type Cta = { href: string; external: boolean; label: string; mode: string };
+type Cta = { href: string; label: string; mode: string } | null;
 
 /**
  * Menu móvel: botão com aria-expanded/aria-controls, Escape fecha e devolve
@@ -75,17 +75,12 @@ export function MobileNav({ items, cta }: { items: Item[]; cta: Cta }) {
             ))}
           </ul>
         </nav>
-        {cta.external ? (
+        {cta ? (
           <a href={cta.href} target="_blank" rel="noopener noreferrer" data-cta="evaluation" data-cta-target={cta.mode} data-cta-location="mobile_menu"
             className="mt-4 flex min-h-12 items-center justify-center rounded-[var(--radius-control)] bg-brand-700 font-semibold text-white">
             {cta.label}<span className="sr-only"> (abre em nova aba)</span>
           </a>
-        ) : (
-          <Link href={cta.href} data-cta="evaluation" data-cta-target={cta.mode} data-cta-location="mobile_menu"
-            className="mt-4 flex min-h-12 items-center justify-center rounded-[var(--radius-control)] bg-brand-700 font-semibold text-white">
-            {cta.label}
-          </Link>
-        )}
+        ) : null}
       </div>
     </div>
   );

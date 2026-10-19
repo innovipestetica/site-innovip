@@ -3,7 +3,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/admin";
-import { listEntries } from "@/lib/cms/admin-data";
+import { listEntries, promotionWindows } from "@/lib/cms/admin-data";
+import { requestNow } from "@/lib/request-time";
 import {
   CONTENT_TYPES,
   LIFECYCLE_LABEL,
@@ -73,6 +74,13 @@ async function ContentList({
     );
   }
 
+  // Promoções: situação da versão NO AR (ou da última, se nunca publicada).
+  const windows =
+    type === "promotion"
+      ? await promotionWindows(rows.map((r) => r.published_version_id ?? r.latest_version_id).filter((v): v is string => !!v))
+      : new Map();
+  const now = type === "promotion" ? await requestNow() : 0;
+
   const pages = Math.max(1, Math.ceil(total / pageSize));
   const qs = (overrides: Record<string, string | number>) => {
     const p = new URLSearchParams({ q, status, ordem: sort, pagina: String(page) });
@@ -134,6 +142,9 @@ async function ContentList({
                     {path ? <span className="block truncate text-xs text-muted">{path}</span> : null}
                   </span>
                   <span className="flex flex-wrap items-center gap-2 text-xs text-muted">
+                    {type === "promotion" ? (
+                      <PromotionBadge window={windows.get(row.published_version_id ?? row.latest_version_id ?? "")} now={now} />
+                    ) : null}
                     {hasDraft ? <span className="rounded-full bg-gold-100 px-2 py-0.5 font-semibold text-gold-700">alterações não publicadas</span> : null}
                     <StatusBadge status={row.lifecycle_status} />
                     <span>{formatDateTime(row.updated_at)}</span>
@@ -153,5 +164,24 @@ async function ContentList({
         </nav>
       ) : null}
     </>
+  );
+}
+
+function PromotionBadge({ window: w, now }: { window?: { startsAt: string | null; endsAt: string | null }; now: number }) {
+  if (!w?.startsAt || !w.endsAt) {
+    return <span className="rounded-full border border-line px-2 py-0.5 font-semibold text-muted">sem datas</span>;
+  }
+  const starts = Date.parse(w.startsAt);
+  const ends = Date.parse(w.endsAt);
+  const [label, cls] =
+    now < starts
+      ? ["agendada", "border-brand-300 bg-brand-50 text-brand-800"]
+      : now >= ends
+        ? ["encerrada", "border-line bg-surface text-muted"]
+        : ["vigente", "border-success/30 bg-success-bg text-success"];
+  return (
+    <span className={`rounded-full border px-2 py-0.5 font-semibold ${cls}`} title={`${formatDateTime(w.startsAt)} – ${formatDateTime(w.endsAt)}`}>
+      {label} · até {formatDateTime(w.endsAt)}
+    </span>
   );
 }

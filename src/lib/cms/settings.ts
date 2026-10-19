@@ -60,7 +60,8 @@ export const settingsSchema = z.object({
   /** Para onde vão TODOS os botões "Agendar avaliação" do site. */
   evaluation_cta: z
     .object({
-      mode: z.enum(["whatsapp", "link", "form"]),
+      // Agendamento externo (decisão da clínica): WhatsApp ou link https.
+      mode: z.enum(["whatsapp", "link"]),
       url: httpsUrl.optional(),
       label: optional(40),
     })
@@ -99,35 +100,26 @@ export const DEFAULT_EVALUATION_LABEL = "Agendar avaliação";
 
 export type EvaluationTarget = {
   href: string;
-  /** Abre em nova aba (WhatsApp ou link de outro site). */
-  external: boolean;
-  mode: "whatsapp" | "link" | "form";
+  /** Sempre externo: abre em nova aba. */
+  external: true;
+  mode: "whatsapp" | "link";
   label: string;
 };
 
 /**
  * Destino dos botões "Agendar avaliação", conforme Configurações públicas.
- * Padrão: WhatsApp (se houver número), senão o formulário do site.
+ * O agendamento é EXTERNO (WhatsApp ou plataforma por link): o site não
+ * coleta dados pessoais. Sem destino configurado → null (botões ocultos).
+ * Padrão sem escolha explícita: WhatsApp, se houver número.
  * WhatsApp usa SEMPRE a mensagem genérica: nada de tratamento ou outro
  * interesse (potencialmente dado de saúde) no link.
- * O interesse só vai para o formulário do próprio site.
  */
-export function evaluationTarget(
-  settings: SiteSettings,
-  context: { interest?: string; promotion?: string } = {},
-): EvaluationTarget {
+export function evaluationTarget(settings: SiteSettings): EvaluationTarget | null {
   const cfg = settings.evaluation_cta;
   const label = cfg?.label || DEFAULT_EVALUATION_LABEL;
-  const mode = cfg?.mode ?? (settings.whatsapp ? "whatsapp" : "form");
+  const wa = whatsappHref(settings);
 
-  if (mode === "link" && cfg?.url) return { href: cfg.url, external: true, mode, label };
-  if (mode === "whatsapp") {
-    const wa = whatsappHref(settings);
-    if (wa) return { href: wa, external: true, mode, label };
-  }
-  const params = new URLSearchParams();
-  if (context.interest) params.set("interesse", context.interest);
-  if (context.promotion) params.set("promocao", context.promotion);
-  const qs = params.toString();
-  return { href: `/agendar-avaliacao${qs ? `?${qs}` : ""}`, external: false, mode: "form", label };
+  if (cfg?.mode === "link" && cfg.url) return { href: cfg.url, external: true, mode: "link", label };
+  if ((cfg?.mode ?? "whatsapp") === "whatsapp" && wa) return { href: wa, external: true, mode: "whatsapp", label };
+  return null;
 }

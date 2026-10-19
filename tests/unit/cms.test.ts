@@ -119,31 +119,31 @@ describe("validação de conteúdo", () => {
   });
 });
 
-describe("destino do botão Agendar avaliação", async () => {
+describe("destino do botão Agendar avaliação (agendamento externo)", async () => {
   const { evaluationTarget } = await import("@/lib/cms/settings");
 
-  it("padrão: WhatsApp quando há número, senão formulário", () => {
-    expect(evaluationTarget({ whatsapp: "5511999999999" }).mode).toBe("whatsapp");
-    expect(evaluationTarget({}).href).toBe("/agendar-avaliacao");
+  it("padrão: WhatsApp quando há número", () => {
+    expect(evaluationTarget({ whatsapp: "5511999999999" })?.mode).toBe("whatsapp");
   });
 
-  it("link personalizado abre fora do site", () => {
+  it("sem destino configurado: null (botões ocultos)", () => {
+    expect(evaluationTarget({})).toBeNull();
+    expect(evaluationTarget({ evaluation_cta: { mode: "whatsapp" } })).toBeNull();
+  });
+
+  it("link externo", () => {
     const t = evaluationTarget({ evaluation_cta: { mode: "link", url: "https://agenda.exemplo.com/innovip" } });
-    expect(t).toMatchObject({ href: "https://agenda.exemplo.com/innovip", external: true });
+    expect(t).toMatchObject({ href: "https://agenda.exemplo.com/innovip", external: true, mode: "link" });
   });
 
-  it("WhatsApp nunca leva o tratamento na mensagem", () => {
-    const t = evaluationTarget({ whatsapp: "5511999999999", evaluation_cta: { mode: "whatsapp" } }, { interest: "peeling" });
-    expect(t.href).toMatch(/^https:\/\/wa\.me\/5511999999999\?text=/);
-    expect(decodeURIComponent(t.href)).not.toContain("peeling");
-  });
-
-  it("WhatsApp escolhido sem número cai no formulário com o interesse", () => {
-    const t = evaluationTarget({ evaluation_cta: { mode: "whatsapp" } }, { interest: "peeling" });
-    expect(t).toMatchObject({ mode: "form", href: "/agendar-avaliacao?interesse=peeling", external: false });
+  it("WhatsApp usa a mensagem genérica", () => {
+    const t = evaluationTarget({ whatsapp: "5511999999999", evaluation_cta: { mode: "whatsapp" } });
+    expect(t?.href).toMatch(/^https:\/\/wa\.me\/5511999999999\?text=/);
+    expect(decodeURIComponent(t?.href ?? "")).toContain("Gostaria de mais informações");
   });
 
   it("rótulo personalizado", () => {
-    expect(evaluationTarget({ evaluation_cta: { mode: "form", label: "Quero ser atendida" } }).label).toBe("Quero ser atendida");
+    const t = evaluationTarget({ whatsapp: "5511999999999", evaluation_cta: { mode: "whatsapp", label: "Quero ser atendida" } });
+    expect(t?.label).toBe("Quero ser atendida");
   });
 });

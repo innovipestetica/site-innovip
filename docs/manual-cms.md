@@ -64,19 +64,23 @@ Botões usam **ações**, sem número fixo: "Agendar avaliação", "WhatsApp"
 
 ### Destino do "Agendar avaliação"
 
-Em **Configurações públicas → Botão "Agendar avaliação"** você escolhe para
-onde vão TODOS os botões de agendamento do site (cabeçalho, menu do celular,
-blocos, páginas de tratamento, "Quero aproveitar" das promoções e contato):
+O agendamento é **externo** (decisão da clínica): o site não tem formulário
+próprio nem guarda dados de quem quer ser atendido. Em **Configurações
+públicas → Botão "Agendar avaliação"** você escolhe para onde vão TODOS os
+botões de agendamento (cabeçalho, menu do celular, blocos, páginas de
+tratamento, "Quero aproveitar" das promoções e contato):
 
 - **WhatsApp**: abre o WhatsApp da clínica com a mensagem genérica. A mensagem
   nunca cita o tratamento (pode ser dado de saúde).
-- **Link personalizado**: qualquer endereço `https://` (ex.: plataforma de
-  agendamento). Abre em nova aba.
-- **Formulário do site**: `/agendar-avaliacao` (etapa 4), já com o tratamento
-  ou a promoção de interesse pré-selecionados.
+- **Link externo**: qualquer endereço `https://` (formulário ou plataforma de
+  agendamento).
 
-Também dá para trocar o texto do botão. Padrão: WhatsApp quando houver número;
-sem número, formulário. Clicar no botão não é agendamento confirmado: a equipe
+Também dá para trocar o texto do botão. Tudo abre em nova aba. **Sem destino
+configurado, os botões ficam ocultos** (nada de link quebrado).
+
+O endereço **`/agendar-avaliacao`** redireciona para o destino escolhido. Use
+esse endereço na bio do Instagram, em QR codes e campanhas: se a plataforma
+mudar, basta trocar no painel. Clicar não é agendamento confirmado: a equipe
 confirma o horário.
 
 ## Endereços (slug)
@@ -88,7 +92,9 @@ novo. Veja em **Redirecionamentos**.
 ## Promoções
 
 Datas são digitadas no horário de Brasília. Fora do prazo, a promoção some das
-listagens automaticamente, mesmo sem nenhuma ação manual. Preço é opcional;
+listagens automaticamente, mesmo sem nenhuma ação manual. Na lista do painel,
+cada promoção mostra a situação da versão no ar: **vigente**, **agendada**,
+**encerrada** ou **sem datas**. Preço é opcional;
 publique valores só quando aprovados.
 
 Landing pages começam como **noindex** (não aparecem no Google) até decisão
