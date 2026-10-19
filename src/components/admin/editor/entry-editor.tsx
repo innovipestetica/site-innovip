@@ -351,15 +351,6 @@ function TypeFields(props: {
       return wrap("Tratamento", (
         <>
           {cover}
-          <Checkbox label="Exige avaliação individual" checked={(det.requires_evaluation as boolean | undefined) ?? true}
-            onChange={(v) => setDetail("requires_evaluation", v)} />
-          <fieldset className="flex flex-col gap-3 rounded-lg border border-gold-300 bg-gold-100/40 p-3">
-            <legend className="px-1 text-sm font-semibold">Revisão clínica (obrigatória para publicar)</legend>
-            <TextInput label="Responsável habilitado que revisou" value={det.clinical_reviewer as string | undefined} maxLength={120}
-              error={issues["details.clinical_reviewer"]} onChange={(v) => setDetail("clinical_reviewer", v)} />
-            <TextInput label="Data da revisão" type="date" value={det.clinical_reviewed_on as string | undefined}
-              error={issues["details.clinical_reviewed_on"]} onChange={(v) => setDetail("clinical_reviewed_on", v)} />
-          </fieldset>
           <TaxonomyChecks label="Categorias" items={props.categories} value={payload.relations.categories} onChange={(ids) => setRelations("categories", ids)} />
           <TaxonomyChecks label="Objetivos (o que a pessoa deseja tratar)" items={props.concerns} value={payload.relations.concerns} onChange={(ids) => setRelations("concerns", ids)} />
         </>

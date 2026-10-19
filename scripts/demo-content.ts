@@ -177,7 +177,7 @@ async function seed(db: Client) {
   const mBanner2 = await createMedia(db, "Banner 2", "dourado", [1600, 584]);
   const mBanner3 = await createMedia(db, "Banner 3", "verde", [1600, 584]);
 
-  const reviewed = { requires_evaluation: true, clinical_reviewer: `${TAG} sem revisão real`, clinical_reviewed_on: new Date().toISOString().slice(0, 10) };
+  const reviewed = { requires_evaluation: true };
   const demoBody = "Texto fictício apenas para testar o layout. **Não é informação clínica.** O conteúdo real deve ser escrito e revisado pelo responsável habilitado.";
 
   console.log("Criando conteúdos…");

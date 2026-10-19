@@ -10,7 +10,7 @@ Marque cada item com evidência (print, data, quem conferiu). O site só está
       WhatsApp, e-mail, endereço, horários, mapa, redes, responsável técnico.
 - [ ] **Destino do "Agendar avaliação"** configurado (WhatsApp ou link).
 - [ ] Home real publicada.
-- [ ] Tratamentos reais, com **revisão clínica** registrada.
+- [ ] Tratamentos reais, com textos conferidos pela responsável técnica antes de publicar (o painel não exige registro).
 - [ ] Equipe com registros profissionais corretos (sem credenciais inventadas).
 - [ ] Depoimentos só com autorização registrada; imagens com licença.
 - [ ] Promoções com preços e condições aprovados.

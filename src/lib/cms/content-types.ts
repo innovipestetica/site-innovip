@@ -102,6 +102,8 @@ export type Seo = z.infer<typeof seoSchema>;
 const isoDateTime = z.iso.datetime({ offset: true });
 
 export const detailsSchemas = {
+  // Revisão clínica saiu do painel (decisão da clínica, 18/10/2026); os campos
+  // continuam aceitos para não invalidar versões antigas.
   treatment: z.object({
     requires_evaluation: z.boolean().default(true),
     clinical_reviewer: z.string().trim().max(120).optional(),

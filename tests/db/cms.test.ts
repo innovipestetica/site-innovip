@@ -120,14 +120,11 @@ describe.skipIf(!hasDatabase)("CMS: versionamento e publicação", () => {
     });
   });
 
-  it("publicação exige revisão clínica no tratamento", async () => {
+  it("tratamento publica sem registro de revisão clínica (exigência removida)", async () => {
     await inRollbackTransaction(async (db) => {
       const admin = await setupAdmin(db);
       const t = await create(db, admin, "treatment", "sem-revisao", { title: "Sem revisão" });
-      await expect(publish(db, admin, t.entry_id, t.version_id)).rejects.toMatchObject({
-        code: "PT422",
-        detail: expect.stringContaining("revisão clínica"),
-      });
+      await expect(publish(db, admin, t.entry_id, t.version_id)).resolves.toBeDefined();
     });
   });
 

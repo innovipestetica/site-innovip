@@ -21,7 +21,6 @@ O botão Publicar mostra a lista do que falta. Exemplos:
 
 | Conteúdo | Exigência |
 |---|---|
-| Tratamento | Revisão clínica registrada (responsável habilitado e data) |
 | Promoção | Início, fim no futuro e condições completas |
 | Depoimento | Registro da autorização da pessoa |
 | FAQ | Resposta preenchida |
