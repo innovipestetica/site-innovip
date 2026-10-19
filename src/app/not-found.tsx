@@ -11,6 +11,8 @@ export default function NotFound() {
     <main
       id="conteudo"
       className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-4 px-4 py-16 text-center"
+      data-page-type="not_found"
+      data-page-sensitive="false"
     >
       <p className="font-display text-sm font-semibold uppercase tracking-widest text-gold-700">
         Erro 404

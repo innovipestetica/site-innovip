@@ -470,6 +470,9 @@ isOneToOne: false
                            },
 "log_admin_auth_event":
 { Args: { "p_action": string }; Returns: undefined
+                           },
+"record_consent":
+{ Args: { "p_analytics": boolean,"p_marketing": boolean,"p_path": string,"p_rate_key": string,"p_subject": string,"p_version": string }; Returns: boolean
                            }
           }
           Enums: {

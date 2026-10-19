@@ -10,6 +10,7 @@ import { resolveMissing } from "@/lib/cms/resolve-missing";
 import { evaluationTarget, whatsappHref } from "@/lib/cms/settings";
 import { EvaluationLink } from "@/components/site/evaluation-link";
 import { absoluteUrl, buildMetadata } from "@/lib/seo";
+import { pageAttrs } from "@/lib/consent/tracking-config";
 
 export async function generateStaticParams() {
   const slugs = await listPublishedSlugs("treatment");
@@ -40,7 +41,7 @@ export default async function TreatmentPage({ params }: PageProps<"/tratamentos/
   const wa = evaluation?.mode === "whatsapp" ? null : whatsappHref(ctx.settings);
 
   return (
-    <main id="conteudo" className="flex-1">
+    <main id="conteudo" className="flex-1" {...pageAttrs("treatment")}>
       <Breadcrumbs
         items={[
           { label: "Início", href: "/" },

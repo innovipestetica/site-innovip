@@ -6,6 +6,7 @@ import { listPublished } from "@/lib/cms/public-data";
 import { contextForCards } from "@/lib/cms/public-media";
 import { resolveMissing } from "@/lib/cms/resolve-missing";
 import { buildMetadata } from "@/lib/seo";
+import { pageAttrs } from "@/lib/consent/tracking-config";
 
 export const metadata: Metadata = buildMetadata({
   title: "Blog",
@@ -23,7 +24,7 @@ export default async function BlogPage() {
   const ctx = await contextForCards(posts);
 
   return (
-    <main id="conteudo" className="flex-1">
+    <main id="conteudo" className="flex-1" {...pageAttrs("blog_list")}>
       <Breadcrumbs items={[{ label: "Início", href: "/" }, { label: "Blog", href: "/blog" }]} />
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
         <h1 className="text-center text-3xl font-bold text-brand-800 sm:text-5xl">Blog</h1>

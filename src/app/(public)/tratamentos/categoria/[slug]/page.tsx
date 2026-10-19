@@ -5,6 +5,7 @@ import { getPublicTaxonomies, listPublished } from "@/lib/cms/public-data";
 import { contextForCards } from "@/lib/cms/public-media";
 import { resolveMissing } from "@/lib/cms/resolve-missing";
 import { buildMetadata } from "@/lib/seo";
+import { pageAttrs } from "@/lib/consent/tracking-config";
 
 export async function generateStaticParams() {
   const { categories } = await getPublicTaxonomies();
@@ -37,7 +38,7 @@ export default async function CategoryPage({ params }: PageProps<"/tratamentos/c
   const ctx = await contextForCards(data.items);
 
   return (
-    <main id="conteudo" className="flex-1">
+    <main id="conteudo" className="flex-1" {...pageAttrs("category")}>
       <Breadcrumbs
         items={[
           { label: "Início", href: "/" },

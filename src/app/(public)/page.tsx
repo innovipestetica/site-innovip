@@ -5,6 +5,7 @@ import { JsonLd, PageIntro } from "@/components/site/page-parts";
 import { getMedia, getPublicSettings, getPublishedEntry, loadPublicContext } from "@/lib/cms/public-data";
 import type { SiteSettings } from "@/lib/cms/settings";
 import { absoluteUrl, buildMetadata } from "@/lib/seo";
+import { pageAttrs } from "@/lib/consent/tracking-config";
 
 export async function generateMetadata(): Promise<Metadata> {
   const [home, settings] = await Promise.all([getPublishedEntry("home", "home"), getPublicSettings()]);
@@ -58,7 +59,7 @@ export default async function HomePage() {
   // Sem Home publicada: página provisória (noindex), sem conteúdo inventado.
   if (!home) {
     return (
-      <main id="conteudo" className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-16 text-center">
+      <main id="conteudo" className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-16 text-center" {...pageAttrs("home")}>
         <Logo size={220} priority />
         <h1 className="text-2xl font-bold text-brand-800 sm:text-3xl">Site em construção</h1>
         <p className="max-w-md text-base text-muted">Em breve, o novo site da Innovip.</p>
@@ -69,7 +70,7 @@ export default async function HomePage() {
   const ctx = await loadPublicContext({ blocks: home.blocks, data: home.data });
   const business = localBusiness(settings);
   return (
-    <main id="conteudo" className="flex-1">
+    <main id="conteudo" className="flex-1" {...pageAttrs("home")}>
       {home.blocks[0]?.type !== "hero" ? <PageIntro title={home.title} summary={home.summary} /> : null}
       <RenderBlocks blocks={home.blocks} ctx={ctx} />
       {business ? <JsonLd data={business} /> : null}

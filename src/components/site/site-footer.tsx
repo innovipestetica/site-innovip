@@ -1,4 +1,7 @@
+import { Suspense } from "react";
 import Link from "next/link";
+import { ConsentManager, ConsentPreferencesButton } from "@/components/consent/consent-manager";
+import { trackingConfig } from "@/lib/consent/tracking-config";
 import { getLegalLinks, getNavigation } from "@/lib/cms/navigation";
 import { getPublicSettings } from "@/lib/cms/public-data";
 import { phoneHref, whatsappHref } from "@/lib/cms/settings";
@@ -24,6 +27,8 @@ export async function SiteFooter({ reduced = false }: { reduced?: boolean }) {
     : "";
   const socials = Object.entries(s.social ?? {}).filter(([, url]) => !!url) as [string, string][];
   const name = s.business_name || "Innovip";
+  const tracking = trackingConfig();
+  const policyHref = legal.find((l) => l.href === "/cookies")?.href ?? legal.find((l) => l.href === "/privacidade")?.href ?? null;
   const linkCls = "inline-flex min-h-11 items-center hover:underline";
 
   return (
@@ -86,13 +91,22 @@ export async function SiteFooter({ reduced = false }: { reduced?: boolean }) {
             {s.legal_name ? ` · ${s.legal_name}` : ""}
             {s.cnpj ? ` · CNPJ ${s.cnpj}` : ""}
           </span>
-          {legal.length ? (
+          {legal.length || tracking.enabled ? (
             <ul className="flex flex-wrap gap-4">
               {legal.map((l) => <li key={l.href}><Link href={l.href} className={linkCls}>{l.label}</Link></li>)}
+              {tracking.enabled ? (
+                <li><ConsentPreferencesButton className={`${linkCls} underline-offset-4 hover:underline`} /></li>
+              ) : null}
             </ul>
           ) : null}
         </div>
       </div>
+      {/* Banner/preferências: só existem quando o rastreamento está ligado. */}
+      {tracking.enabled ? (
+        <Suspense fallback={null}>
+          <ConsentManager gtmId={tracking.gtmId} siteName={name} policyHref={policyHref} />
+        </Suspense>
+      ) : null}
     </footer>
   );
 }

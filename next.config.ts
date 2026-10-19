@@ -20,18 +20,46 @@ function supabaseOrigins(): { http: string; ws: string } | null {
  *   hidratação do Next.js sem nonce. Mitigado por: React escapa saída, o CMS
  *   não aceita HTML/JS, e as demais diretivas restringem origens.
  * - 'unsafe-eval' só em desenvolvimento (exigido pelo React em dev).
- * - Origens de GTM/GA4/Meta entram na etapa de integrações, com consentimento.
+ * - Origens de GTM/GA4/Meta só com o rastreamento ligado (ver trackingOrigins).
  */
+/**
+ * Origens de medição: só quando o rastreamento está ligado (mesma regra de
+ * src/lib/consent/tracking-config.ts). GTM carrega GA4 e o Pixel da Meta.
+ * Sem 'unsafe-eval': no GTM, não usar "Variáveis JavaScript personalizadas".
+ * TRACKING_DEBUG=true libera o Tag Assistant (depuração; desligar depois).
+ */
+function trackingOrigins() {
+  const enabled =
+    process.env.TRACKING_ENABLED === "true" &&
+    /^GTM-[A-Z0-9]{4,12}$/.test(process.env.NEXT_PUBLIC_GTM_ID ?? "") &&
+    (process.env.VERCEL_ENV === undefined || process.env.VERCEL_ENV === "production");
+  if (!enabled) return { script: [], connect: [], img: [], frame: [] };
+  const debug = process.env.TRACKING_DEBUG === "true";
+  return {
+    script: ["https://www.googletagmanager.com", "https://connect.facebook.net", ...(debug ? ["https://tagassistant.google.com"] : [])],
+    connect: [
+      "https://www.googletagmanager.com",
+      "https://*.google-analytics.com",
+      "https://*.analytics.google.com",
+      "https://www.facebook.com",
+      "https://connect.facebook.net",
+    ],
+    img: ["https://www.googletagmanager.com", "https://*.google-analytics.com", "https://www.facebook.com", ...(debug ? ["https://ssl.gstatic.com", "https://www.gstatic.com"] : [])],
+    frame: debug ? ["https://tagassistant.google.com", "https://www.googletagmanager.com"] : [],
+  };
+}
+
 function contentSecurityPolicy(): string {
   const sb = supabaseOrigins();
+  const tr = trackingOrigins();
   const directives: Record<string, string[]> = {
     "default-src": ["'self'"],
-    "script-src": ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : [])],
+    "script-src": ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : []), ...tr.script],
     "style-src": ["'self'", "'unsafe-inline'"],
-    "img-src": ["'self'", "data:", "blob:", ...(sb ? [sb.http] : [])],
+    "img-src": ["'self'", "data:", "blob:", ...(sb ? [sb.http] : []), ...tr.img],
     "font-src": ["'self'"],
-    "connect-src": ["'self'", ...(sb ? [sb.http, sb.ws] : [])],
-    "frame-src": ["'none'"],
+    "connect-src": ["'self'", ...(sb ? [sb.http, sb.ws] : []), ...tr.connect],
+    "frame-src": tr.frame.length ? tr.frame : ["'none'"],
     "object-src": ["'none'"],
     "base-uri": ["'self'"],
     "form-action": ["'self'"],

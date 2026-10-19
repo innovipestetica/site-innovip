@@ -7,6 +7,7 @@ import { getPublicTaxonomies, listPublished } from "@/lib/cms/public-data";
 import { contextForCards } from "@/lib/cms/public-media";
 import { resolveMissing } from "@/lib/cms/resolve-missing";
 import { buildMetadata } from "@/lib/seo";
+import { pageAttrs } from "@/lib/consent/tracking-config";
 
 export const metadata: Metadata = buildMetadata({
   title: "Tratamentos",
@@ -24,7 +25,7 @@ export default async function TreatmentsPage({ searchParams }: PageProps<"/trata
   const usedConcerns = taxonomies.concerns.filter((c) => treatments.some((t) => t.treatment?.concernIds.includes(c.id)));
 
   return (
-    <main id="conteudo" className="flex-1">
+    <main id="conteudo" className="flex-1" {...pageAttrs("catalog")}>
       <Breadcrumbs items={[{ label: "Início", href: "/" }, { label: "Tratamentos", href: "/tratamentos" }]} />
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
         <h1 className="text-center text-3xl font-bold text-brand-800 sm:text-5xl">Tratamentos</h1>

@@ -10,6 +10,7 @@ import { resolveMissing } from "@/lib/cms/resolve-missing";
 import { buildMetadata } from "@/lib/seo";
 import { evaluationTarget } from "@/lib/cms/settings";
 import { EvaluationLink } from "@/components/site/evaluation-link";
+import { pageAttrs } from "@/lib/consent/tracking-config";
 
 export const metadata: Metadata = buildMetadata({
   title: "Promoções",
@@ -23,7 +24,7 @@ export default async function PromotionsPage() {
   const ctx = await loadPublicContext(null);
 
   return (
-    <main id="conteudo" className="flex-1">
+    <main id="conteudo" className="flex-1" {...pageAttrs("promotions")}>
       <Breadcrumbs items={[{ label: "Início", href: "/" }, { label: "Promoções", href: "/promocoes" }]} />
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
         <h1 className="text-center text-3xl font-bold text-brand-800 sm:text-5xl">Promoções</h1>

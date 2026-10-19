@@ -210,3 +210,45 @@ describe.skipIf(!hasDatabase)("fundação: admin_accounts, autorização e grant
 describe.runIf(!hasDatabase)("fundação (sem DATABASE_URL)", () => {
   it.skip("testes de RLS ignorados: defina DATABASE_URL em .env.local", () => {});
 });
+
+describe.skipIf(!hasDatabase)("consentimento: registro e limite de requisições", () => {
+  const args = ["7c1f0a52-3b7e-4f0b-9d0c-2a4c6e8f1a3b", "2026-10-18", true, false, "/tratamentos", "a".repeat(64)];
+  const call = "select public.record_consent($1::uuid, $2, $3, $4, $5, $6) as ok";
+
+  it("anônimo e autenticado não gravam nem leem recibos", async () => {
+    await inRollbackTransaction(async (db) => {
+      const user = await createAuthUser(db);
+      for (const [role, claims] of [["anon", null], ["authenticated", userClaims(user, "aal2")]] as const) {
+        await expect(asRole(db, role, claims, () => db.query(call, args)), role).rejects.toThrow(/permission denied/);
+        await expect(asRole(db, role, claims, () => db.query("select * from private.consent_receipts")), role).rejects.toThrow(/permission denied/);
+      }
+    });
+  });
+
+  it("servidor grava; acima de 20 por janela o limite recusa", async () => {
+    await inRollbackTransaction(async (db) => {
+      const results: boolean[] = [];
+      for (let i = 0; i < 21; i++) {
+        const r = await asRole(db, "service_role", { role: "service_role" }, () => db.query<{ ok: boolean }>(call, args));
+        results.push(r.rows[0]!.ok);
+      }
+      expect(results.slice(0, 20).every(Boolean)).toBe(true);
+      expect(results[20]).toBe(false);
+      const count = await db.query<{ n: number }>("select count(*)::int n from private.consent_receipts where subject_id = $1", [args[0]]);
+      expect(count.rows[0]!.n).toBe(20);
+      // O IP não é gravado: só a chave HMAC no limite.
+      const cols = await db.query<{ column_name: string }>(
+        "select column_name from information_schema.columns where table_schema = 'private' and table_name = 'consent_receipts'",
+      );
+      expect(cols.rows.map((c) => c.column_name)).not.toContain("ip");
+    });
+  });
+
+  it("caminho com query ou caracteres inesperados é recusado pelo banco", async () => {
+    await inRollbackTransaction(async (db) => {
+      const bad = [...args];
+      bad[4] = "/tratamentos?email=a@b.com";
+      await expect(asRole(db, "service_role", { role: "service_role" }, () => db.query(call, bad))).rejects.toThrow(/check constraint/);
+    });
+  });
+});

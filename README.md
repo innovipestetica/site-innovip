@@ -13,7 +13,7 @@ Arquitetura: **Domínio/DNS (Locaweb) → Vercel → Next.js → Supabase**.
 | 2. Banco e CMS | **Implementada (18/10/2026).** Modelo de conteúdo versionado, RLS, Storage, painel completo e mídia. Pendente: teste manual do painel logado (login com MFA não é automatizável) |
 | 3. Páginas públicas | **Implementada (18/10/2026).** Home, páginas, tratamentos (catálogo/categoria/detalhe), promoções, landing pages, blog, sitemap e SEO. Testes: 64 unitários, 28 de banco, 34 E2E. Pendente: verificação visual com conteúdo real ou de demonstração; `/agendar-avaliacao` chega na etapa 4 |
 | 4. Agendamento e promoções | **Concluída (18/10/2026).** Agendamento externo (WhatsApp ou link) configurável no painel; `/agendar-avaliacao` redireciona para o destino; botões ocultos sem destino; vigência das promoções no site e no painel. **Desvio da especificação, por decisão da clínica:** sem formulário/banco/painel de leads próprios |
-| 5. Integrações (consentimento, GTM/GA4, Meta) | pendente |
+| 5. Integrações (consentimento, GTM/GA4, Meta) | **Implementada (18/10/2026), desligada até configurar.** Banner e preferências versionados, revogação, registro de consentimento no banco, GTM só após consentimento (Consent Mode v2), eventos sem dados pessoais, marketing bloqueado em páginas sensíveis, CSP condicional. Meta Pixel via GTM após revisão; CAPI fora do escopo (agendamento externo). Ver [docs/gtm-ga4-meta.md](docs/gtm-ga4-meta.md) e [docs/eventos.md](docs/eventos.md) |
 | 6. Testes finais e deploy | pendente |
 
 ### O que a etapa 2 entrega

@@ -6,6 +6,7 @@ import { PromotionStatus, PromotionTerms } from "@/components/site/promotion-sta
 import { getMedia, getPublishedEntry, listPublishedSlugs, loadPublicContext } from "@/lib/cms/public-data";
 import { resolveMissing } from "@/lib/cms/resolve-missing";
 import { buildMetadata } from "@/lib/seo";
+import { pageAttrs } from "@/lib/consent/tracking-config";
 
 export async function generateStaticParams() {
   const slugs = await listPublishedSlugs("promotion");
@@ -33,7 +34,7 @@ export default async function PromotionPage({ params }: PageProps<"/promocoes/[s
   const cover = typeof promo.data.mediaId === "string" ? ctx.media.get(promo.data.mediaId) : null;
 
   return (
-    <main id="conteudo" className="flex-1">
+    <main id="conteudo" className="flex-1" {...pageAttrs("promotion")}>
       <Breadcrumbs
         items={[
           { label: "Início", href: "/" },

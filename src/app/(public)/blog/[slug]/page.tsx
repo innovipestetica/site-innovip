@@ -4,6 +4,7 @@ import { Breadcrumbs, JsonLd, PageIntro } from "@/components/site/page-parts";
 import { getMedia, getPublishedEntry, listPublishedSlugs, loadPublicContext } from "@/lib/cms/public-data";
 import { resolveMissing } from "@/lib/cms/resolve-missing";
 import { absoluteUrl, buildMetadata } from "@/lib/seo";
+import { pageAttrs } from "@/lib/consent/tracking-config";
 
 export async function generateStaticParams() {
   const slugs = await listPublishedSlugs("blog_post");
@@ -30,7 +31,7 @@ export default async function BlogPostPage({ params }: PageProps<"/blog/[slug]">
   const publisher = ctx.settings.business_name || "Innovip";
 
   return (
-    <main id="conteudo" className="flex-1">
+    <main id="conteudo" className="flex-1" {...pageAttrs("blog_post")}>
       <Breadcrumbs
         items={[
           { label: "Início", href: "/" },

@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/site/site-header";
 import { getMedia, getPublishedEntry, listPublishedSlugs, loadPublicContext } from "@/lib/cms/public-data";
 import { resolveMissing } from "@/lib/cms/resolve-missing";
 import { buildMetadata } from "@/lib/seo";
+import { pageAttrs } from "@/lib/consent/tracking-config";
 
 /**
  * Landing pages de campanha. Navegação reduzida opcional; começam noindex
@@ -42,7 +43,7 @@ export default async function LandingPage({ params }: PageProps<"/lp/[slug]">) {
   return (
     <>
       <SiteHeader reduced={reduced} />
-      <main id="conteudo" className="flex-1">
+      <main id="conteudo" className="flex-1" {...pageAttrs("landing")}>
         {!startsWithHero ? <PageIntro title={lp.title} summary={lp.summary} /> : null}
         {promo ? (
           <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-4">
