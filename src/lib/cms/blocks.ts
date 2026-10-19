@@ -26,6 +26,8 @@ export const blockStyleSchema = z.object({
   background: hexColor.optional(),
   card: hexColor.optional(),
   heading: hexColor.optional(),
+  /** Títulos dentro dos cartões (se vazio, usam a cor de "heading"). */
+  cardHeading: hexColor.optional(),
   text: hexColor.optional(),
   accent: hexColor.optional(),
 });

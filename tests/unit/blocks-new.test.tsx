@@ -126,3 +126,13 @@ describe("aviso de contraste dos cartões e destaques", () => {
     expect(styleWarnings({ card: "#e5c88b", heading: "#183f35", accent: "#183f35", text: "#1e2b27" })).toHaveLength(0);
   });
 });
+
+describe("títulos dos cartões com cor própria", () => {
+  it("variável e marcador próprios; aviso usa a cor dos cartões", () => {
+    const out = html({ type: "notice", tone: "info", text: "Oi", style: { cardHeading: "#183f35" } });
+    expect(out).toContain("--blk-card-heading:#183f35");
+    expect(out).toContain('data-card-heading=""');
+    const fixed = { background: "#2b6b59", card: "#e5c88b", heading: "#f6edda", cardHeading: "#183f35", accent: "#183f35", text: "#1e2b27" };
+    expect(styleWarnings(fixed).filter((w) => w.includes("sobre os cartões"))).toHaveLength(0);
+  });
+});

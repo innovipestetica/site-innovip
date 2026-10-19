@@ -135,6 +135,9 @@
 .blk[data-heading] :is(h1, h2, h3, h4) {
   color: var(--blk-heading);
 }
+.blk[data-card-heading] .blk-card :is(h2, h3, h4) {
+  color: var(--blk-card-heading);
+}
 .blk[data-text] :is(p, li, figcaption, blockquote, summary, dd, dt) {
   color: var(--blk-text);
 }
