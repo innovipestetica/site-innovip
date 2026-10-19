@@ -14,7 +14,7 @@ interno em `https://site-innovip.vercel.app`).
 | `npm test` | 78 testes unitários: links seguros, texto rico, blocos x banco, validação por tipo, datas America/Sao_Paulo, centavos, processamento de imagem (EXIF/GPS removido, SVG/HTML/executável recusados), consentimento, Consent Mode, JSON-LD seguro, destino do agendamento | 78/78 |
 | `npm run test:db` | 31 testes de banco com papéis reais (anon, autenticado, admin sem/com MFA, service_role), em transação com ROLLBACK | 31/31 |
 | `npm run test:e2e` (local, build de produção) | Cabeçalhos, redirecionamentos, 404 reais, login/recuperação sem enumeração, open redirect, formulários sem dados na URL, site público com demonstração, sitemap/robots, acessibilidade (axe), consentimento (build com rastreamento ligado) | 64 passaram (build com rastreamento), 0 falhas |
-| `E2E_BASE_URL=https://site-innovip.vercel.app npm run test:e2e` | Mesma suíte contra o deploy | 78 passaram; 1 instável corrigido (ids repetidos durante o streaming do catálogo); pulados: consentimento (rastreamento desligado em produção) e testes que dependem de destino de agendamento |
+| `E2E_BASE_URL=https://site-innovip.vercel.app npm run test:e2e` | Mesma suíte contra o deploy | 79 passaram sem retentativas (após corrigir ids repetidos durante o streaming do catálogo, achado nesta rodada); pulados: consentimento (rastreamento desligado em produção) e testes que dependem de destino de agendamento |
 | `npm run backup:export` + `backup:verify` | Backup lógico e restauração isolada | 86 linhas/16 tabelas e 28 arquivos íntegros; arquivo adulterado detectado |
 
 ## Cenários exigidos pela especificação (seção 23)
