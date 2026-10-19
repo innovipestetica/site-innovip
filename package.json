@@ -19,7 +19,8 @@
     "demo:seed": "tsx scripts/demo-content.ts seed",
     "demo:remove": "tsx scripts/demo-content.ts remove",
     "backup:export": "tsx scripts/backup.ts export",
-    "backup:verify": "tsx scripts/backup.ts verify"
+    "backup:verify": "tsx scripts/backup.ts verify",
+    "tratamentos:importar": "tsx scripts/import-treatments.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

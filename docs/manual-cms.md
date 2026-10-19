@@ -114,6 +114,20 @@ Minúsculos, sem acentos, com hífens. Ao **alterar o endereço** de um conteúd
 que já foi publicado, o endereço antigo passa a redirecionar (301) para o
 novo. Veja em **Redirecionamentos**.
 
+## Tratamentos em lote (rascunhos)
+
+Para cadastrar muitos tratamentos de uma vez, sem foto, existe um script no
+computador do projeto. Ele só cria **rascunhos**; revisar e publicar continua
+sendo pelo painel.
+
+1. Crie um arquivo de texto com um tratamento por linha:
+   `Título | Categorias | Objetivos | Resumo` (só o título é obrigatório;
+   vários itens separados por `;`). Modelo: `scripts/exemplos/tratamentos.txt`.
+2. Simule: `npm run tratamentos:importar -- lista.txt` (mostra o que seria
+   criado e aponta nomes de categoria/objetivo que não existem).
+3. Grave: repita com `--aplicar`. Endereços que já existem são pulados; se
+   houver qualquer erro, nada é gravado.
+
 ## Promoções
 
 Datas são digitadas no horário de Brasília. Fora do prazo, a promoção some das

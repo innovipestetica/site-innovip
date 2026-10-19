@@ -1,0 +1,7 @@
+# Uma linha por tratamento:  Título | Categorias | Objetivos | Resumo
+# Só o título é obrigatório. Vários itens separados por ";".
+# Os nomes precisam existir em "Categorias e objetivos" no painel.
+#
+# Exemplos (apague o "#" do começo para usar):
+# Massagem modeladora | Corporais | Sensação de inchaço
+# Peeling químico | Faciais | Manchas; Textura da pele | Resumo curto que aparece na listagem.
