@@ -15,6 +15,8 @@ import {
   type RefOption,
 } from "./fields";
 import { confirmDialog } from "@/components/admin/dialog";
+import { StyleEditor } from "./style-editor";
+import { FLOW_ICONS, FLOW_ICON_NAMES, FlowIcon } from "@/components/blocks/flow-icons";
 
 type Issues = Record<string, string>;
 
@@ -35,6 +37,21 @@ function emptyBlock(type: BlockType): Block {
     case "features":
     case "steps":
       return { id, type, items: [{ title: "" }] };
+    case "steps_carousel":
+      return { id, type, items: [{ key: newBlockId(), title: "" }], autoplay: true, intervalSeconds: 5 };
+    case "care_flow":
+      return {
+        id,
+        type,
+        eyebrow: "Cuidado em cada etapa",
+        heading: "Como funciona o atendimento",
+        items: [
+          { key: newBlockId(), icon: "calendario-relogio", title: "Agende sua avaliação", text: "Escolha o melhor dia e horário pelo nosso canal de atendimento." },
+          { key: newBlockId(), icon: "pessoa-conversa", title: "Avaliação individual", text: "Conversamos sobre seus objetivos, histórico de saúde e expectativas." },
+          { key: newBlockId(), icon: "documento-mais", title: "Plano de tratamento", text: "Você recebe as opções indicadas, o número estimado de sessões e os cuidados." },
+          { key: newBlockId(), icon: "maos-coracao", title: "Acompanhamento", text: "Seguimos com você em cada etapa, com retornos e ajustes quando necessário." },
+        ],
+      };
     case "notice":
       return { id, type, tone: "important", text: "" };
     case "faq_list":
@@ -49,7 +66,7 @@ function emptyBlock(type: BlockType): Block {
     case "promotion_list":
       return { id, type, limit: 6 };
     case "gallery":
-      return { id, type, mediaIds: [] };
+      return { id, type, mediaIds: [], layout: "grid", autoplay: true, intervalSeconds: 5 };
     case "contact":
       return { id, type, showMap: true, showForm: true };
   }
@@ -110,6 +127,7 @@ export function BlocksEditor(props: {
                 mediaOptions={props.mediaOptions}
                 issue={(field) => props.issues[`blocks.${idx}.${field}`]}
               />
+              <StyleEditor value={block.style} onChange={(style) => update(idx, { ...block, style } as Block)} />
             </div>
           </li>
         ))}
@@ -219,7 +237,7 @@ function BlockFields(props: {
   issue: (field: string) => string | undefined;
 }) {
   const { block: b, onChange, issue } = props;
-  const heading = "heading" in b || ["rich_text", "features", "steps", "faq_list", "treatment_list", "category_list", "concern_list", "promotion_list", "testimonial_list", "team_list", "gallery", "contact"].includes(b.type);
+  const heading = "heading" in b || ["rich_text", "features", "steps", "faq_list", "treatment_list", "category_list", "concern_list", "promotion_list", "testimonial_list", "team_list", "gallery", "steps_carousel", "contact"].includes(b.type);
 
   return (
     <>
@@ -237,7 +255,7 @@ function BlockFields(props: {
         </>
       ) : null}
 
-      {b.type !== "hero" && b.type !== "banner_carousel" && b.type !== "image" && b.type !== "cta" && b.type !== "notice" && heading ? (
+      {b.type !== "hero" && b.type !== "banner_carousel" && b.type !== "image" && b.type !== "cta" && b.type !== "notice" && b.type !== "care_flow" && heading ? (
         <TextInput label="Título da seção (opcional)" value={"heading" in b ? (b.heading as string | undefined) : undefined} maxLength={120}
           onChange={(v) => onChange({ ...b, heading: v } as Block)} />
       ) : null}
@@ -265,6 +283,12 @@ function BlockFields(props: {
           <TextArea label="Texto (opcional)" value={b.text} maxLength={300} onChange={(v) => onChange({ ...b, text: v })} />
           <CtaEditor label="Botão" value={b.action} onChange={(v) => v && onChange({ ...b, action: v })} issue={issue("action.href") ?? issue("action.label")} />
         </>
+      ) : null}
+
+      {b.type === "care_flow" ? <CareFlowEditor block={b} onChange={onChange} issue={issue} /> : null}
+
+      {b.type === "steps_carousel" ? (
+        <StepsCarouselEditor block={b} onChange={onChange} mediaOptions={props.mediaOptions} issue={issue} />
       ) : null}
 
       {b.type === "features" || b.type === "steps" ? (
@@ -305,6 +329,20 @@ function BlockFields(props: {
 
       {b.type === "gallery" ? (
         <>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Select label="Exibição" value={b.layout}
+              options={[{ value: "grid", label: "Grade (3 por linha)" }, { value: "carousel", label: "Carrossel (3 por vez)" }]}
+              onChange={(v) => onChange({ ...b, layout: v ?? "grid" })} />
+            {b.layout === "carousel" ? (
+              <>
+                <Checkbox label="Passar automaticamente" checked={b.autoplay} hint="Sempre com botão de pausar."
+                  onChange={(autoplay) => onChange({ ...b, autoplay })} />
+                <Select label="Tempo de cada passagem" value={String(b.intervalSeconds) as "4" | "5" | "6" | "8"}
+                  options={["4", "5", "6", "8"].map((v) => ({ value: v, label: `${v} segundos` }))}
+                  onChange={(v) => onChange({ ...b, intervalSeconds: Number(v ?? 5) as 4 | 5 | 6 | 8 })} />
+              </>
+            ) : null}
+          </div>
           <MediaMultiPicker label="Imagens" value={b.mediaIds} options={props.mediaOptions} error={issue("mediaIds")}
             onChange={(mediaIds) => onChange({ ...b, mediaIds, links: pickLinks(b.links, mediaIds) })} />
           {b.mediaIds.length ? (
@@ -341,6 +379,124 @@ function pickLinks(links: Record<string, string> | undefined, ids: string[]) {
 function mediaName(options: MediaOption[], id: string) {
   const alt = options.find((m) => m.id === id)?.alt ?? "imagem";
   return alt.length > 50 ? `${alt.slice(0, 50)}…` : alt;
+}
+
+type CareFlowBlock = Extract<Block, { type: "care_flow" }>;
+
+function CareFlowEditor(props: { block: CareFlowBlock; onChange: (b: Block) => void; issue: (field: string) => string | undefined }) {
+  const { block: b, onChange } = props;
+  const setItems = (items: CareFlowBlock["items"]) => onChange({ ...b, items });
+  const update = (i: number, patch: Partial<CareFlowBlock["items"][number]>) =>
+    setItems(b.items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
+  const move = (i: number, dir: -1 | 1) => {
+    const n = [...b.items];
+    const j = i + dir;
+    if (j < 0 || j >= n.length) return;
+    [n[i], n[j]] = [n[j]!, n[i]!];
+    setItems(n);
+  };
+  return (
+    <div className="flex flex-col gap-4">
+      <TextInput label="Chamada acima do título (opcional)" value={b.eyebrow} maxLength={60}
+        hint="Texto pequeno em dourado, ex.: “Cuidado em cada etapa”." onChange={(eyebrow) => onChange({ ...b, eyebrow })} />
+      <TextInput label="Título" value={b.heading} maxLength={120} onChange={(heading) => onChange({ ...b, heading })} />
+      {props.issue("items") ? <p className="text-sm text-danger">{props.issue("items")}</p> : null}
+      <ol className="flex flex-col gap-3">
+        {b.items.map((it, i) => (
+          <li key={it.key} className="flex flex-col gap-3 rounded-lg border border-line p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-sm font-semibold">Etapa {i + 1}</span>
+              <span className="flex gap-1">
+                <IconButton label={`Mover etapa ${i + 1} para cima`} disabled={i === 0} onClick={() => move(i, -1)}>↑</IconButton>
+                <IconButton label={`Mover etapa ${i + 1} para baixo`} disabled={i === b.items.length - 1} onClick={() => move(i, 1)}>↓</IconButton>
+                <IconButton label={`Remover etapa ${i + 1}`} disabled={b.items.length <= 2}
+                  onClick={() => void confirmDialog(`Remover a etapa ${i + 1}?`, { confirmLabel: "Remover", danger: true }).then((yes) => yes && setItems(b.items.filter((_, j) => j !== i)))}>✕</IconButton>
+              </span>
+            </div>
+            <div className="flex items-end gap-3">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-800">
+                <FlowIcon name={it.icon} className="size-6" />
+              </span>
+              <div className="flex-1">
+                <Select label="Ícone" value={it.icon}
+                  options={FLOW_ICON_NAMES.map((n) => ({ value: n, label: FLOW_ICONS[n].label }))}
+                  onChange={(icon) => icon && update(i, { icon })} />
+              </div>
+            </div>
+            <TextInput label="Título" value={it.title} maxLength={80} error={props.issue(`items.${i}.title`)}
+              onChange={(title) => update(i, { title: title ?? "" })} />
+            <TextArea label="Descrição (opcional)" value={it.text} maxLength={240} rows={2} onChange={(text) => update(i, { text })} />
+          </li>
+        ))}
+      </ol>
+      {b.items.length < 6 ? (
+        <button type="button" className="min-h-11 self-start rounded-[var(--radius-control)] border border-line px-3 text-sm font-semibold hover:bg-brand-50"
+          onClick={() => setItems([...b.items, { key: newBlockId(), icon: "brilho", title: "" }])}>
+          Adicionar etapa
+        </button>
+      ) : <p className="text-sm text-muted">Máximo de 6 etapas.</p>}
+    </div>
+  );
+}
+
+type StepsCarouselBlock = Extract<Block, { type: "steps_carousel" }>;
+
+function StepsCarouselEditor(props: {
+  block: StepsCarouselBlock;
+  onChange: (b: Block) => void;
+  mediaOptions: MediaOption[];
+  issue: (field: string) => string | undefined;
+}) {
+  const { block: b, onChange } = props;
+  const setItems = (items: StepsCarouselBlock["items"]) => onChange({ ...b, items });
+  const update = (i: number, patch: Partial<StepsCarouselBlock["items"][number]>) =>
+    setItems(b.items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
+  const move = (i: number, dir: -1 | 1) => {
+    const n = [...b.items];
+    const j = i + dir;
+    if (j < 0 || j >= n.length) return;
+    [n[i], n[j]] = [n[j]!, n[i]!];
+    setItems(n);
+  };
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Checkbox label="Passar automaticamente" checked={b.autoplay}
+          hint="Sempre com botão de pausar; não passa sozinho para quem pede menos movimento."
+          onChange={(autoplay) => onChange({ ...b, autoplay })} />
+        <Select label="Tempo de cada passagem" value={String(b.intervalSeconds) as "4" | "5" | "6" | "8"}
+          options={["4", "5", "6", "8"].map((v) => ({ value: v, label: `${v} segundos` }))}
+          onChange={(v) => onChange({ ...b, intervalSeconds: Number(v ?? 5) as 4 | 5 | 6 | 8 })} />
+      </div>
+      {props.issue("items") ? <p className="text-sm text-danger">{props.issue("items")}</p> : null}
+      <ol className="flex flex-col gap-3">
+        {b.items.map((it, i) => (
+          <li key={it.key} className="flex flex-col gap-3 rounded-lg border border-line p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-sm font-semibold">Etapa {i + 1}</span>
+              <span className="flex gap-1">
+                <IconButton label={`Mover etapa ${i + 1} para cima`} disabled={i === 0} onClick={() => move(i, -1)}>↑</IconButton>
+                <IconButton label={`Mover etapa ${i + 1} para baixo`} disabled={i === b.items.length - 1} onClick={() => move(i, 1)}>↓</IconButton>
+                <IconButton label={`Remover etapa ${i + 1}`} disabled={b.items.length === 1}
+                  onClick={() => void confirmDialog(`Remover a etapa ${i + 1}?`, { confirmLabel: "Remover", danger: true }).then((yes) => yes && setItems(b.items.filter((_, j) => j !== i)))}>✕</IconButton>
+              </span>
+            </div>
+            <MediaPicker label="Imagem (opcional)" value={it.mediaId} options={props.mediaOptions}
+              hint="Formato paisagem funciona melhor (ex.: 1200×800)." onChange={(mediaId) => update(i, { mediaId })} />
+            <TextInput label="Título" value={it.title} maxLength={80} error={props.issue(`items.${i}.title`)}
+              onChange={(title) => update(i, { title: title ?? "" })} />
+            <TextArea label="Texto (opcional)" value={it.text} maxLength={400} rows={2} onChange={(text) => update(i, { text })} />
+          </li>
+        ))}
+      </ol>
+      {b.items.length < 12 ? (
+        <button type="button" className="min-h-11 self-start rounded-[var(--radius-control)] border border-line px-3 text-sm font-semibold hover:bg-brand-50"
+          onClick={() => setItems([...b.items, { key: newBlockId(), title: "" }])}>
+          Adicionar etapa
+        </button>
+      ) : <p className="text-sm text-muted">Máximo de 12 etapas.</p>}
+    </div>
+  );
 }
 
 type CarouselBlock = Extract<Block, { type: "banner_carousel" }>;

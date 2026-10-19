@@ -41,7 +41,7 @@ Ao sair da página com alterações não salvas, o navegador pede confirmação.
 ## Blocos
 
 Páginas, Home, tratamentos, promoções, landing pages e blog são montados com
-blocos de uma lista fechada (destaque, carrossel de banners, texto, imagem, chamada, diferenciais,
+blocos de uma lista fechada (destaque, carrossel de banners, fluxo do atendimento, passo a passo com imagens, texto, imagem, chamada, diferenciais,
 passo a passo, aviso, FAQs, tratamentos, categorias, objetivos, promoções
 vigentes, depoimentos, equipe, galeria, contato). Não é possível inserir HTML
 ou scripts.
@@ -81,6 +81,38 @@ O endereço **`/agendar-avaliacao`** redireciona para o destino escolhido. Use
 esse endereço na bio do Instagram, em QR codes e campanhas: se a plataforma
 mudar, basta trocar no painel. Clicar não é agendamento confirmado: a equipe
 confirma o horário.
+
+### Cores do bloco
+
+Todo bloco tem, no fim do editor, a seção recolhível **Cores do bloco**:
+**fundo do bloco**, **fundo dos cartões**, **títulos**, **textos** e
+**destaques** (etiquetas como "Etapa 01", linhas e detalhes dourados). Use a
+paleta da marca ou o seletor livre; "Usar padrão" volta à cor do site.
+O painel avisa quando a combinação fica difícil de ler (contraste abaixo do
+recomendado). Prefira resolver o aviso antes de publicar.
+
+### Fluxo do atendimento
+
+Bloco com etapas em cartões, ícone sobre a borda, número dourado e uma linha
+dourada em curvas que liga uma etapa à outra (com setas). Ao adicionar, já vem
+com as 4 etapas do atendimento preenchidas; dá para editar textos, trocar
+ícones (lista fechada), reordenar e usar de 2 a 6 etapas. No computador os
+cartões ficam lado a lado; no tablet, em duas colunas; no celular, empilhados
+— a linha se adapta sozinha. Ao entrar na tela, título, cartões e linha
+aparecem em sequência (sem animação para quem pede "reduzir movimento").
+
+### Passo a passo com imagens (carrossel)
+
+Etapas com imagem (opcional), título e texto, mostradas 3 por vez no
+computador (2 no tablet, 1 no celular), na ordem cadastrada. Passam sozinhas
+(com botão de pausar) ou pelas setas, pontos, teclado e deslizando o dedo. Até
+12 etapas.
+
+### Galeria: grade ou carrossel
+
+Em **Exibição**, escolha **Grade** (3 por linha; a última linha incompleta fica
+centralizada) ou **Carrossel** (3 por vez, com setas e passagem automática
+opcional).
 
 ### Imagens clicáveis
 

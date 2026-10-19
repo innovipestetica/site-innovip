@@ -20,6 +20,17 @@ const shortText = (max: number) => z.string().trim().min(1).max(max);
 const optionalText = (max: number) => z.string().trim().max(max).optional();
 const blockId = z.string().regex(/^[a-z0-9]{6,24}$/);
 
+const hexColor = z.string().regex(/^#[0-9a-f]{6}$/i, "Use uma cor no formato #RRGGBB.");
+/** Cores opcionais por bloco (fundo, cartões, títulos, textos, destaques). */
+export const blockStyleSchema = z.object({
+  background: hexColor.optional(),
+  card: hexColor.optional(),
+  heading: hexColor.optional(),
+  text: hexColor.optional(),
+  accent: hexColor.optional(),
+});
+export type BlockStyle = z.infer<typeof blockStyleSchema>;
+
 /** Ação de um botão: sem telefone ou URL fixos dentro do bloco. */
 export const ctaActionSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("evaluation"), label: shortText(40) }), // destino nas Configurações públicas
@@ -30,6 +41,12 @@ export type CtaAction = z.infer<typeof ctaActionSchema>;
 
 /** Link opcional ao clicar numa imagem (mesmas regras dos links dos botões). */
 const imageLink = safeHrefSchema.optional();
+
+/** Ícones do bloco "Fluxo do atendimento" (desenhos em components/blocks/flow-icons). */
+export const FLOW_ICON_KEYS = [
+  "calendario-relogio", "pessoa-conversa", "documento-mais", "maos-coracao",
+  "brilho", "escudo-check", "coracao", "telefone",
+] as const;
 
 const listItem = z.object({ title: shortText(80), text: optionalText(400) });
 
@@ -89,6 +106,25 @@ export const blockSchemas = {
     heading: optionalText(120),
     items: z.array(listItem).min(1).max(12),
   }),
+  /** Passo a passo com imagem por etapa, em carrossel (3 por vez). */
+  steps_carousel: z.object({
+    heading: optionalText(120),
+    items: z
+      .array(z.object({ key: blockId, title: shortText(80), text: optionalText(400), mediaId: uuid.optional() }))
+      .min(1)
+      .max(12),
+    autoplay: z.boolean().default(true),
+    intervalSeconds: z.union([z.literal(4), z.literal(5), z.literal(6), z.literal(8)]).default(5),
+  }),
+  /** Fluxo do atendimento: cartões com ícone ligados por uma linha dourada. */
+  care_flow: z.object({
+    eyebrow: optionalText(60),
+    heading: optionalText(120),
+    items: z
+      .array(z.object({ key: blockId, icon: z.enum(FLOW_ICON_KEYS), title: shortText(80), text: optionalText(240) }))
+      .min(2)
+      .max(6),
+  }),
   notice: z.object({
     tone: z.enum(["info", "important"]),
     text: shortText(500),
@@ -125,6 +161,10 @@ export const blockSchemas = {
     mediaIds: z.array(uuid).min(1).max(24),
     /** Link por imagem: chave = id da imagem. */
     links: z.record(uuid, safeHrefSchema).optional(),
+    /** Grade (3 por linha, última centralizada) ou carrossel (3 por vez). */
+    layout: z.enum(["grid", "carousel"]).default("grid"),
+    autoplay: z.boolean().default(true),
+    intervalSeconds: z.union([z.literal(4), z.literal(5), z.literal(6), z.literal(8)]).default(5),
   }),
   contact: z.object({
     heading: optionalText(120),
@@ -137,7 +177,7 @@ export type BlockType = keyof typeof blockSchemas;
 export const BLOCK_TYPES = Object.keys(blockSchemas) as BlockType[];
 
 export type Block = {
-  [K in BlockType]: z.infer<(typeof blockSchemas)[K]> & { id: string; type: K };
+  [K in BlockType]: z.infer<(typeof blockSchemas)[K]> & { id: string; type: K; style?: BlockStyle };
 }[BlockType];
 
 type BlockVariant = z.ZodObject<{ id: typeof blockId; type: z.ZodLiteral<BlockType> }>;
@@ -145,7 +185,7 @@ type BlockVariant = z.ZodObject<{ id: typeof blockId; type: z.ZodLiteral<BlockTy
 export const blockSchema = z.discriminatedUnion(
   "type",
   BLOCK_TYPES.map((type) =>
-    blockSchemas[type].extend({ id: blockId, type: z.literal(type) }),
+    blockSchemas[type].extend({ id: blockId, type: z.literal(type), style: blockStyleSchema.optional() }),
   ) as unknown as [BlockVariant, ...BlockVariant[]],
 ) as unknown as z.ZodType<Block>;
 
@@ -163,6 +203,14 @@ export const BLOCK_META: Record<BlockType, { label: string; help: string }> = {
   cta: { label: "Chamada para ação", help: "Convite com um botão (avaliação, WhatsApp ou link)." },
   features: { label: "Diferenciais", help: "Itens curtos e verificáveis." },
   steps: { label: "Passo a passo", help: "Como funciona, em etapas." },
+  steps_carousel: {
+    label: "Passo a passo com imagens (carrossel)",
+    help: "Etapas com imagem, 3 por vez, passando sozinhas (com pausa) ou pelas setas, na ordem cadastrada.",
+  },
+  care_flow: {
+    label: "Fluxo do atendimento",
+    help: "Etapas em cartões com ícone, ligadas por uma linha dourada animada (2 a 6 etapas).",
+  },
   notice: { label: "Aviso", help: "Ex.: necessidade de avaliação individual." },
   faq_list: { label: "Perguntas frequentes", help: "Escolha FAQs publicadas." },
   treatment_list: { label: "Tratamentos em destaque", help: "Escolha tratamentos publicados." },

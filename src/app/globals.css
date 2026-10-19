@@ -22,6 +22,7 @@
 
   --color-gold-100: #f6edda;
   --color-gold-300: #e5c88b;
+  --color-gold-500: #b08d57; /* linhas e detalhes (não usar em texto pequeno) */
   --color-gold-700: #8a6a2a;
 
   --color-surface: #fbf8f2;
@@ -115,4 +116,31 @@
   .skip-link:focus {
     top: 1rem;
   }
+}
+
+/*
+ * Cores por bloco (escolhidas no painel). Fora de @layer de propósito: regras
+ * sem camada vencem os utilitários do Tailwind. Cada cor só vale se foi
+ * escolhida (marcador data-* no invólucro .blk).
+ */
+.blk[data-background] {
+  background-color: var(--blk-bg);
+}
+.blk[data-background] > :is(section, div, figure, p) {
+  background-color: transparent;
+}
+.blk[data-card] .blk-card {
+  background-color: var(--blk-card);
+}
+.blk[data-heading] :is(h1, h2, h3, h4) {
+  color: var(--blk-heading);
+}
+.blk[data-text] :is(p, li, figcaption, blockquote, summary, dd, dt) {
+  color: var(--blk-text);
+}
+.blk[data-accent] .blk-accent {
+  color: var(--blk-accent);
+}
+.blk[data-accent] .blk-accent-bg {
+  background-color: var(--blk-accent);
 }

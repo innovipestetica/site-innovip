@@ -1,7 +1,8 @@
-import { Suspense, type ReactNode } from "react";
+import { Fragment, Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { requestNow } from "@/lib/request-time";
 import type { Block, CtaAction } from "@/lib/cms/blocks";
+import { blockStyleAttrs } from "@/lib/cms/block-style";
 import { publicPath } from "@/lib/cms/content-types";
 import { formatCents } from "@/lib/cms/format";
 import { activePromotions, type RenderContext, type RenderEntry, type RenderMedia } from "@/lib/cms/render-context";
@@ -9,6 +10,8 @@ import { evaluationTarget, phoneHref, whatsappHref } from "@/lib/cms/settings";
 import { EvaluationLink } from "@/components/site/evaluation-link";
 import { RichText } from "./rich-text";
 import { BannerCarousel } from "./banner-carousel";
+import { CardCarousel } from "./card-carousel";
+import { CareFlow } from "./care-flow";
 
 /**
  * Renderização dos blocos (Server Components, sem JS no cliente).
@@ -121,7 +124,7 @@ export function EntryCard({ entry, ctx }: { entry: RenderEntry; ctx: RenderConte
     </>
   );
   return (
-    <li className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-4 text-center">
+    <li className="blk-card rounded-[var(--radius-card)] border border-line bg-surface-raised p-4 text-center">
       {href ? <Link href={href} className="block">{body}</Link> : body}
     </li>
   );
@@ -130,9 +133,12 @@ export function EntryCard({ entry, ctx }: { entry: RenderEntry; ctx: RenderConte
 export function RenderBlocks({ blocks, ctx }: { blocks: Block[]; ctx: RenderContext }) {
   return (
     <>
-      {blocks.map((block, idx) => (
-        <RenderBlock key={block.id} block={block} ctx={ctx} first={idx === 0} />
-      ))}
+      {blocks.map((block, idx) => {
+        const content = <RenderBlock block={block} ctx={ctx} first={idx === 0} />;
+        // Cores escolhidas no painel: invólucro com variáveis CSS (globals.css).
+        const styled = blockStyleAttrs(block.style);
+        return styled ? <div key={block.id} {...styled}>{content}</div> : <Fragment key={block.id}>{content}</Fragment>;
+      })}
     </>
   );
 }
@@ -225,8 +231,8 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
           {b.type === "steps" ? (
             <ol className="card-grid">
               {b.items.map((it, i) => (
-                <li key={i} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
-                  <span className="text-sm font-semibold text-gold-700">Etapa {i + 1}</span>
+                <li key={i} className="blk-card rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
+                  <span className="blk-accent text-sm font-semibold text-gold-700">Etapa {i + 1}</span>
                   <h3 className="mt-1 font-semibold text-brand-800">{it.title}</h3>
                   {it.text ? <p className="mt-1 text-sm text-muted">{it.text}</p> : null}
                 </li>
@@ -235,13 +241,44 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
           ) : (
             <ul className="card-grid">
               {b.items.map((it, i) => (
-                <li key={i} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
+                <li key={i} className="blk-card rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
                   <h3 className="font-semibold text-brand-800">{it.title}</h3>
                   {it.text ? <p className="mt-1 text-sm text-muted">{it.text}</p> : null}
                 </li>
               ))}
             </ul>
           )}
+        </section>
+      );
+    case "care_flow":
+      return (
+        <section aria-labelledby={b.heading ? headingId : undefined} className="mx-auto w-full max-w-6xl px-4 py-14 sm:py-20">
+          <CareFlow eyebrow={b.eyebrow} heading={b.heading} headingId={headingId} items={b.items} />
+        </section>
+      );
+    case "steps_carousel":
+      return (
+        <section aria-labelledby={b.heading ? headingId : undefined} className={section}>
+          <Heading text={b.heading} id={headingId} />
+          <CardCarousel
+            label={b.heading || "Passo a passo"}
+            itemLabel="Etapa"
+            autoplay={b.autoplay}
+            intervalSeconds={b.intervalSeconds}
+            items={b.items.map((it, i) => {
+              const media = it.mediaId ? ctx.media.get(it.mediaId) : undefined;
+              return (
+                <article key={it.key} className="blk-card flex w-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface-raised text-center">
+                  {media ? <div className="[&_img]:rounded-none"><Picture media={media} sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" /></div> : null}
+                  <div className="flex flex-1 flex-col gap-1 p-5">
+                    <span className="blk-accent text-sm font-semibold tracking-wide text-gold-700 uppercase">Etapa {String(i + 1).padStart(2, "0")}</span>
+                    <h3 className="text-lg font-semibold text-brand-800">{it.title}</h3>
+                    {it.text ? <p className="text-sm text-muted">{it.text}</p> : null}
+                  </div>
+                </article>
+              );
+            })}
+          />
         </section>
       );
     case "notice":
@@ -260,7 +297,7 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
           <Heading text={b.heading ?? "Perguntas frequentes"} id={headingId} />
           <div className="mx-auto flex max-w-3xl flex-col gap-2">
             {faqs.map((f) => (
-              <details key={f.id} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-4">
+              <details key={f.id} className="blk-card rounded-[var(--radius-card)] border border-line bg-surface-raised p-4">
                 <summary className="min-h-11 cursor-pointer content-center font-semibold text-brand-800">{f.title}</summary>
                 <p className="mt-2 whitespace-pre-line text-ink">{String(f.data.answer ?? "")}</p>
               </details>
@@ -280,12 +317,12 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
           <ul className="card-grid">
             {items.map((e) =>
               b.type === "testimonial_list" ? (
-                <li key={e.id} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
+                <li key={e.id} className="blk-card rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
                   <blockquote className="text-ink">“{String(e.data.quote ?? "")}”</blockquote>
                   {e.data.author_display ? <p className="mt-2 text-sm text-muted">— {String(e.data.author_display)}</p> : null}
                 </li>
               ) : b.type === "team_list" ? (
-                <li key={e.id} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
+                <li key={e.id} className="blk-card rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
                   {typeof e.data.mediaId === "string" && ctx.media.get(e.data.mediaId) ? (
                     <Picture media={ctx.media.get(e.data.mediaId)!} sizes="320px" />
                   ) : null}
@@ -339,13 +376,27 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
       return (
         <section aria-labelledby={b.heading ? headingId : undefined} className={section}>
           <Heading text={b.heading} id={headingId} />
-          <ul className="grid grid-cols-2 gap-3 md:grid-cols-3">
-            {items.map((m) => (
-              <li key={m.id}>
-                <ImageLink href={b.links?.[m.id]}><Picture media={m} sizes="(min-width: 768px) 33vw, 50vw" /></ImageLink>
-              </li>
-            ))}
-          </ul>
+          {b.layout === "carousel" ? (
+            <CardCarousel
+              label={b.heading || "Galeria de imagens"}
+              itemLabel="Imagem"
+              autoplay={b.autoplay}
+              intervalSeconds={b.intervalSeconds}
+              items={items.map((m) => (
+                <ImageLink key={m.id} href={b.links?.[m.id]} className="w-full">
+                  <Picture media={m} sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" />
+                </ImageLink>
+              ))}
+            />
+          ) : (
+            <ul className="card-grid [--card-gap:0.75rem]">
+              {items.map((m) => (
+                <li key={m.id}>
+                  <ImageLink href={b.links?.[m.id]}><Picture media={m} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" /></ImageLink>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       );
     }
@@ -411,7 +462,7 @@ async function ActivePromotionList(props: { heading?: string; limit: number; hea
 export function PromotionCard({ promotion: p, ctx }: { promotion: RenderContext["promotions"][number]; ctx: RenderContext }) {
   const cover = typeof p.entry.data.mediaId === "string" ? ctx.media.get(p.entry.data.mediaId) : undefined;
   return (
-    <li className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
+    <li className="blk-card rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
       <Link href={`/promocoes/${p.entry.slug}`} className="block">
         {cover ? <Picture media={cover} sizes="(min-width: 1024px) 320px, 100vw" /> : null}
         <h3 className="mt-3 font-semibold text-brand-800">{p.entry.title}</h3>
