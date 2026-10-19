@@ -81,6 +81,7 @@ Veja [docs/configuracao-supabase.md](docs/configuracao-supabase.md) e
 | `npm run backup:export` / `backup:verify` | backup lógico (conteúdo + mídia) e teste de restauração isolada |
 | `npm run demo:seed` / `demo:remove` | conteúdo de demonstração marcado / remoção total |
 | `npm run tratamentos:importar -- lista.txt [--aplicar]` | cadastra tratamentos em lote como rascunho (sem `--aplicar` só simula); formato em `scripts/exemplos/tratamentos.txt` |
+| `npm run conteudo:importar -- pacote.ts [--aplicar]` | importa um pacote de conteúdo (Home, FAQs, tratamentos, posts) como rascunho/revisão não publicada; formato no topo de `scripts/import-content.ts` |
 | `E2E_BASE_URL=https://... npm run test:e2e` | E2E contra um deploy publicado |
 | `npm run admin:provision -- --email X` | adiciona um administrador (`--remove` remove, `--list` lista) |
 
