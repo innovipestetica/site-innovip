@@ -1,8 +1,11 @@
 import { Suspense } from "react";
-import Link from "next/link";
 import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/site/page-parts";
-import { normalizeSearch, TreatmentGrid } from "@/components/site/treatment-grid";
+import { TreatmentCard } from "@/components/site/treatment-grid";
+import { CatalogFilter, type CatalogItem } from "@/components/site/catalog-filter";
+import { normalizeSearch } from "@/lib/search";
+import type { PublishedEntry } from "@/lib/cms/public-data";
+import type { RenderMedia } from "@/lib/cms/render-context";
 import { getPublicTaxonomies, listPublished } from "@/lib/cms/public-data";
 import { contextForCards } from "@/lib/cms/public-media";
 import { resolveMissing } from "@/lib/cms/resolve-missing";
@@ -19,10 +22,7 @@ export default async function TreatmentsPage({ searchParams }: PageProps<"/trata
   const [treatments, taxonomies] = await Promise.all([listPublished("treatment"), getPublicTaxonomies()]);
   if (treatments.length === 0) return resolveMissing("/tratamentos");
   const ctx = await contextForCards(treatments);
-
-  // Só oferece filtros que têm algum tratamento.
-  const usedCategories = taxonomies.categories.filter((c) => treatments.some((t) => t.treatment?.categoryIds.includes(c.id)));
-  const usedConcerns = taxonomies.concerns.filter((c) => treatments.some((t) => t.treatment?.concernIds.includes(c.id)));
+  const catalog = buildCatalog(treatments, taxonomies, ctx.media);
 
   return (
     <main id="conteudo" className="flex-1" {...pageAttrs("catalog")}>
@@ -34,16 +34,9 @@ export default async function TreatmentsPage({ searchParams }: PageProps<"/trata
         </p>
 
         <div className="mt-6">
-          {/* O catálogo completo vai no HTML estático; o filtro (dados da URL) chega por streaming. */}
-          <Suspense
-            fallback={
-              <>
-                <FilterForm concerns={usedConcerns} categories={usedCategories} idPrefix="inicial-" />
-                <div className="mt-8"><TreatmentGrid items={treatments} media={ctx.media} /></div>
-              </>
-            }
-          >
-            <FilteredCatalog searchParams={searchParams} />
+          {/* Catálogo completo no HTML estático; os valores do endereço chegam por streaming. */}
+          <Suspense fallback={<CatalogFilter {...catalog} initial={EMPTY} idPrefix="inicial-" />}>
+            <FilteredCatalog searchParams={searchParams} catalog={catalog} />
           </Suspense>
         </div>
       </div>
@@ -51,89 +44,40 @@ export default async function TreatmentsPage({ searchParams }: PageProps<"/trata
   );
 }
 
+const EMPTY = { q: "", objetivo: "", categoria: "" };
+
 function one(v: string | string[] | undefined) {
   return (Array.isArray(v) ? v[0] : v)?.slice(0, 80) ?? "";
 }
 
-type Option = { id: string; slug: string; name: string };
+type Taxonomies = Awaited<ReturnType<typeof getPublicTaxonomies>>;
 
-function FilterForm({
-  concerns,
-  categories,
-  values = {},
-  idPrefix = "",
-}: {
-  concerns: Option[];
-  categories: Option[];
-  values?: { q?: string; objetivo?: string; categoria?: string };
-  /** Evita ids repetidos enquanto o formulário provisório e o final coexistem no streaming. */
-  idPrefix?: string;
-}) {
-  return (
-        <form method="get" role="search" aria-label="Filtrar tratamentos" className="mt-6 grid gap-3 rounded-[var(--radius-card)] border border-line bg-surface-raised p-4 sm:grid-cols-[1fr_auto_auto_auto] sm:items-end">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor={`${idPrefix}busca`} className="text-sm font-semibold">Buscar</label>
-            <input id={`${idPrefix}busca`} name="q" type="search" defaultValue={values.q} maxLength={60} placeholder="Ex.: manchas, flacidez"
-              className="min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-3" />
-          </div>
-          {concerns.length ? (
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor={`${idPrefix}objetivo`} className="text-sm font-semibold">O que deseja tratar</label>
-              <select id={`${idPrefix}objetivo`} name="objetivo" defaultValue={values.objetivo ?? ""} className="min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-3">
-                <option value="">Todos</option>
-                {concerns.map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}
-              </select>
-            </div>
-          ) : null}
-          {categories.length ? (
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor={`${idPrefix}categoria`} className="text-sm font-semibold">Categoria</label>
-              <select id={`${idPrefix}categoria`} name="categoria" defaultValue={values.categoria ?? ""} className="min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-3">
-                <option value="">Todas</option>
-                {categories.map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}
-              </select>
-            </div>
-          ) : null}
-          <button type="submit" className="min-h-11 rounded-[var(--radius-control)] bg-brand-700 px-5 font-semibold text-white hover:bg-brand-800">Filtrar</button>
-        </form>
-
-  );
+/** Cards prontos + dados de filtro. Só oferece filtros que têm algum tratamento. */
+function buildCatalog(treatments: PublishedEntry[], taxonomies: Taxonomies, media: Map<string, RenderMedia>) {
+  const slugs = (all: { id: string; slug: string }[], ids: string[] = []) =>
+    all.filter((x) => ids.includes(x.id)).map((x) => x.slug);
+  const items: CatalogItem[] = treatments.map((t) => ({
+    id: t.id,
+    text: normalizeSearch(`${t.title} ${t.summary ?? ""}`),
+    categories: slugs(taxonomies.categories, t.treatment?.categoryIds),
+    concerns: slugs(taxonomies.concerns, t.treatment?.concernIds),
+    card: <TreatmentCard key={t.id} entry={t} media={media} />,
+  }));
+  const used = (all: { slug: string; name: string }[], key: "categories" | "concerns") =>
+    all.filter((x) => items.some((i) => i[key].includes(x.slug))).map(({ slug, name }) => ({ slug, name }));
+  return { items, categories: used(taxonomies.categories, "categories"), concerns: used(taxonomies.concerns, "concerns") };
 }
 
-async function FilteredCatalog({ searchParams }: { searchParams: PageProps<"/tratamentos">["searchParams"] }) {
+async function FilteredCatalog({
+  searchParams,
+  catalog,
+}: {
+  searchParams: PageProps<"/tratamentos">["searchParams"];
+  catalog: ReturnType<typeof buildCatalog>;
+}) {
   const sp = await searchParams;
-  const [treatments, taxonomies] = await Promise.all([listPublished("treatment"), getPublicTaxonomies()]);
-  const ctx = await contextForCards(treatments);
-
-  const q = normalizeSearch(one(sp.q).trim());
-  const concern = taxonomies.concerns.find((c) => c.slug === one(sp.objetivo));
-  const category = taxonomies.categories.find((c) => c.slug === one(sp.categoria));
-
-  const filtered = treatments.filter((t) => {
-    if (concern && !t.treatment?.concernIds.includes(concern.id)) return false;
-    if (category && !t.treatment?.categoryIds.includes(category.id)) return false;
-    if (q && !normalizeSearch(`${t.title} ${t.summary ?? ""}`).includes(q)) return false;
-    return true;
-  });
-
-  const active = [concern?.name, category?.name, q ? `“${one(sp.q)}”` : null].filter(Boolean);
-  const usedCategories = taxonomies.categories.filter((c) => treatments.some((t) => t.treatment?.categoryIds.includes(c.id)));
-  const usedConcerns = taxonomies.concerns.filter((c) => treatments.some((t) => t.treatment?.concernIds.includes(c.id)));
-  return (
-    <>
-      <FilterForm
-        concerns={usedConcerns}
-        categories={usedCategories}
-        values={{ q: one(sp.q), objetivo: concern?.slug, categoria: category?.slug }}
-      />
-      <div className="mt-8" />
-      {active.length ? (
-        <p className="mb-4 text-sm text-muted" role="status">
-          {filtered.length} resultado(s) para {active.join(" · ")}.{" "}
-          <Link href="/tratamentos" className="font-semibold text-brand-800 underline">Limpar filtros</Link>
-        </p>
-      ) : null}
-      <TreatmentGrid items={filtered} media={ctx.media} emptyText="Nenhum tratamento com esses filtros. Fale com a equipe na avaliação." />
-    </>
-  );
+  // Valores desconhecidos no endereço são ignorados.
+  const objetivo = catalog.concerns.some((c) => c.slug === one(sp.objetivo)) ? one(sp.objetivo) : "";
+  const categoria = catalog.categories.some((c) => c.slug === one(sp.categoria)) ? one(sp.categoria) : "";
+  return <CatalogFilter {...catalog} initial={{ q: one(sp.q).slice(0, 60), objetivo, categoria }} />;
 }
