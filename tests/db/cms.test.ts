@@ -128,6 +128,23 @@ describe.skipIf(!hasDatabase)("CMS: versionamento e publicação", () => {
     });
   });
 
+  it("categoria arquivada ainda marcada bloqueia a publicação e é citada pelo nome", async () => {
+    await inRollbackTransaction(async (db) => {
+      const admin = await setupAdmin(db);
+      const cat = await db.query<{ id: string }>(
+        "insert into public.categories (name, slug, status) values ('Antiga (teste)', 'antiga-teste', 'archived') returning id",
+      );
+      const t = await create(db, admin, "treatment", "com-arquivada", {
+        title: "Com arquivada",
+        relations: { categories: [cat.rows[0]!.id], concerns: [], treatments: [] },
+      });
+      await expect(publish(db, admin, t.entry_id, t.version_id)).rejects.toMatchObject({
+        code: "PT422",
+        detail: expect.stringContaining("Antiga (teste) (arquivada)"),
+      });
+    });
+  });
+
   it("referência a conteúdo não publicado bloqueia a publicação e a despublicação do alvo", async () => {
     await inRollbackTransaction(async (db) => {
       const admin = await setupAdmin(db);

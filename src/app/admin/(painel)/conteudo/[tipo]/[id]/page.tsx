@@ -71,8 +71,10 @@ async function Editor({ params }: { params: PageProps<"/admin/conteudo/[tipo]/[i
         initialPayload={entry.payload}
         refOptions={refOptions.filter((o) => o.id !== entry.id)}
         mediaOptions={mediaOptions}
-        categories={taxonomies.categories.filter((c) => c.status !== "archived")}
-        concerns={taxonomies.concerns.filter((c) => c.status !== "archived")}
+        // Arquivadas somem da lista, exceto as ainda marcadas: precisam aparecer
+        // para poderem ser desmarcadas (senão a publicação fica bloqueada).
+        categories={taxonomies.categories.filter((c) => c.status !== "archived" || entry.payload.relations.categories.includes(c.id))}
+        concerns={taxonomies.concerns.filter((c) => c.status !== "archived" || entry.payload.relations.concerns.includes(c.id))}
       />
     </>
   );

@@ -431,7 +431,14 @@ function TaxonomyChecks(props: { label: string; items: Taxonomy[]; value: string
             <label key={t.id} className="flex min-h-11 items-center gap-3 rounded px-2 hover:bg-brand-50">
               <input type="checkbox" className="size-5 accent-brand-700" checked={props.value.includes(t.id)}
                 onChange={(e) => props.onChange(e.target.checked ? [...props.value, t.id] : props.value.filter((v) => v !== t.id))} />
-              <span className="text-sm">{t.name}{t.status !== "published" ? <span className="ml-1 text-xs text-gold-700">(não publicada)</span> : null}</span>
+              <span className="text-sm">
+                {t.name}
+                {t.status === "archived" ? (
+                  <span className="ml-1 text-xs text-gold-700">(arquivada — desmarque para publicar)</span>
+                ) : t.status !== "published" ? (
+                  <span className="ml-1 text-xs text-gold-700">(não publicada)</span>
+                ) : null}
+              </span>
             </label>
           ))}
         </div>
