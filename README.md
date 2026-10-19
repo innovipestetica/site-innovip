@@ -14,7 +14,7 @@ Arquitetura: **Domínio/DNS (Locaweb) → Vercel → Next.js → Supabase**.
 | 3. Páginas públicas | **Implementada (18/10/2026).** Home, páginas, tratamentos (catálogo/categoria/detalhe), promoções, landing pages, blog, sitemap e SEO. Testes: 64 unitários, 28 de banco, 34 E2E. Pendente: verificação visual com conteúdo real ou de demonstração; `/agendar-avaliacao` chega na etapa 4 |
 | 4. Agendamento e promoções | **Concluída (18/10/2026).** Agendamento externo (WhatsApp ou link) configurável no painel; `/agendar-avaliacao` redireciona para o destino; botões ocultos sem destino; vigência das promoções no site e no painel. **Desvio da especificação, por decisão da clínica:** sem formulário/banco/painel de leads próprios |
 | 5. Integrações (consentimento, GTM/GA4, Meta) | **Implementada (18/10/2026), desligada até configurar.** Banner e preferências versionados, revogação, registro de consentimento no banco, GTM só após consentimento (Consent Mode v2), eventos sem dados pessoais, marketing bloqueado em páginas sensíveis, CSP condicional. Meta Pixel via GTM após revisão; CAPI fora do escopo (agendamento externo). Ver [docs/gtm-ga4-meta.md](docs/gtm-ga4-meta.md) e [docs/eventos.md](docs/eventos.md) |
-| 6. Testes finais e deploy | pendente |
+| 6. Testes finais e deploy | **Implementada (18/10/2026).** Acessibilidade automatizada (axe), backup verificável, docs de entrega e deploy de teste interno na Vercel (Hobby) em `site-innovip.vercel.app`. Lançamento depende do [checklist](docs/checklist-lancamento.md) (plano comercial, conteúdo real, domínio, SMTP, políticas revisadas). Ver [relatório de testes](docs/relatorio-testes.md) |
 
 ### O que a etapa 2 entrega
 
@@ -78,6 +78,9 @@ Veja [docs/configuracao-supabase.md](docs/configuracao-supabase.md) e
 | `npm run db:migrate` | aplica migrações pendentes via `DATABASE_URL` (`-- --dry-run` para ensaio) |
 | `npm run db:push` | aplica migrações pela CLI (projeto vinculado) |
 | `npm run db:types` | regenera `src/lib/supabase/database.types.ts` a partir do banco |
+| `npm run backup:export` / `backup:verify` | backup lógico (conteúdo + mídia) e teste de restauração isolada |
+| `npm run demo:seed` / `demo:remove` | conteúdo de demonstração marcado / remoção total |
+| `E2E_BASE_URL=https://... npm run test:e2e` | E2E contra um deploy publicado |
 | `npm run admin:provision -- --email X` | adiciona um administrador (`--remove` remove, `--list` lista) |
 
 ## Estrutura

@@ -1,7 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const PORT = Number(process.env.E2E_PORT ?? 3100);
-const baseURL = `http://localhost:${PORT}`;
+// E2E_BASE_URL=https://... testa um deploy publicado (sem servidor local).
+const remote = process.env.E2E_BASE_URL?.replace(/\/+$/, "");
+const baseURL = remote ?? `http://localhost:${PORT}`;
 
 /**
  * E2E contra o build de produção local (`next start`), não o modo dev, para
@@ -19,10 +21,12 @@ export default defineConfig({
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
     { name: "mobile", use: { ...devices["Pixel 7"] } },
   ],
-  webServer: {
-    command: `npx next start -p ${PORT}`,
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  webServer: remote
+    ? undefined
+    : {
+        command: `npx next start -p ${PORT}`,
+        url: baseURL,
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+      },
 });

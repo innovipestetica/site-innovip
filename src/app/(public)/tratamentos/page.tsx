@@ -38,7 +38,7 @@ export default async function TreatmentsPage({ searchParams }: PageProps<"/trata
           <Suspense
             fallback={
               <>
-                <FilterForm concerns={usedConcerns} categories={usedCategories} />
+                <FilterForm concerns={usedConcerns} categories={usedCategories} idPrefix="inicial-" />
                 <div className="mt-8"><TreatmentGrid items={treatments} media={ctx.media} /></div>
               </>
             }
@@ -61,22 +61,25 @@ function FilterForm({
   concerns,
   categories,
   values = {},
+  idPrefix = "",
 }: {
   concerns: Option[];
   categories: Option[];
   values?: { q?: string; objetivo?: string; categoria?: string };
+  /** Evita ids repetidos enquanto o formulário provisório e o final coexistem no streaming. */
+  idPrefix?: string;
 }) {
   return (
         <form method="get" role="search" aria-label="Filtrar tratamentos" className="mt-6 grid gap-3 rounded-[var(--radius-card)] border border-line bg-surface-raised p-4 sm:grid-cols-[1fr_auto_auto_auto] sm:items-end">
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="busca" className="text-sm font-semibold">Buscar</label>
-            <input id="busca" name="q" type="search" defaultValue={values.q} maxLength={60} placeholder="Ex.: manchas, flacidez"
+            <label htmlFor={`${idPrefix}busca`} className="text-sm font-semibold">Buscar</label>
+            <input id={`${idPrefix}busca`} name="q" type="search" defaultValue={values.q} maxLength={60} placeholder="Ex.: manchas, flacidez"
               className="min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-3" />
           </div>
           {concerns.length ? (
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="objetivo" className="text-sm font-semibold">O que deseja tratar</label>
-              <select id="objetivo" name="objetivo" defaultValue={values.objetivo ?? ""} className="min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-3">
+              <label htmlFor={`${idPrefix}objetivo`} className="text-sm font-semibold">O que deseja tratar</label>
+              <select id={`${idPrefix}objetivo`} name="objetivo" defaultValue={values.objetivo ?? ""} className="min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-3">
                 <option value="">Todos</option>
                 {concerns.map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}
               </select>
@@ -84,8 +87,8 @@ function FilterForm({
           ) : null}
           {categories.length ? (
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="categoria" className="text-sm font-semibold">Categoria</label>
-              <select id="categoria" name="categoria" defaultValue={values.categoria ?? ""} className="min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-3">
+              <label htmlFor={`${idPrefix}categoria`} className="text-sm font-semibold">Categoria</label>
+              <select id={`${idPrefix}categoria`} name="categoria" defaultValue={values.categoria ?? ""} className="min-h-11 rounded-[var(--radius-control)] border border-line bg-surface px-3">
                 <option value="">Todas</option>
                 {categories.map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}
               </select>
