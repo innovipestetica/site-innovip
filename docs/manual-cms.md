@@ -101,6 +101,17 @@ cartões ficam lado a lado; no tablet, em duas colunas; no celular, empilhados
 — a linha se adapta sozinha. Ao entrar na tela, título, cartões e linha
 aparecem em sequência (sem animação para quem pede "reduzir movimento").
 
+### Etiqueta das etapas ("Etapa 01")
+
+Nos blocos **Passo a passo**, **Passo a passo com imagens** e **Fluxo do
+atendimento**:
+
+- **Mostrar etiqueta nas etapas**: desmarque para não mostrar nada.
+- **Palavra da etiqueta**: troca "Etapa" por outra palavra (o número entra
+  depois). Ex.: "Passo" → "Passo 01".
+- **Etiqueta própria** (em cada etapa): substitui a etiqueta automática só
+  naquela etapa. Ex.: "Retorno".
+
 ### Passo a passo com imagens (carrossel)
 
 Etapas com imagem (opcional), título e texto, mostradas 3 por vez no

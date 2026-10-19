@@ -1,7 +1,7 @@
 import { Fragment, Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { requestNow } from "@/lib/request-time";
-import type { Block, CtaAction } from "@/lib/cms/blocks";
+import { stepLabelText, type Block, type CtaAction } from "@/lib/cms/blocks";
 import { blockStyleAttrs } from "@/lib/cms/block-style";
 import { publicPath } from "@/lib/cms/content-types";
 import { formatCents } from "@/lib/cms/format";
@@ -232,7 +232,7 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
             <ol className="card-grid">
               {b.items.map((it, i) => (
                 <li key={i} className="blk-card rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
-                  <span className="blk-accent text-sm font-semibold text-gold-700">Etapa {i + 1}</span>
+                  {stepLabelText(b, it, i, false) ? <span className="blk-accent text-sm font-semibold text-gold-700">{stepLabelText(b, it, i, false)}</span> : null}
                   <h3 className="mt-1 font-semibold text-brand-800">{it.title}</h3>
                   {it.text ? <p className="mt-1 text-sm text-muted">{it.text}</p> : null}
                 </li>
@@ -253,7 +253,8 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
     case "care_flow":
       return (
         <section aria-labelledby={b.heading ? headingId : undefined} className="mx-auto w-full max-w-6xl px-4 py-14 sm:py-20">
-          <CareFlow eyebrow={b.eyebrow} heading={b.heading} headingId={headingId} items={b.items} />
+          <CareFlow eyebrow={b.eyebrow} heading={b.heading} headingId={headingId}
+            items={b.items.map((it, i) => ({ ...it, label: stepLabelText(b, it, i) }))} />
         </section>
       );
     case "steps_carousel":
@@ -271,7 +272,9 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
                 <article key={it.key} className="blk-card flex w-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface-raised text-center">
                   {media ? <div className="[&_img]:rounded-none"><Picture media={media} sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" /></div> : null}
                   <div className="flex flex-1 flex-col gap-1 p-5">
-                    <span className="blk-accent text-sm font-semibold tracking-wide text-gold-700 uppercase">Etapa {String(i + 1).padStart(2, "0")}</span>
+                    {stepLabelText(b, it, i) ? (
+                      <span className="blk-accent text-sm font-semibold tracking-wide text-gold-700 uppercase">{stepLabelText(b, it, i)}</span>
+                    ) : null}
                     <h3 className="text-lg font-semibold text-brand-800">{it.title}</h3>
                     {it.text ? <p className="text-sm text-muted">{it.text}</p> : null}
                   </div>
@@ -295,7 +298,8 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
       return (
         <section aria-labelledby={headingId} className={section}>
           <Heading text={b.heading ?? "Perguntas frequentes"} id={headingId} />
-          <div className="mx-auto flex max-w-3xl flex-col gap-2">
+          {/* Duas colunas no computador; items-start: abrir uma pergunta não estica a vizinha. */}
+          <div className="mx-auto grid max-w-3xl items-start gap-2 lg:max-w-none lg:grid-cols-2 lg:gap-x-6">
             {faqs.map((f) => (
               <details key={f.id} className="blk-card rounded-[var(--radius-card)] border border-line bg-surface-raised p-4">
                 <summary className="min-h-11 cursor-pointer content-center font-semibold text-brand-800">{f.title}</summary>

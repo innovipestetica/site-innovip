@@ -73,3 +73,37 @@ describe("passo a passo com imagens e galeria", () => {
     expect(html({ type: "gallery", mediaIds: [A], layout: "carousel", autoplay: false, intervalSeconds: 5 })).toContain('aria-roledescription="carrossel"');
   });
 });
+
+describe("etiqueta das etapas", () => {
+  const steps = [{ title: "Um" }, { title: "Dois", label: "Bônus" }];
+  it("padrão “Etapa N”, palavra trocada, texto próprio por etapa ou nenhuma", () => {
+    expect(html({ type: "steps", showLabel: true, items: steps })).toContain(">Etapa 1<");
+    const passo = html({ type: "steps", showLabel: true, labelPrefix: "Passo", items: steps });
+    expect(passo).toContain(">Passo 1<");
+    expect(passo).toContain(">Bônus<");
+    expect(passo).not.toContain("Passo 2");
+    const none = html({ type: "steps", showLabel: false, items: steps });
+    expect(none).not.toContain("Etapa");
+    expect(none).not.toContain("Bônus");
+    expect(html({ type: "steps", items: [{ title: "Antigo" }] })).toContain(">Etapa 1<"); // conteúdo salvo antes da opção
+  });
+
+  it("vale também no fluxo e no passo a passo com imagens", () => {
+    const flow = html({ type: "care_flow", showLabel: true, labelPrefix: "Passo", items: [flowItems[0], { ...flowItems[1], label: "Conversa" }] });
+    expect(flow).toContain(">Passo 01<");
+    expect(flow).toContain(">Conversa<");
+    expect(html({ type: "care_flow", showLabel: false, items: flowItems })).not.toContain("Etapa 0");
+    const sc = html({ type: "steps_carousel", showLabel: false, autoplay: false, intervalSeconds: 5, items: [{ key: "s00001", title: "A" }] });
+    expect(sc).not.toContain("Etapa 01");
+  });
+});
+
+describe("perguntas frequentes", () => {
+  it("duas colunas no computador", () => {
+    const F = "aaaaaaaa-1111-4222-8333-444444444444";
+    const faqCtx = { ...ctx, entries: new Map([[F, { id: F, type: "faq", slug: "x", title: "Dói?", summary: null, data: { answer: "Pouco." }, published: true }]]) } as unknown as RenderContext;
+    const out = renderToStaticMarkup(<RenderBlocks blocks={[{ id: "abcdef1", type: "faq_list", entryIds: [F] } as Block]} ctx={faqCtx} />);
+    expect(out).toContain("lg:grid-cols-2");
+    expect(out).toContain("Dói?");
+  });
+});

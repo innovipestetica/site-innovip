@@ -50,6 +50,25 @@ export const FLOW_ICON_KEYS = [
 
 const listItem = z.object({ title: shortText(80), text: optionalText(400) });
 
+/**
+ * Etiqueta das etapas ("Etapa 01"): palavra comum + número (labelPrefix,
+ * padrão "Etapa"), texto próprio por etapa (item.label) ou nenhuma
+ * (showLabel = false).
+ */
+const stepLabel = { showLabel: z.boolean().default(true), labelPrefix: optionalText(30) };
+const itemLabel = optionalText(40);
+
+export function stepLabelText(
+  block: { showLabel?: boolean; labelPrefix?: string },
+  item: { label?: string },
+  index: number,
+  pad = true,
+): string | null {
+  if (block.showLabel === false) return null;
+  if (item.label) return item.label;
+  return `${block.labelPrefix || "Etapa"} ${pad ? String(index + 1).padStart(2, "0") : index + 1}`;
+}
+
 export const blockSchemas = {
   hero: z.object({
     heading: shortText(120),
@@ -104,13 +123,15 @@ export const blockSchemas = {
   }),
   steps: z.object({
     heading: optionalText(120),
-    items: z.array(listItem).min(1).max(12),
+    ...stepLabel,
+    items: z.array(listItem.extend({ label: itemLabel })).min(1).max(12),
   }),
   /** Passo a passo com imagem por etapa, em carrossel (3 por vez). */
   steps_carousel: z.object({
     heading: optionalText(120),
+    ...stepLabel,
     items: z
-      .array(z.object({ key: blockId, title: shortText(80), text: optionalText(400), mediaId: uuid.optional() }))
+      .array(z.object({ key: blockId, label: itemLabel, title: shortText(80), text: optionalText(400), mediaId: uuid.optional() }))
       .min(1)
       .max(12),
     autoplay: z.boolean().default(true),
@@ -120,8 +141,9 @@ export const blockSchemas = {
   care_flow: z.object({
     eyebrow: optionalText(60),
     heading: optionalText(120),
+    ...stepLabel,
     items: z
-      .array(z.object({ key: blockId, icon: z.enum(FLOW_ICON_KEYS), title: shortText(80), text: optionalText(240) }))
+      .array(z.object({ key: blockId, icon: z.enum(FLOW_ICON_KEYS), label: itemLabel, title: shortText(80), text: optionalText(240) }))
       .min(2)
       .max(6),
   }),

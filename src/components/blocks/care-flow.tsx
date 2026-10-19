@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { FlowIcon, type FlowIconName } from "./flow-icons";
 
-type Item = { key: string; icon: FlowIconName; title: string; text?: string };
+type Item = { key: string; icon: FlowIconName; title: string; text?: string; /** "Etapa 01" já resolvido (null = sem etiqueta). */ label: string | null };
 type Segment = { d: string; arrow: string };
 
 const LG_COLS: Record<number, string> = {
@@ -167,9 +167,9 @@ export function CareFlow({ eyebrow, heading, headingId, items }: { eyebrow?: str
                     {i + 1}
                   </span>
                 </div>
-                <p className="blk-accent text-xs font-semibold tracking-[0.18em] text-gold-700 uppercase">
-                  Etapa {String(i + 1).padStart(2, "0")}
-                </p>
+                {it.label ? (
+                  <p className="blk-accent text-xs font-semibold tracking-[0.18em] text-gold-700 uppercase">{it.label}</p>
+                ) : null}
                 <h3 className="mt-2 text-xl font-bold text-brand-800">{it.title}</h3>
                 {it.text ? <p className="mt-3 text-[0.95rem] leading-relaxed text-muted">{it.text}</p> : null}
               </div>

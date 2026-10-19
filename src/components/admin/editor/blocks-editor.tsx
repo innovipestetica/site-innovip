@@ -35,16 +35,18 @@ function emptyBlock(type: BlockType): Block {
     case "cta":
       return { id, type, heading: "", action: { kind: "evaluation", label: "Agendar avaliação" } };
     case "features":
-    case "steps":
       return { id, type, items: [{ title: "" }] };
+    case "steps":
+      return { id, type, showLabel: true, items: [{ title: "" }] };
     case "steps_carousel":
-      return { id, type, items: [{ key: newBlockId(), title: "" }], autoplay: true, intervalSeconds: 5 };
+      return { id, type, showLabel: true, items: [{ key: newBlockId(), title: "" }], autoplay: true, intervalSeconds: 5 };
     case "care_flow":
       return {
         id,
         type,
         eyebrow: "Cuidado em cada etapa",
         heading: "Como funciona o atendimento",
+        showLabel: true,
         items: [
           { key: newBlockId(), icon: "calendario-relogio", title: "Agende sua avaliação", text: "Escolha o melhor dia e horário pelo nosso canal de atendimento." },
           { key: newBlockId(), icon: "pessoa-conversa", title: "Avaliação individual", text: "Conversamos sobre seus objetivos, histórico de saúde e expectativas." },
@@ -205,13 +207,37 @@ function CtaEditor(props: { label: string; value: CtaAction | undefined; onChang
   );
 }
 
-function ItemsEditor(props: { items: { title: string; text?: string }[]; onChange: (items: { title: string; text?: string }[]) => void; issue?: string }) {
+/** Etiqueta das etapas: liga/desliga e troca a palavra ("Etapa" → "Passo"…). */
+function StepLabelFields(props: { showLabel?: boolean; labelPrefix?: string; onChange: (v: { showLabel: boolean; labelPrefix?: string }) => void }) {
+  const show = props.showLabel !== false;
+  return (
+    <div className="grid gap-4 rounded-lg border border-line p-3 sm:grid-cols-2">
+      <Checkbox label="Mostrar etiqueta nas etapas" checked={show}
+        hint="Ex.: “Etapa 01”. Desmarque para não mostrar nada."
+        onChange={(showLabel) => props.onChange({ showLabel, labelPrefix: props.labelPrefix })} />
+      {show ? (
+        <TextInput label="Palavra da etiqueta" value={props.labelPrefix} maxLength={30}
+          hint="O número entra depois. Vazio = “Etapa”. Ex.: “Passo” → “Passo 01”."
+          onChange={(labelPrefix) => props.onChange({ showLabel: true, labelPrefix })} />
+      ) : null}
+    </div>
+  );
+}
+
+type ListItem = { title: string; text?: string; label?: string };
+
+function ItemsEditor(props: { items: ListItem[]; onChange: (items: ListItem[]) => void; issue?: string; withLabel?: boolean }) {
   const groupId = useId();
   return (
     <fieldset className="flex flex-col gap-3" aria-describedby={props.issue ? `${groupId}-erro` : undefined}>
       <legend className="text-sm font-semibold">Itens</legend>
       {props.items.map((item, i) => (
         <div key={i} className="flex flex-col gap-2 rounded-lg border border-line p-3">
+          {props.withLabel ? (
+            <TextInput label={`Item ${i + 1}: etiqueta própria (opcional)`} value={item.label} maxLength={40}
+              hint="Substitui a etiqueta automática só neste item."
+              onChange={(label) => props.onChange(props.items.map((it, j) => (j === i ? { ...it, label } : it)))} />
+          ) : null}
           <TextInput label={`Item ${i + 1}: título`} value={item.title} maxLength={80}
             onChange={(t) => props.onChange(props.items.map((it, j) => (j === i ? { ...it, title: t ?? "" } : it)))} />
           <TextArea label={`Item ${i + 1}: texto`} value={item.text} maxLength={400} rows={2}
@@ -292,7 +318,12 @@ function BlockFields(props: {
       ) : null}
 
       {b.type === "features" || b.type === "steps" ? (
-        <ItemsEditor items={b.items} issue={issue("items")} onChange={(items) => onChange({ ...b, items })} />
+        <>
+          {b.type === "steps" ? (
+            <StepLabelFields showLabel={b.showLabel} labelPrefix={b.labelPrefix} onChange={(v) => onChange({ ...b, ...v })} />
+          ) : null}
+          <ItemsEditor items={b.items} issue={issue("items")} withLabel={b.type === "steps"} onChange={(items) => onChange({ ...b, items } as Block)} />
+        </>
       ) : null}
 
       {b.type === "notice" ? (
@@ -400,6 +431,7 @@ function CareFlowEditor(props: { block: CareFlowBlock; onChange: (b: Block) => v
       <TextInput label="Chamada acima do título (opcional)" value={b.eyebrow} maxLength={60}
         hint="Texto pequeno em dourado, ex.: “Cuidado em cada etapa”." onChange={(eyebrow) => onChange({ ...b, eyebrow })} />
       <TextInput label="Título" value={b.heading} maxLength={120} onChange={(heading) => onChange({ ...b, heading })} />
+      <StepLabelFields showLabel={b.showLabel} labelPrefix={b.labelPrefix} onChange={(v) => onChange({ ...b, ...v })} />
       {props.issue("items") ? <p className="text-sm text-danger">{props.issue("items")}</p> : null}
       <ol className="flex flex-col gap-3">
         {b.items.map((it, i) => (
@@ -423,6 +455,11 @@ function CareFlowEditor(props: { block: CareFlowBlock; onChange: (b: Block) => v
                   onChange={(icon) => icon && update(i, { icon })} />
               </div>
             </div>
+            {b.showLabel !== false ? (
+              <TextInput label="Etiqueta própria (opcional)" value={it.label} maxLength={40}
+                hint={`Substitui “${b.labelPrefix || "Etapa"} ${String(i + 1).padStart(2, "0")}” só nesta etapa.`}
+                onChange={(label) => update(i, { label })} />
+            ) : null}
             <TextInput label="Título" value={it.title} maxLength={80} error={props.issue(`items.${i}.title`)}
               onChange={(title) => update(i, { title: title ?? "" })} />
             <TextArea label="Descrição (opcional)" value={it.text} maxLength={240} rows={2} onChange={(text) => update(i, { text })} />
@@ -460,6 +497,7 @@ function StepsCarouselEditor(props: {
   };
   return (
     <div className="flex flex-col gap-4">
+      <StepLabelFields showLabel={b.showLabel} labelPrefix={b.labelPrefix} onChange={(v) => onChange({ ...b, ...v })} />
       <div className="grid gap-4 sm:grid-cols-2">
         <Checkbox label="Passar automaticamente" checked={b.autoplay}
           hint="Sempre com botão de pausar; não passa sozinho para quem pede menos movimento."
@@ -483,6 +521,11 @@ function StepsCarouselEditor(props: {
             </div>
             <MediaPicker label="Imagem (opcional)" value={it.mediaId} options={props.mediaOptions}
               hint="Formato paisagem funciona melhor (ex.: 1200×800)." onChange={(mediaId) => update(i, { mediaId })} />
+            {b.showLabel !== false ? (
+              <TextInput label="Etiqueta própria (opcional)" value={it.label} maxLength={40}
+                hint={`Substitui “${b.labelPrefix || "Etapa"} ${String(i + 1).padStart(2, "0")}” só nesta etapa.`}
+                onChange={(label) => update(i, { label })} />
+            ) : null}
             <TextInput label="Título" value={it.title} maxLength={80} error={props.issue(`items.${i}.title`)}
               onChange={(title) => update(i, { title: title ?? "" })} />
             <TextArea label="Texto (opcional)" value={it.text} maxLength={400} rows={2} onChange={(text) => update(i, { text })} />
