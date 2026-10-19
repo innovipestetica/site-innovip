@@ -67,7 +67,7 @@ export async function PromotionStatus({
         {others.length ? (
           <div>
             <h2 className="mb-3 text-center text-xl font-bold text-brand-800">Promoções vigentes</h2>
-            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="card-grid">
               {others.map((o) => <PromotionCard key={o.entry.id} promotion={o} ctx={ctx} />)}
             </ul>
           </div>

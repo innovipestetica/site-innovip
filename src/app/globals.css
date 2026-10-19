@@ -77,6 +77,30 @@
 }
 
 @layer components {
+  /* Grade de caixas (diferenciais, etapas, tratamentos, promoções…): até 3 por
+     linha (2 em telas médias) e a última linha, se incompleta, CENTRALIZADA
+     (com 5 caixas: 3 em cima, 2 centralizadas embaixo). Intervalo em --card-gap. */
+  .card-grid {
+    --card-gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--card-gap);
+  }
+  .card-grid > * {
+    width: 100%;
+  }
+  @media (width >= 40rem) {
+    .card-grid > * {
+      width: calc((100% - var(--card-gap)) / 2);
+    }
+  }
+  @media (width >= 64rem) {
+    .card-grid > * {
+      width: calc((100% - 2 * var(--card-gap)) / 3);
+    }
+  }
+
   .skip-link {
     position: absolute;
     left: 1rem;

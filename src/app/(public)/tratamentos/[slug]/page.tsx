@@ -122,7 +122,7 @@ async function RelatedPromotions({ treatmentId, ctx }: { treatmentId: string; ct
   return (
     <section aria-labelledby="promocoes-relacionadas" className="mx-auto w-full max-w-5xl px-4 py-8">
       <h2 id="promocoes-relacionadas" className="mb-6 text-center text-2xl font-bold text-brand-800">Promoções vigentes</h2>
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="card-grid">
         {related.map((p) => <PromotionCard key={p.entry.id} promotion={p} ctx={ctx} />)}
       </ul>
     </section>

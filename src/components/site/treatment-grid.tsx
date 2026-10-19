@@ -14,7 +14,7 @@ export function TreatmentGrid({
 }) {
   if (items.length === 0) return <p className="text-center text-muted" role="status">{emptyText}</p>;
   return (
-    <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="card-grid [--card-gap:1.25rem]">
       {items.map((t) => {
         const cover = typeof t.data.mediaId === "string" ? media.get(t.data.mediaId) : undefined;
         return (

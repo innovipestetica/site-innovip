@@ -62,7 +62,7 @@ async function ActiveList({ ctx }: { ctx: RenderContext }) {
     );
   }
   return (
-    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="card-grid">
       {active.map((p) => <PromotionCard key={p.entry.id} promotion={p} ctx={ctx} />)}
     </ul>
   );

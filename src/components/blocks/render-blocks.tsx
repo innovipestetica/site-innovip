@@ -201,7 +201,7 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
         <section aria-labelledby={b.heading ? headingId : undefined} className={section}>
           <Heading text={b.heading} id={headingId} />
           {b.type === "steps" ? (
-            <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ol className="card-grid">
               {b.items.map((it, i) => (
                 <li key={i} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
                   <span className="text-sm font-semibold text-gold-700">Etapa {i + 1}</span>
@@ -211,7 +211,7 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
               ))}
             </ol>
           ) : (
-            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="card-grid">
               {b.items.map((it, i) => (
                 <li key={i} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
                   <h3 className="font-semibold text-brand-800">{it.title}</h3>
@@ -255,7 +255,7 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
       return (
         <section aria-labelledby={b.heading ? headingId : undefined} className={section}>
           <Heading text={b.heading} id={headingId} />
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="card-grid">
             {items.map((e) =>
               b.type === "testimonial_list" ? (
                 <li key={e.id} className="rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-center">
@@ -375,7 +375,7 @@ async function ActivePromotionList(props: { heading?: string; limit: number; hea
   return (
     <section aria-labelledby={props.headingId} className={section}>
       <Heading text={props.heading ?? "Promoções"} id={props.headingId} />
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="card-grid">
         {promos.map((p) => <PromotionCard key={p.entry.id} promotion={p} ctx={props.ctx} />)}
       </ul>
     </section>

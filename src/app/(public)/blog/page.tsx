@@ -28,7 +28,7 @@ export default async function BlogPage() {
       <Breadcrumbs items={[{ label: "Início", href: "/" }, { label: "Blog", href: "/blog" }]} />
       <div className="mx-auto w-full max-w-5xl px-4 py-6">
         <h1 className="text-center text-3xl font-bold text-brand-800 sm:text-5xl">Blog</h1>
-        <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="card-grid mt-8 [--card-gap:1.5rem]">
           {posts.map((p) => {
             const cover = typeof p.data.mediaId === "string" ? ctx.media.get(p.data.mediaId) : undefined;
             return (
