@@ -17,8 +17,9 @@ function open(message: string, opts: Options): Promise<string | null> {
   return new Promise((resolve) => {
     const opener = document.activeElement as HTMLElement | null;
     const dialog = document.createElement("dialog");
+    // m-auto: o reset do Tailwind zera a margem que centraliza o <dialog>.
     dialog.className =
-      "w-[min(92vw,28rem)] rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-ink shadow-xl backdrop:bg-black/40";
+      "m-auto w-[min(92vw,28rem)] rounded-[var(--radius-card)] border border-line bg-surface-raised p-5 text-ink shadow-xl backdrop:bg-black/40";
     dialog.setAttribute("aria-label", opts.input ? opts.input.label : "Confirmação");
 
     const form = document.createElement("form");
