@@ -82,6 +82,19 @@ esse endereço na bio do Instagram, em QR codes e campanhas: se a plataforma
 mudar, basta trocar no painel. Clicar não é agendamento confirmado: a equipe
 confirma o horário.
 
+### Imagens clicáveis
+
+As imagens dos blocos **Imagem**, **Destaque**, **Galeria** e **Carrossel de
+banners** podem levar a um link: preencha o campo "Link ao clicar…" logo abaixo
+da imagem (na Galeria, um campo por imagem). Vazio = imagem sem link.
+
+- Aceita `https://…` (abre em nova aba), caminhos do site (`/tratamentos`,
+  `/promocoes/…`, `/agendar-avaliacao`), `tel:` e `mailto:`.
+- No banner **sem botão**, o banner inteiro vira o link; **com botão**, só a
+  imagem leva ao link e o botão continua com o destino dele.
+- Quem usa leitor de tela ouve o texto alternativo da imagem como nome do link:
+  escreva em Mídia um texto que faça sentido (ex.: "Promoção de drenagem").
+
 ### Carrossel de banners
 
 Para colocar vários banners que passam sozinhos (ou que a pessoa troca pelas

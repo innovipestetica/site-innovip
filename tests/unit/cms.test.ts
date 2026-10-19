@@ -181,3 +181,25 @@ describe("carrossel de banners", () => {
     expect(validatePayload("treatment", { ...initialPayload("treatment", "T", () => "abcdef3"), blocks: [block] }).ok).toBe(false);
   });
 });
+
+describe("imagens com link", () => {
+  const media = "7d9f1c2a-1b2c-4d3e-8f90-112233445566";
+  const ok = (b: object) => blockSchema.safeParse({ id: "abcdef1", ...b }).success;
+
+  it("aceita link seguro em imagem, destaque, banner e galeria", () => {
+    expect(ok({ type: "image", mediaId: media, link: "/tratamentos" })).toBe(true);
+    expect(ok({ type: "image", mediaId: media, link: "https://wa.me/5511999999999" })).toBe(true);
+    expect(ok({ type: "hero", heading: "Oi", mediaId: media, imageLink: "/promocoes" })).toBe(true);
+    expect(ok({ type: "banner_carousel", slides: [{ key: "slide100", mediaId: media, link: "/agendar-avaliacao" }] })).toBe(true);
+    expect(ok({ type: "gallery", mediaIds: [media], links: { [media]: "https://instagram.com/innovip" } })).toBe(true);
+  });
+
+  it("recusa links perigosos e chave de galeria que não é imagem", () => {
+    for (const href of ["javascript:alert(1)", "//evil.com", "data:text/html,oi"]) {
+      expect(ok({ type: "image", mediaId: media, link: href })).toBe(false);
+      expect(ok({ type: "banner_carousel", slides: [{ key: "slide100", mediaId: media, link: href }] })).toBe(false);
+      expect(ok({ type: "gallery", mediaIds: [media], links: { [media]: href } })).toBe(false);
+    }
+    expect(ok({ type: "gallery", mediaIds: [media], links: { "nao-e-id": "/x" } })).toBe(false);
+  });
+});

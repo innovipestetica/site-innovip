@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { requestNow } from "@/lib/request-time";
 import type { Block, CtaAction } from "@/lib/cms/blocks";
@@ -45,6 +45,24 @@ export function Picture({ media, sizes, priority }: { media: RenderMedia; sizes:
       decoding="async"
       className="h-auto w-full rounded-[var(--radius-card)] object-cover"
     />
+  );
+}
+
+/**
+ * Imagem clicável (link opcional definido no painel). O nome do link vem do
+ * texto alternativo da imagem; externos abrem em nova aba e avisam o leitor de tela.
+ */
+function ImageLink({ href, children, className = "" }: { href?: string; children: ReactNode; className?: string }) {
+  if (!href) return <>{children}</>;
+  const cls = `block rounded-[var(--radius-card)] transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-700 ${className}`;
+  return href.startsWith("https://") ? (
+    <a href={href} className={cls} target="_blank" rel="noopener noreferrer" data-image-link="">
+      {children}<span className="sr-only"> (abre em nova aba)</span>
+    </a>
+  ) : href.startsWith("/") ? (
+    <Link href={href} className={cls} data-image-link="">{children}</Link>
+  ) : (
+    <a href={href} className={cls} data-image-link="">{children}</a>
   );
 }
 
@@ -136,7 +154,11 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
                 {b.secondary ? <CtaButton action={b.secondary} ctx={ctx} variant="secondary" /> : null}
               </div>
             </div>
-            {media ? <div className="w-full max-w-4xl"><Picture media={media} sizes="(min-width: 1024px) 896px, 100vw" priority={first} /></div> : null}
+            {media ? (
+              <div className="w-full max-w-4xl">
+                <ImageLink href={b.imageLink}><Picture media={media} sizes="(min-width: 1024px) 896px, 100vw" priority={first} /></ImageLink>
+              </div>
+            ) : null}
             {b.mediaId && !media ? <PreviewNote ctx={ctx}>imagem ainda não disponível.</PreviewNote> : null}
           </div>
         </section>
@@ -180,7 +202,7 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
       if (!media) return <PreviewNote ctx={ctx}>imagem ainda não disponível.</PreviewNote>;
       return (
         <figure className={section}>
-          <Picture media={media} sizes="(min-width: 1024px) 1024px, 100vw" priority={first} />
+          <ImageLink href={b.link}><Picture media={media} sizes="(min-width: 1024px) 1024px, 100vw" priority={first} /></ImageLink>
           {b.caption ? <figcaption className="mt-2 text-center text-sm text-muted">{b.caption}</figcaption> : null}
         </figure>
       );
@@ -318,7 +340,11 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
         <section aria-labelledby={b.heading ? headingId : undefined} className={section}>
           <Heading text={b.heading} id={headingId} />
           <ul className="grid grid-cols-2 gap-3 md:grid-cols-3">
-            {items.map((m) => <li key={m.id}><Picture media={m} sizes="(min-width: 768px) 33vw, 50vw" /></li>)}
+            {items.map((m) => (
+              <li key={m.id}>
+                <ImageLink href={b.links?.[m.id]}><Picture media={m} sizes="(min-width: 768px) 33vw, 50vw" /></ImageLink>
+              </li>
+            ))}
           </ul>
         </section>
       );
@@ -420,32 +446,36 @@ function BannerSlide({
 }) {
   const largest = desktop.sources.at(-1)!;
   const hasText = !!(slide.title || slide.text || slide.action);
-  return (
-    <div className="relative">
-      <picture>
-        {mobile ? (
-          <source
-            media="(max-width: 767px)"
-            srcSet={mobile.sources.map((s) => `${s.url} ${s.width}w`).join(", ")}
-            sizes="100vw"
-            width={mobile.width ?? undefined}
-            height={mobile.height ?? undefined}
-          />
-        ) : null}
-        {/* Variantes já otimizadas no upload (dentro de <picture>, o lint não exige next/image). */}
-        <img
-          src={largest.url}
-          srcSet={desktop.sources.map((s) => `${s.url} ${s.width}w`).join(", ")}
-          sizes="(min-width: 1152px) 1152px, 100vw"
-          alt={desktop.alt}
-          width={desktop.width ?? undefined}
-          height={desktop.height ?? undefined}
-          loading={priority ? "eager" : "lazy"}
-          fetchPriority={priority ? "high" : undefined}
-          decoding="async"
-          className="h-auto w-full object-cover sm:rounded-[var(--radius-card)]"
+  const wholeSlide = slide.link && !slide.action;
+  const picture = (
+    <picture>
+      {mobile ? (
+        <source
+          media="(max-width: 767px)"
+          srcSet={mobile.sources.map((s) => `${s.url} ${s.width}w`).join(", ")}
+          sizes="100vw"
+          width={mobile.width ?? undefined}
+          height={mobile.height ?? undefined}
         />
-      </picture>
+      ) : null}
+      {/* Variantes já otimizadas no upload (dentro de <picture>, o lint não exige next/image). */}
+      <img
+        src={largest.url}
+        srcSet={desktop.sources.map((s) => `${s.url} ${s.width}w`).join(", ")}
+        sizes="(min-width: 1152px) 1152px, 100vw"
+        alt={desktop.alt}
+        width={desktop.width ?? undefined}
+        height={desktop.height ?? undefined}
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : undefined}
+        decoding="async"
+        className="h-auto w-full object-cover sm:rounded-[var(--radius-card)]"
+      />
+    </picture>
+  );
+  const content = (
+    <>
+      {wholeSlide ? picture : <ImageLink href={slide.link}>{picture}</ImageLink>}
       {hasText ? (
         // Computador: painel centralizado sobre a imagem. Celular: sobre a parte
         // de baixo só quando há imagem própria (alta); com a imagem larga, o
@@ -466,6 +496,12 @@ function BannerSlide({
           </div>
         </div>
       ) : null}
-    </div>
+    </>
+  );
+  // Sem botão, o banner inteiro é o link; com botão, só a imagem (link dentro de link é inválido).
+  return wholeSlide ? (
+    <ImageLink href={slide.link} className="relative">{content}</ImageLink>
+  ) : (
+    <div className="relative">{content}</div>
   );
 }

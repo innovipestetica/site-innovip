@@ -228,6 +228,10 @@ function BlockFields(props: {
           <TextInput label="Título principal" value={b.heading} maxLength={120} error={issue("heading")} onChange={(v) => onChange({ ...b, heading: v ?? "" })} />
           <TextArea label="Subtítulo" value={b.subheading} maxLength={300} onChange={(v) => onChange({ ...b, subheading: v })} />
           <MediaPicker label="Imagem" value={b.mediaId} options={props.mediaOptions} onChange={(v) => onChange({ ...b, mediaId: v })} />
+          {b.mediaId ? (
+            <TextInput label="Link ao clicar na imagem" value={b.imageLink} maxLength={500} error={issue("imageLink")}
+              hint={"Opcional. https://…, caminho do site (/tratamentos), tel: ou mailto:. Links externos abrem em nova aba."} onChange={(imageLink) => onChange({ ...b, imageLink })} />
+          ) : null}
           <CtaEditor label="Botão principal" optional value={b.primary} onChange={(v) => onChange({ ...b, primary: v })} issue={issue("primary.href") ?? issue("primary.label")} />
           <CtaEditor label="Botão secundário" optional value={b.secondary} onChange={(v) => onChange({ ...b, secondary: v })} issue={issue("secondary.href") ?? issue("secondary.label")} />
         </>
@@ -250,6 +254,8 @@ function BlockFields(props: {
         <>
           <MediaPicker label="Imagem" value={b.mediaId || undefined} options={props.mediaOptions} error={issue("mediaId")} onChange={(v) => onChange({ ...b, mediaId: v ?? "" })} />
           <TextInput label="Legenda (opcional)" value={b.caption} maxLength={200} onChange={(v) => onChange({ ...b, caption: v })} />
+          <TextInput label="Link ao clicar na imagem" value={b.link} maxLength={500} error={issue("link")}
+            hint={"Opcional. https://…, caminho do site (/tratamentos), tel: ou mailto:. Links externos abrem em nova aba."} onChange={(link) => onChange({ ...b, link })} />
         </>
       ) : null}
 
@@ -298,7 +304,20 @@ function BlockFields(props: {
       ) : null}
 
       {b.type === "gallery" ? (
-        <MediaMultiPicker label="Imagens" value={b.mediaIds} options={props.mediaOptions} error={issue("mediaIds")} onChange={(mediaIds) => onChange({ ...b, mediaIds })} />
+        <>
+          <MediaMultiPicker label="Imagens" value={b.mediaIds} options={props.mediaOptions} error={issue("mediaIds")}
+            onChange={(mediaIds) => onChange({ ...b, mediaIds, links: pickLinks(b.links, mediaIds) })} />
+          {b.mediaIds.length ? (
+            <fieldset className="flex flex-col gap-3">
+              <legend className="text-sm font-semibold">Links das imagens (opcionais)</legend>
+              {b.mediaIds.map((id, i) => (
+                <TextInput key={id} label={`Imagem ${i + 1}: ${mediaName(props.mediaOptions, id)}`} value={b.links?.[id]} maxLength={500}
+                  error={issue(`links.${id}`)} hint={i === 0 ? "Opcional. https://…, caminho do site (/tratamentos), tel: ou mailto:. Links externos abrem em nova aba." : undefined}
+                  onChange={(href) => onChange({ ...b, links: pickLinks({ ...b.links, [id]: href ?? "" }, b.mediaIds) })} />
+              ))}
+            </fieldset>
+          ) : null}
+        </>
       ) : null}
 
       {b.type === "contact" ? (
@@ -311,6 +330,17 @@ function BlockFields(props: {
       {b.type === "category_list" ? <p className="text-sm text-muted">Mostra as categorias publicadas, na ordem definida em Categorias e objetivos.</p> : null}
     </>
   );
+}
+
+/** Mantém só links preenchidos de imagens ainda selecionadas. */
+function pickLinks(links: Record<string, string> | undefined, ids: string[]) {
+  const kept = Object.fromEntries(Object.entries(links ?? {}).filter(([id, href]) => ids.includes(id) && href.trim()));
+  return Object.keys(kept).length ? kept : undefined;
+}
+
+function mediaName(options: MediaOption[], id: string) {
+  const alt = options.find((m) => m.id === id)?.alt ?? "imagem";
+  return alt.length > 50 ? `${alt.slice(0, 50)}…` : alt;
 }
 
 type CarouselBlock = Extract<Block, { type: "banner_carousel" }>;
@@ -371,6 +401,8 @@ function BannerSlidesEditor(props: {
             <CtaEditor label="Botão (opcional)" optional value={slide.action}
               issue={props.issue(`slides.${i}.action.href`) ?? props.issue(`slides.${i}.action.label`)}
               onChange={(action) => update(i, { action })} />
+            <TextInput label="Link ao clicar no banner" value={slide.link} maxLength={500} error={props.issue(`slides.${i}.link`)}
+              hint={"Opcional. https://…, caminho do site (/tratamentos), tel: ou mailto:. Links externos abrem em nova aba."} onChange={(link) => update(i, { link })} />
           </li>
         ))}
       </ol>

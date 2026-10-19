@@ -28,6 +28,9 @@ export const ctaActionSchema = z.discriminatedUnion("kind", [
 ]);
 export type CtaAction = z.infer<typeof ctaActionSchema>;
 
+/** Link opcional ao clicar numa imagem (mesmas regras dos links dos botões). */
+const imageLink = safeHrefSchema.optional();
+
 const listItem = z.object({ title: shortText(80), text: optionalText(400) });
 
 export const blockSchemas = {
@@ -35,6 +38,7 @@ export const blockSchemas = {
     heading: shortText(120),
     subheading: optionalText(300),
     mediaId: uuid.optional(),
+    imageLink,
     primary: ctaActionSchema.optional(),
     secondary: ctaActionSchema.optional(),
   }),
@@ -55,6 +59,7 @@ export const blockSchemas = {
           title: optionalText(120),
           text: optionalText(240),
           action: ctaActionSchema.optional(),
+          link: imageLink,
         }),
       )
       .min(1)
@@ -69,6 +74,7 @@ export const blockSchemas = {
   image: z.object({
     mediaId: uuid,
     caption: optionalText(200),
+    link: imageLink,
   }),
   cta: z.object({
     heading: shortText(120),
@@ -117,6 +123,8 @@ export const blockSchemas = {
   gallery: z.object({
     heading: optionalText(120),
     mediaIds: z.array(uuid).min(1).max(24),
+    /** Link por imagem: chave = id da imagem. */
+    links: z.record(uuid, safeHrefSchema).optional(),
   }),
   contact: z.object({
     heading: optionalText(120),
