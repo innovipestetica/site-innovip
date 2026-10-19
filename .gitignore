@@ -51,3 +51,6 @@ next-env.d.ts
 # supabase cli
 supabase/.temp/
 supabase/.branches/
+
+# backups locais (originais de mídia e dados internos)
+/backups/
