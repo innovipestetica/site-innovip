@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { BLOCK_TYPES, blockSchema, newBlockId } from "@/lib/cms/blocks";
 import {
@@ -15,8 +15,12 @@ import {
 } from "@/lib/cms/rich-text";
 
 describe("biblioteca de blocos", () => {
-  it("lista de tipos bate com a migração do banco", () => {
-    const sql = readFileSync("supabase/migrations/20261019090000_cms_content.sql", "utf8");
+  it("lista de tipos bate com a migração mais recente do banco", () => {
+    const files = readdirSync("supabase/migrations").filter((f) => f.endsWith(".sql")).sort();
+    const sql = files
+      .map((f) => readFileSync(`supabase/migrations/${f}`, "utf8"))
+      .filter((s) => s.includes("cms_blocks_are_valid(p_blocks jsonb)"))
+      .at(-1)!;
     const match = sql.match(/b ->> 'type' = any \(array\[([\s\S]*?)\]\)/);
     expect(match).toBeTruthy();
     const dbTypes = [...match![1]!.matchAll(/'([a-z_]+)'/g)].map((m) => m[1]).sort();
@@ -145,5 +149,35 @@ describe("destino do botão Agendar avaliação (agendamento externo)", async ()
   it("rótulo personalizado", () => {
     const t = evaluationTarget({ whatsapp: "5511999999999", evaluation_cta: { mode: "whatsapp", label: "Quero ser atendida" } });
     expect(t?.label).toBe("Quero ser atendida");
+  });
+});
+
+describe("carrossel de banners", () => {
+  const media = "7d9f1c2a-1b2c-4d3e-8f90-112233445566";
+  const slide = (n: number) => ({ key: `slide${n}00`, mediaId: media });
+
+  it("aceita de 1 a 8 banners, com padrões de autoplay e intervalo", () => {
+    const parsed = blockSchema.safeParse({ id: "abcdef1", type: "banner_carousel", slides: [slide(1)] });
+    expect(parsed.success).toBe(true);
+    expect(parsed.success && parsed.data.type === "banner_carousel" && parsed.data.autoplay).toBe(true);
+    expect(parsed.success && parsed.data.type === "banner_carousel" && parsed.data.intervalSeconds).toBe(6);
+  });
+
+  it("recusa carrossel vazio, mais de 8 banners e intervalo fora da lista", () => {
+    expect(blockSchema.safeParse({ id: "abcdef1", type: "banner_carousel", slides: [] }).success).toBe(false);
+    expect(blockSchema.safeParse({ id: "abcdef1", type: "banner_carousel", slides: Array.from({ length: 9 }, (_, i) => slide(i)) }).success).toBe(false);
+    expect(blockSchema.safeParse({ id: "abcdef1", type: "banner_carousel", slides: [slide(1)], intervalSeconds: 2 }).success).toBe(false);
+  });
+
+  it("botão do banner só com link seguro", () => {
+    const bad = { ...slide(1), action: { kind: "link", label: "Ver", href: "javascript:alert(1)" } };
+    expect(blockSchema.safeParse({ id: "abcdef1", type: "banner_carousel", slides: [bad] }).success).toBe(false);
+  });
+
+  it("permitido na Home, páginas e landing; não em tratamento", () => {
+    const base = initialPayload("home", "Home", () => "abcdef1");
+    const block = { id: "abcdef2", type: "banner_carousel", slides: [slide(1)] };
+    expect(validatePayload("home", { ...base, blocks: [block] }).ok).toBe(true);
+    expect(validatePayload("treatment", { ...initialPayload("treatment", "T", () => "abcdef3"), blocks: [block] }).ok).toBe(false);
   });
 });

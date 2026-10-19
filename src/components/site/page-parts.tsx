@@ -70,3 +70,13 @@ export const ctaSecondary =
 /** Botão sobre fundo escuro (faixas de chamada). */
 export const ctaOnDark =
   "inline-flex min-h-11 items-center justify-center rounded-[var(--radius-control)] border border-white px-6 font-semibold text-white hover:bg-white/10";
+
+/**
+ * Abertura da página conforme o 1º bloco: hero já traz o h1; carrossel
+ * ganha um h1 só para leitores de tela; nos demais casos, PageIntro.
+ */
+export function PageOpening({ firstBlockType, title, summary }: { firstBlockType?: string; title: string; summary?: string | null }) {
+  if (firstBlockType === "hero") return null;
+  if (firstBlockType === "banner_carousel") return <h1 className="sr-only">{title}</h1>;
+  return <PageIntro title={title} summary={summary} />;
+}

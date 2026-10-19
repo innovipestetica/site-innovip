@@ -8,6 +8,7 @@ import { activePromotions, type RenderContext, type RenderEntry, type RenderMedi
 import { evaluationTarget, phoneHref, whatsappHref } from "@/lib/cms/settings";
 import { EvaluationLink } from "@/components/site/evaluation-link";
 import { RichText } from "./rich-text";
+import { BannerCarousel } from "./banner-carousel";
 
 /**
  * Renderização dos blocos (Server Components, sem JS no cliente).
@@ -58,7 +59,7 @@ function ctaHref(action: CtaAction, ctx: RenderContext): string | null {
   }
 }
 
-function CtaButton({ action, ctx, variant = "primary" }: { action: CtaAction; ctx: RenderContext; variant?: "primary" | "secondary" | "onDark" }) {
+function CtaButton({ action, ctx, variant = "primary", location }: { action: CtaAction; ctx: RenderContext; variant?: "primary" | "secondary" | "onDark"; location?: string }) {
   const href = ctaHref(action, ctx);
   if (!href) {
     return <PreviewNote ctx={ctx}>botão “{action.label}” oculto — configure o WhatsApp ou o destino do agendamento em Configurações públicas.</PreviewNote>;
@@ -73,11 +74,11 @@ function CtaButton({ action, ctx, variant = "primary" }: { action: CtaAction; ct
   const external = href.startsWith("https://");
   const target = action.kind === "evaluation" ? evaluationTarget(ctx.settings)?.mode : undefined;
   return external ? (
-    <a href={href} className={cls} target="_blank" rel="noopener noreferrer" data-cta={action.kind} data-cta-target={target}>
+    <a href={href} className={cls} target="_blank" rel="noopener noreferrer" data-cta={action.kind} data-cta-target={target} data-cta-location={location}>
       {action.label}<span className="sr-only"> (abre em nova aba)</span>
     </a>
   ) : (
-    <Link href={href} className={cls} data-cta={action.kind} data-cta-target={target}>{action.label}</Link>
+    <Link href={href} className={cls} data-cta={action.kind} data-cta-target={target} data-cta-location={location}>{action.label}</Link>
   );
 }
 
@@ -139,6 +140,31 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
             {b.mediaId && !media ? <PreviewNote ctx={ctx}>imagem ainda não disponível.</PreviewNote> : null}
           </div>
         </section>
+      );
+    }
+    case "banner_carousel": {
+      // Só banners com imagem aprovada (no site); na prévia, avisa o que falta.
+      const slides = b.slides.flatMap((slide, i) => {
+        const desktop = ctx.media.get(slide.mediaId);
+        if (!desktop) return [];
+        const mobile = slide.mobile?.mediaId ? ctx.media.get(slide.mobile.mediaId) : undefined;
+        return [<BannerSlide key={slide.key} desktop={desktop} mobile={mobile} slide={slide} ctx={ctx} priority={first && i === 0} />];
+      });
+      const missing = b.slides.length - slides.length;
+      return (
+        <>
+          {missing ? <PreviewNote ctx={ctx}>{missing} banner(s) sem imagem aprovada ficam ocultos.</PreviewNote> : null}
+          {slides.length ? (
+            <div className="mx-auto w-full max-w-6xl px-0 pb-6 sm:px-4 sm:pt-4">
+              <BannerCarousel
+                slides={slides}
+                label={b.label || "Destaques"}
+                autoplay={b.autoplay}
+                intervalSeconds={b.intervalSeconds}
+              />
+            </div>
+          ) : null}
+        </>
       );
     }
     case "rich_text":
@@ -373,5 +399,73 @@ export function PromotionCard({ promotion: p, ctx }: { promotion: RenderContext[
         <p className="mt-1 text-xs text-muted">Consulte as condições.</p>
       </Link>
     </li>
+  );
+}
+
+type CarouselSlide = Extract<Block, { type: "banner_carousel" }>["slides"][number];
+
+/** Um banner: imagem (com versão de celular) + painel de texto centralizado. */
+function BannerSlide({
+  desktop,
+  mobile,
+  slide,
+  ctx,
+  priority,
+}: {
+  desktop: RenderMedia;
+  mobile?: RenderMedia;
+  slide: CarouselSlide;
+  ctx: RenderContext;
+  priority: boolean;
+}) {
+  const largest = desktop.sources.at(-1)!;
+  const hasText = !!(slide.title || slide.text || slide.action);
+  return (
+    <div className="relative">
+      <picture>
+        {mobile ? (
+          <source
+            media="(max-width: 767px)"
+            srcSet={mobile.sources.map((s) => `${s.url} ${s.width}w`).join(", ")}
+            sizes="100vw"
+            width={mobile.width ?? undefined}
+            height={mobile.height ?? undefined}
+          />
+        ) : null}
+        {/* Variantes já otimizadas no upload (dentro de <picture>, o lint não exige next/image). */}
+        <img
+          src={largest.url}
+          srcSet={desktop.sources.map((s) => `${s.url} ${s.width}w`).join(", ")}
+          sizes="(min-width: 1152px) 1152px, 100vw"
+          alt={desktop.alt}
+          width={desktop.width ?? undefined}
+          height={desktop.height ?? undefined}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : undefined}
+          decoding="async"
+          className="h-auto w-full object-cover sm:rounded-[var(--radius-card)]"
+        />
+      </picture>
+      {hasText ? (
+        // Computador: painel centralizado sobre a imagem. Celular: sobre a parte
+        // de baixo só quando há imagem própria (alta); com a imagem larga, o
+        // painel vai abaixo para não cobri-la. Fundo quase opaco = contraste AA.
+        <div
+          className={`flex justify-center p-3 md:absolute md:inset-0 md:items-center md:p-6 ${
+            mobile ? "absolute inset-x-0 bottom-0" : "bg-brand-900"
+          }`}
+        >
+          <div className="w-full max-w-xl rounded-[var(--radius-card)] bg-brand-900/90 p-4 text-center text-white md:p-6">
+            {slide.title ? <p className="font-display text-xl font-bold sm:text-3xl">{slide.title}</p> : null}
+            {slide.text ? <p className="mt-1 text-sm text-white/90 sm:mt-2 sm:text-base">{slide.text}</p> : null}
+            {slide.action ? (
+              <div className="mt-3 flex justify-center sm:mt-4">
+                <CtaButton action={slide.action} ctx={ctx} variant="onDark" location="banner" />
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }

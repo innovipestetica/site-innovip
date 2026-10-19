@@ -45,21 +45,24 @@ const storage = () =>
 // ---------------------------------------------------------------------------
 // Imagens
 // ---------------------------------------------------------------------------
-async function demoImage(label: string, hue: "verde" | "dourado") {
+async function demoImage(label: string, hue: "verde" | "dourado", width = 1600, height = 1000) {
   const [bg, fg] = hue === "verde" ? ["#2b6b59", "#f6edda"] : ["#e5c88b", "#183f35"];
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000">
+  const cx = width / 2;
+  const cy = height / 2;
+  const big = Math.round(Math.min(width, height * 1.6) / 25);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
     <rect width="100%" height="100%" fill="${bg}"/>
-    <circle cx="1350" cy="220" r="260" fill="${fg}" opacity="0.12"/>
-    <circle cx="220" cy="860" r="320" fill="${fg}" opacity="0.10"/>
-    <text x="800" y="470" font-family="Arial, sans-serif" font-size="64" font-weight="700" fill="${fg}" text-anchor="middle">IMAGEM DE DEMONSTRAÇÃO</text>
-    <text x="800" y="560" font-family="Arial, sans-serif" font-size="44" fill="${fg}" text-anchor="middle">${label}</text>
+    <circle cx="${width * 0.85}" cy="${height * 0.2}" r="${height * 0.26}" fill="${fg}" opacity="0.12"/>
+    <circle cx="${width * 0.14}" cy="${height * 0.86}" r="${height * 0.32}" fill="${fg}" opacity="0.10"/>
+    <text x="${cx}" y="${cy - big * 0.4}" font-family="Arial, sans-serif" font-size="${big}" font-weight="700" fill="${fg}" text-anchor="middle">IMAGEM DE DEMONSTRAÇÃO</text>
+    <text x="${cx}" y="${cy + big}" font-family="Arial, sans-serif" font-size="${Math.round(big * 0.7)}" fill="${fg}" text-anchor="middle">${label}</text>
   </svg>`;
   return sharp(Buffer.from(svg)).jpeg({ quality: 85 }).toBuffer();
 }
 
-async function createMedia(db: Client, label: string, hue: "verde" | "dourado"): Promise<string> {
+async function createMedia(db: Client, label: string, hue: "verde" | "dourado", size: [number, number] = [1600, 1000]): Promise<string> {
   const id = randomUUID();
-  const original = await demoImage(label, hue);
+  const original = await demoImage(label, hue, size[0], size[1]);
   const st = storage();
   const originalPath = `originals/${id}.jpg`;
   const up = await st.from(PRIVATE_BUCKET).upload(originalPath, original, { contentType: "image/jpeg" });
@@ -68,7 +71,7 @@ async function createMedia(db: Client, label: string, hue: "verde" | "dourado"):
 
   const variants: { width: number; height: number; path: string; format: "webp" }[] = [];
   const publicVariants: typeof variants = [];
-  for (const w of WIDTHS) {
+  for (const w of WIDTHS.filter((x) => x <= size[0])) {
     const { data, info } = await sharp(original).resize({ width: w }).webp({ quality: 80 }).toBuffer({ resolveWithObject: true });
     const priv = `variants/${id}/${w}.webp`;
     const pub = `${id}/${w}.webp`;
@@ -83,8 +86,8 @@ async function createMedia(db: Client, label: string, hue: "verde" | "dourado"):
 
   await db.query(
     `insert into public.media_assets (id, status, mime, size_bytes, width, height, alt, private_original_path, private_variants, public_variants)
-     values ($1, 'published', 'image/jpeg', $2, 1600, 1000, $3, $4, $5, $6)`,
-    [id, original.length, `${TAG} Imagem ilustrativa: ${label}`, originalPath, JSON.stringify(variants), JSON.stringify(publicVariants)],
+     values ($1, 'published', 'image/jpeg', $2, $7, $8, $3, $4, $5, $6)`,
+    [id, original.length, `${TAG} Imagem ilustrativa: ${label}`, originalPath, JSON.stringify(variants), JSON.stringify(publicVariants), size[0], size[1]],
   );
   await db.query(
     `insert into public.media_permissions (kind, media_id, description, granted_on)
@@ -169,6 +172,10 @@ async function seed(db: Client) {
   const mLimpeza = await createMedia(db, "Tratamento facial", "dourado");
   const mDrenagem = await createMedia(db, "Tratamento corporal", "verde");
   const mPeeling = await createMedia(db, "Cuidados com a pele", "dourado");
+  const mBanner1 = await createMedia(db, "Banner 1 (computador)", "verde", [1600, 584]);
+  const mBanner1Mobile = await createMedia(db, "Banner 1 (celular)", "verde", [800, 1000]);
+  const mBanner2 = await createMedia(db, "Banner 2", "dourado", [1600, 584]);
+  const mBanner3 = await createMedia(db, "Banner 3", "verde", [1600, 584]);
 
   const reviewed = { requires_evaluation: true, clinical_reviewer: `${TAG} sem revisão real`, clinical_reviewed_on: new Date().toISOString().slice(0, 10) };
   const demoBody = "Texto fictício apenas para testar o layout. **Não é informação clínica.** O conteúdo real deve ser escrito e revisado pelo responsável habilitado.";
@@ -272,6 +279,14 @@ async function seed(db: Client) {
   });
 
   const homeBlocks: Block[] = [
+    { id: newBlockId(), type: "banner_carousel", label: "Destaques (demonstração)", autoplay: true, intervalSeconds: 6, slides: [
+      { key: newBlockId(), mediaId: mBanner1, mobile: { mediaId: mBanner1Mobile },
+        title: `${TAG} Tecnologia, estética e cuidado`, text: "Texto de exemplo do banner (sujeito a aprovação).",
+        action: { kind: "evaluation", label: "Agendar avaliação" } },
+      { key: newBlockId(), mediaId: mBanner2, title: `${TAG} Promoção de exemplo`,
+        action: { kind: "link", label: "Ver promoções", href: "/promocoes" } },
+      { key: newBlockId(), mediaId: mBanner3 },
+    ] },
     { id: newBlockId(), type: "hero", heading: `${TAG} Tecnologia, estética e cuidado para valorizar a sua melhor versão.`,
       subheading: "Texto de exemplo do destaque (sugestão da especificação, sujeita a aprovação).", mediaId: mHero,
       primary: { kind: "evaluation", label: "Agendar avaliação" }, secondary: { kind: "link", label: "Conhecer tratamentos", href: "/tratamentos" } },

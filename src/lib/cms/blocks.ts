@@ -38,6 +38,30 @@ export const blockSchemas = {
     primary: ctaActionSchema.optional(),
     secondary: ctaActionSchema.optional(),
   }),
+  /**
+   * Carrossel de banners. Acessibilidade (WCAG 2.2.2): passagem automática
+   * com botão de pausa, pausa em hover/foco/aba oculta e desligada com
+   * "reduzir movimento". Imagem do celular em `mobile.mediaId` (o banco
+   * extrai e valida qualquer chave mediaId).
+   */
+  banner_carousel: z.object({
+    label: optionalText(80),
+    slides: z
+      .array(
+        z.object({
+          key: blockId,
+          mediaId: uuid,
+          mobile: z.object({ mediaId: uuid.optional() }).optional(),
+          title: optionalText(120),
+          text: optionalText(240),
+          action: ctaActionSchema.optional(),
+        }),
+      )
+      .min(1)
+      .max(8),
+    autoplay: z.boolean().default(true),
+    intervalSeconds: z.union([z.literal(5), z.literal(6), z.literal(8), z.literal(10)]).default(6),
+  }),
   rich_text: z.object({
     heading: optionalText(120),
     body: richTextSchema.min(1),
@@ -122,6 +146,10 @@ export const blocksSchema = z.array(blockSchema).max(60);
 /** Rótulos e ajuda exibidos no editor do painel. */
 export const BLOCK_META: Record<BlockType, { label: string; help: string }> = {
   hero: { label: "Destaque (hero)", help: "Título principal, subtítulo, imagem e botões." },
+  banner_carousel: {
+    label: "Carrossel de banners",
+    help: "Vários banners que passam sozinhos (com pausa) ou pelas setas. Não coloque texto importante só dentro da imagem e não deixe informação essencial apenas no carrossel.",
+  },
   rich_text: { label: "Texto", help: "Parágrafos, subtítulos, listas e links." },
   image: { label: "Imagem", help: "Uma imagem aprovada da biblioteca." },
   cta: { label: "Chamada para ação", help: "Convite com um botão (avaliação, WhatsApp ou link)." },

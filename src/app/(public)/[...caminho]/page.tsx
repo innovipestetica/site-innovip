@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { RenderBlocks } from "@/components/blocks/render-blocks";
-import { Breadcrumbs, PageIntro } from "@/components/site/page-parts";
+import { Breadcrumbs, PageOpening } from "@/components/site/page-parts";
 import { getMedia, getPublishedEntry, listPublishedSlugs, loadPublicContext } from "@/lib/cms/public-data";
 import { resolveMissing } from "@/lib/cms/resolve-missing";
 import { buildMetadata } from "@/lib/seo";
@@ -36,11 +36,10 @@ export default async function CmsPage({ params }: PageProps<"/[...caminho]">) {
   if (!page) return resolveMissing(`/${caminho.join("/")}`);
 
   const ctx = await loadPublicContext({ blocks: page.blocks, data: page.data });
-  const startsWithHero = page.blocks[0]?.type === "hero";
   return (
     <main id="conteudo" className="flex-1" {...pageAttrs("page")}>
       <Breadcrumbs items={[{ label: "Início", href: "/" }, { label: page.title, href: `/${page.slug}` }]} />
-      {!startsWithHero ? <PageIntro title={page.title} summary={page.summary} /> : null}
+      <PageOpening firstBlockType={page.blocks[0]?.type} title={page.title} summary={page.summary} />
       <RenderBlocks blocks={page.blocks} ctx={ctx} />
     </main>
   );

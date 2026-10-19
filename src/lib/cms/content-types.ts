@@ -21,7 +21,7 @@ type TypeMeta = {
 };
 
 const ALL_BLOCKS: BlockType[] = [
-  "hero", "rich_text", "image", "cta", "features", "steps", "notice", "faq_list",
+  "hero", "banner_carousel", "rich_text", "image", "cta", "features", "steps", "notice", "faq_list",
   "treatment_list", "category_list", "concern_list", "promotion_list",
   "testimonial_list", "team_list", "gallery", "contact",
 ];

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Logo } from "@/components/brand/logo";
 import { RenderBlocks } from "@/components/blocks/render-blocks";
-import { JsonLd, PageIntro } from "@/components/site/page-parts";
+import { JsonLd, PageOpening } from "@/components/site/page-parts";
 import { getMedia, getPublicSettings, getPublishedEntry, loadPublicContext } from "@/lib/cms/public-data";
 import type { SiteSettings } from "@/lib/cms/settings";
 import { absoluteUrl, buildMetadata } from "@/lib/seo";
@@ -71,7 +71,7 @@ export default async function HomePage() {
   const business = localBusiness(settings);
   return (
     <main id="conteudo" className="flex-1" {...pageAttrs("home")}>
-      {home.blocks[0]?.type !== "hero" ? <PageIntro title={home.title} summary={home.summary} /> : null}
+      <PageOpening firstBlockType={home.blocks[0]?.type} title={home.title} summary={home.summary} />
       <RenderBlocks blocks={home.blocks} ctx={ctx} />
       {business ? <JsonLd data={business} /> : null}
     </main>

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { RenderBlocks } from "@/components/blocks/render-blocks";
-import { PageIntro } from "@/components/site/page-parts";
+import { PageOpening } from "@/components/site/page-parts";
 import { PromotionStatus, PromotionTerms } from "@/components/site/promotion-status";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
@@ -38,13 +38,12 @@ export default async function LandingPage({ params }: PageProps<"/lp/[slug]">) {
   const promoRef = promotionId ? ctx.entries.get(promotionId) : undefined;
   const promo = promoRef ? await getPublishedEntry("promotion", promoRef.slug) : null;
   const reduced = lp.landing?.reducedNavigation ?? true;
-  const startsWithHero = lp.blocks[0]?.type === "hero";
 
   return (
     <>
       <SiteHeader reduced={reduced} />
       <main id="conteudo" className="flex-1" {...pageAttrs("landing")}>
-        {!startsWithHero ? <PageIntro title={lp.title} summary={lp.summary} /> : null}
+        <PageOpening firstBlockType={lp.blocks[0]?.type} title={lp.title} summary={lp.summary} />
         {promo ? (
           <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-4">
             <Suspense fallback={<p className="text-sm text-muted" role="status">Verificando vigência da oferta…</p>}>

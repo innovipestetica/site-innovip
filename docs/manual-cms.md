@@ -42,7 +42,7 @@ Ao sair da página com alterações não salvas, o navegador pede confirmação.
 ## Blocos
 
 Páginas, Home, tratamentos, promoções, landing pages e blog são montados com
-blocos de uma lista fechada (destaque, texto, imagem, chamada, diferenciais,
+blocos de uma lista fechada (destaque, carrossel de banners, texto, imagem, chamada, diferenciais,
 passo a passo, aviso, FAQs, tratamentos, categorias, objetivos, promoções
 vigentes, depoimentos, equipe, galeria, contato). Não é possível inserir HTML
 ou scripts.
@@ -82,6 +82,32 @@ O endereço **`/agendar-avaliacao`** redireciona para o destino escolhido. Use
 esse endereço na bio do Instagram, em QR codes e campanhas: se a plataforma
 mudar, basta trocar no painel. Clicar não é agendamento confirmado: a equipe
 confirma o horário.
+
+### Carrossel de banners
+
+Para colocar vários banners que passam sozinhos (ou que a pessoa troca pelas
+setas, pelos pontinhos, pelo teclado ou deslizando o dedo):
+
+1. **Conteúdo → Home** (ou qualquer página/landing) → **Adicionar bloco →
+   Carrossel de banners**. Para ele abrir a página, use a seta **↑** do bloco até
+   ficar em primeiro.
+2. Em cada banner escolha a **imagem (computador)** (sugestão: 1600×584,
+   formato largo) e, se quiser, uma **imagem para celular** (sugestão:
+   800×1000, em pé). Sem imagem de celular, a de computador é usada.
+3. **Título, texto e botão** são opcionais. Aparecem num painel verde sobre a
+   imagem (no celular com imagem larga, logo abaixo dela).
+4. **Passar automaticamente** e o **intervalo** (5, 6, 8 ou 10 segundos).
+   Até 8 banners; dá para reordenar e remover.
+
+Regras de acessibilidade aplicadas sozinhas: há botão de pausar; o carrossel
+para enquanto o mouse ou o foco estão nele e quando a aba fica oculta; quem
+pede "reduzir movimento" no aparelho não vê troca automática. Só imagens
+**aprovadas** aparecem no site.
+
+Dica: não deixe informação essencial (preço, condição de promoção) **só** no
+carrossel — muita gente não vê os banners seguintes. Repita em outro bloco ou
+na página da promoção. Escreva o texto importante nos campos de título/texto,
+não dentro da imagem (leitores de tela e buscadores não leem texto em imagem).
 
 ## Endereços (slug)
 

@@ -23,6 +23,8 @@ function emptyBlock(type: BlockType): Block {
   switch (type) {
     case "hero":
       return { id, type, heading: "", primary: { kind: "evaluation", label: "Agendar avaliação" } };
+    case "banner_carousel":
+      return { id, type, slides: [{ key: newBlockId(), mediaId: "" }], autoplay: true, intervalSeconds: 6 };
     case "rich_text":
       return { id, type, body: [] };
     case "image":
@@ -228,9 +230,13 @@ function BlockFields(props: {
         </>
       ) : null}
 
-      {b.type !== "hero" && b.type !== "image" && b.type !== "cta" && b.type !== "notice" && heading ? (
+      {b.type !== "hero" && b.type !== "banner_carousel" && b.type !== "image" && b.type !== "cta" && b.type !== "notice" && heading ? (
         <TextInput label="Título da seção (opcional)" value={"heading" in b ? (b.heading as string | undefined) : undefined} maxLength={120}
           onChange={(v) => onChange({ ...b, heading: v } as Block)} />
+      ) : null}
+
+      {b.type === "banner_carousel" ? (
+        <BannerSlidesEditor block={b} onChange={onChange} mediaOptions={props.mediaOptions} issue={issue} />
       ) : null}
 
       {b.type === "rich_text" ? (
@@ -301,5 +307,76 @@ function BlockFields(props: {
 
       {b.type === "category_list" ? <p className="text-sm text-muted">Mostra as categorias publicadas, na ordem definida em Categorias e objetivos.</p> : null}
     </>
+  );
+}
+
+type CarouselBlock = Extract<Block, { type: "banner_carousel" }>;
+
+function BannerSlidesEditor(props: {
+  block: CarouselBlock;
+  onChange: (b: Block) => void;
+  mediaOptions: MediaOption[];
+  issue: (field: string) => string | undefined;
+}) {
+  const { block: b, onChange } = props;
+  const setSlides = (slides: CarouselBlock["slides"]) => onChange({ ...b, slides });
+  const update = (i: number, patch: Partial<CarouselBlock["slides"][number]>) =>
+    setSlides(b.slides.map((s, j) => (j === i ? { ...s, ...patch } : s)));
+  const move = (i: number, dir: -1 | 1) => {
+    const n = [...b.slides];
+    const j = i + dir;
+    if (j < 0 || j >= n.length) return;
+    [n[i], n[j]] = [n[j]!, n[i]!];
+    setSlides(n);
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <TextInput label="Nome do carrossel (para leitores de tela)" value={b.label} maxLength={80}
+        hint="Ex.: “Destaques da clínica”. Não aparece na tela." onChange={(label) => onChange({ ...b, label })} />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Checkbox label="Passar automaticamente" checked={b.autoplay}
+          hint="Sempre com botão de pausa; não passa sozinho para quem pede menos movimento."
+          onChange={(autoplay) => onChange({ ...b, autoplay })} />
+        <Select label="Tempo de cada banner" value={String(b.intervalSeconds) as "5" | "6" | "8" | "10"}
+          options={[{ value: "5", label: "5 segundos" }, { value: "6", label: "6 segundos" }, { value: "8", label: "8 segundos" }, { value: "10", label: "10 segundos" }]}
+          onChange={(v) => onChange({ ...b, intervalSeconds: Number(v ?? 6) as 5 | 6 | 8 | 10 })} />
+      </div>
+      {props.issue("slides") ? <p className="text-sm text-danger">{props.issue("slides")}</p> : null}
+
+      <ol className="flex flex-col gap-3">
+        {b.slides.map((slide, i) => (
+          <li key={slide.key} className="flex flex-col gap-3 rounded-lg border border-line p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-sm font-semibold">Banner {i + 1}</span>
+              <span className="flex gap-1">
+                <IconButton label={`Mover banner ${i + 1} para cima`} disabled={i === 0} onClick={() => move(i, -1)}>↑</IconButton>
+                <IconButton label={`Mover banner ${i + 1} para baixo`} disabled={i === b.slides.length - 1} onClick={() => move(i, 1)}>↓</IconButton>
+                <IconButton label={`Remover banner ${i + 1}`} disabled={b.slides.length === 1}
+                  onClick={() => window.confirm(`Remover o banner ${i + 1}?`) && setSlides(b.slides.filter((_, j) => j !== i))}>✕</IconButton>
+              </span>
+            </div>
+            <MediaPicker label="Imagem (computador)" value={slide.mediaId || undefined} options={props.mediaOptions}
+              error={props.issue(`slides.${i}.mediaId`)}
+              hint="Formato largo, ex.: 1920×700. O texto alternativo vem da Mídia."
+              onChange={(v) => update(i, { mediaId: v ?? "" })} />
+            <MediaPicker label="Imagem para celular (opcional)" value={slide.mobile?.mediaId} options={props.mediaOptions}
+              hint="Formato mais alto, ex.: 800×1000. Sem ela, usa a do computador."
+              onChange={(v) => update(i, { mobile: v ? { mediaId: v } : undefined })} />
+            <TextInput label="Título (opcional)" value={slide.title} maxLength={120} onChange={(title) => update(i, { title })} />
+            <TextArea label="Texto (opcional)" value={slide.text} maxLength={240} rows={2} onChange={(text) => update(i, { text })} />
+            <CtaEditor label="Botão (opcional)" optional value={slide.action}
+              issue={props.issue(`slides.${i}.action.href`) ?? props.issue(`slides.${i}.action.label`)}
+              onChange={(action) => update(i, { action })} />
+          </li>
+        ))}
+      </ol>
+      {b.slides.length < 8 ? (
+        <button type="button" className="min-h-11 self-start rounded-[var(--radius-control)] border border-line px-3 text-sm font-semibold hover:bg-brand-50"
+          onClick={() => setSlides([...b.slides, { key: newBlockId(), mediaId: "" }])}>
+          Adicionar banner
+        </button>
+      ) : <p className="text-sm text-muted">Máximo de 8 banners.</p>}
+    </div>
   );
 }

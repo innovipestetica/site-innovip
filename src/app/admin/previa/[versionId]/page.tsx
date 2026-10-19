@@ -11,6 +11,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatCents } from "@/lib/cms/format";
 import { formatDateTime } from "@/components/admin/ui";
 import { RenderBlocks } from "@/components/blocks/render-blocks";
+import { PageOpening } from "@/components/site/page-parts";
 
 // Prévia: autenticada, dinâmica e fora de qualquer cache público (o proxy
 // também envia no-store/noindex para /admin).
@@ -47,7 +48,6 @@ async function Preview({ params }: { params: PageProps<"/admin/previa/[versionId
   const ctx = await loadPreviewContext({ blocks: payload.blocks, data: payload.data, seo: payload.seo });
   const meta = CONTENT_TYPES[entry.type];
   const isLive = entry.published_version_id === version.id;
-  const startsWithHero = payload.blocks[0]?.type === "hero";
   const promo = entry.type === "promotion" ? (payload.details as Record<string, string | number | undefined>) : null;
 
   return (
@@ -62,12 +62,7 @@ async function Preview({ params }: { params: PageProps<"/admin/previa/[versionId
         </Link>
       </div>
       <main id="conteudo" className="flex-1">
-        {!startsWithHero ? (
-          <header className="mx-auto w-full max-w-5xl px-4 pt-10">
-            <h1 className="text-3xl font-bold text-brand-800 sm:text-4xl">{payload.title}</h1>
-            {payload.summary ? <p className="mt-3 max-w-3xl text-lg text-muted">{payload.summary}</p> : null}
-          </header>
-        ) : null}
+        <PageOpening firstBlockType={payload.blocks[0]?.type} title={payload.title} summary={payload.summary} />
 
         {promo ? (
           <section className="mx-auto w-full max-w-5xl px-4 pt-6">
