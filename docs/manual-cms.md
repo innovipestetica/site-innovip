@@ -113,8 +113,8 @@ setas, pelos pontinhos, pelo teclado ou deslizando o dedo):
 
 Regras de acessibilidade aplicadas sozinhas: há botão de pausar; o carrossel
 para enquanto o mouse ou o foco estão nele e quando a aba fica oculta; quem
-pede "reduzir movimento" no aparelho não vê troca automática. Só imagens
-**aprovadas** aparecem no site.
+pede "reduzir movimento" no aparelho não vê troca automática. Imagens tiradas
+do site (em Mídia) ficam ocultas.
 
 Dica: não deixe informação essencial (preço, condição de promoção) **só** no
 carrossel — muita gente não vê os banners seguintes. Repita em outro bloco ou
@@ -158,11 +158,14 @@ fonte.
 1. **Enviar**: JPEG, PNG, WebP ou AVIF, até 10 MB. O sistema confere o tipo
    real do arquivo, remove metadados (inclusive localização GPS) e cria
    versões otimizadas. O nome do arquivo original não é guardado.
-2. A imagem fica **privada** até ser **aprovada**.
-3. **Aprovar** exige texto alternativo e o registro da licença ou autorização
-   de uso (fica guardado como evidência).
-4. Imagem em uso não pode ser excluída. Com registro de licença, "Excluir"
-   arquiva (a evidência é mantida).
+2. A imagem **já fica disponível para o site** assim que o envio termina (não
+   há etapa de aprovação). Use só fotos próprias, licenciadas ou com
+   autorização de imagem das pessoas que aparecem.
+3. Preencha o **texto alternativo** (recomendado): ele é lido por quem usa
+   leitor de tela e pelo Google.
+4. **Tirar do site** esconde a imagem; **Colocar no site** traz de volta.
+5. Imagem em uso não pode ser excluída. Imagens antigas com registro de
+   licença são arquivadas em vez de apagadas (a evidência é mantida).
 
 Retirar uma imagem do site não apaga cópias que alguém já tenha baixado ou que
 estejam em caches externos por algum tempo.

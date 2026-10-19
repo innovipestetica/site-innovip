@@ -159,7 +159,7 @@ export const BLOCK_META: Record<BlockType, { label: string; help: string }> = {
     help: "Vários banners que passam sozinhos (com pausa) ou pelas setas. Não coloque texto importante só dentro da imagem e não deixe informação essencial apenas no carrossel.",
   },
   rich_text: { label: "Texto", help: "Parágrafos, subtítulos, listas e links." },
-  image: { label: "Imagem", help: "Uma imagem aprovada da biblioteca." },
+  image: { label: "Imagem", help: "Uma imagem da biblioteca de Mídia." },
   cta: { label: "Chamada para ação", help: "Convite com um botão (avaliação, WhatsApp ou link)." },
   features: { label: "Diferenciais", help: "Itens curtos e verificáveis." },
   steps: { label: "Passo a passo", help: "Como funciona, em etapas." },
@@ -171,7 +171,7 @@ export const BLOCK_META: Record<BlockType, { label: string; help: string }> = {
   promotion_list: { label: "Promoções vigentes", help: "Mostra só promoções dentro do prazo." },
   testimonial_list: { label: "Depoimentos", help: "Somente depoimentos com autorização registrada." },
   team_list: { label: "Equipe", help: "Escolha profissionais publicados." },
-  gallery: { label: "Galeria", help: "Várias imagens aprovadas." },
+  gallery: { label: "Galeria", help: "Várias imagens da biblioteca de Mídia." },
   contact: { label: "Contato", help: "Canais, mapa (com consentimento) e formulário." },
 };
 

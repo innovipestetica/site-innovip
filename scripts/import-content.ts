@@ -25,8 +25,9 @@ import { parseRichText } from "../src/lib/cms/rich-text";
 config({ path: ".env.local", quiet: true });
 
 /** Bloco do pacote: igual ao do CMS, mas sem `id`, com `md` no lugar de
- *  `body` e `entrySlugs` no lugar de `entryIds`. */
-type PackBlock = Record<string, unknown> & { type: string; md?: string; entrySlugs?: string[] };
+ *  `body` e `entrySlugs` no lugar de `entryIds`. `{ keep: "image" }` repete
+ *  o próximo bloco desse tipo da versão atual (ex.: imagens já escolhidas). */
+type PackBlock = Record<string, unknown> & { type?: string; keep?: string; md?: string; entrySlugs?: string[] };
 
 type PackEntry = {
   type: ContentType;
@@ -114,13 +115,14 @@ async function main() {
 
       let current: VersionPayload | null = null;
       if (!isNew) {
-        const cur = await db.query<{ id: string; blocks: VersionPayload["blocks"]; data: Record<string, unknown> }>(
-          "select id, blocks, data from public.content_versions where entry_id = $1 and revision = $2",
+        const cur = await db.query<{ id: string; blocks: VersionPayload["blocks"]; data: Record<string, unknown>; seo: VersionPayload["seo"] }>(
+          "select id, blocks, data, seo from public.content_versions where entry_id = $1 and revision = $2",
           [row.id, row.latest_revision],
         );
         current = cur.rows[0] ? ({ ...payload, ...cur.rows[0] } as VersionPayload) : null;
         // Preserva imagem de capa e detalhes já definidos no painel.
         if (current?.data.mediaId && !payload.data.mediaId) payload.data.mediaId = current.data.mediaId;
+        if (current) payload.seo = { ...current.seo, ...(entry.seo ?? {}) };
         if (cur.rows[0] && entry.type === "treatment") {
           const d = await db.query<{ requires_evaluation: boolean }>(
             "select requires_evaluation from public.treatment_details where version_id = $1",
@@ -131,7 +133,14 @@ async function main() {
       }
 
       if (entry.blocks) {
+        const used = new Set<unknown>();
         payload.blocks = entry.blocks.map((b) => {
+          if (b.keep) {
+            const old = current?.blocks.find((x) => x.type === b.keep && !used.has(x));
+            if (!old) throw new Error(`${entry.slug}: não há bloco "${b.keep}" na versão atual para manter.`);
+            used.add(old);
+            return old;
+          }
           if (b.type === "banner_carousel" && entry.keepFromCurrent?.includes("banner_carousel")) {
             const old = current?.blocks.find((x) => x.type === "banner_carousel");
             if (!old) throw new Error(`${entry.slug}: não há carrossel atual para manter.`);

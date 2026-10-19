@@ -175,7 +175,7 @@ function RenderBlock({ block: b, ctx, first }: { block: Block; ctx: RenderContex
       const missing = b.slides.length - slides.length;
       return (
         <>
-          {missing ? <PreviewNote ctx={ctx}>{missing} banner(s) sem imagem aprovada ficam ocultos.</PreviewNote> : null}
+          {missing ? <PreviewNote ctx={ctx}>{missing} banner(s) com imagem fora do site ficam ocultos.</PreviewNote> : null}
           {slides.length ? (
             <div className="mx-auto w-full max-w-6xl px-0 pb-6 sm:px-4 sm:pt-4">
               <BannerCarousel

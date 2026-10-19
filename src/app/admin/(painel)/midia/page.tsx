@@ -13,7 +13,7 @@ export default function MediaPage({ searchParams }: PageProps<"/admin/midia">) {
     <AdminMain>
       <PageHeader
         title="Mídia"
-        description="Imagens ficam privadas até serem aprovadas. Aprovar exige texto alternativo e registro de licença ou autorização de imagem."
+        description="Imagens enviadas já ficam disponíveis para o site. Use só fotos próprias, licenciadas ou com autorização de imagem."
       />
       <Suspense fallback={<p className="text-sm text-muted" role="status">Carregando…</p>}>
         <Media searchParams={searchParams} />
@@ -52,7 +52,7 @@ async function Media({ searchParams }: { searchParams: PageProps<"/admin/midia">
     usage.set(r.media_id, set);
   }
 
-  // Miniaturas: pública (aprovada) ou assinada por 10 minutos (privada).
+  // Miniaturas: pública (no site) ou assinada por 10 minutos (fora do site).
   const thumbs = new Map<string, string>();
   const privatePaths: { id: string; path: string }[] = [];
   for (const a of assets) {

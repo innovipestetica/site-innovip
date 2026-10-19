@@ -18,7 +18,7 @@ import {
 
 /**
  * Mídia: upload direto ao bucket PRIVADO (URL assinada), processamento no
- * servidor e publicação de CÓPIAS aprovadas no bucket público.
+ * servidor e publicação de CÓPIAS otimizadas no bucket público (já no envio).
  * Tudo com a sessão do administrador (RLS e políticas do Storage ativos).
  */
 
@@ -122,9 +122,17 @@ export async function processUploadAction(input: { path: string; alt?: string })
     variants.push({ width: v.width, height: v.height, path, format: "webp" });
   }
 
+  // Envio já libera a imagem para o site (decisão da clínica, 19/10/2026).
+  const published = await copyToPublic(supabase, assetId, variants);
+  if (!published.ok) {
+    await cleanup(variantPaths);
+    return published;
+  }
+
   const { error } = await supabase.from("media_assets").insert({
     id: assetId,
-    status: "private",
+    status: "published",
+    public_variants: published.data,
     mime: processed.kind.mime,
     size_bytes: processed.original.length,
     width: processed.width,
@@ -136,9 +144,34 @@ export async function processUploadAction(input: { path: string; alt?: string })
   });
   if (error) {
     await cleanup(variantPaths);
+    await supabase.storage.from(PUBLIC_BUCKET).remove(published.data.map((v) => v.path));
     return mapDbError(error);
   }
+  updateTag(TAG.media);
   return { ok: true, data: { id: assetId } };
+}
+
+/** Copia SOMENTE as variantes otimizadas (sem o original) para o bucket público. */
+async function copyToPublic(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  id: string,
+  variants: Variant[],
+): Promise<ActionResult<Variant[]>> {
+  const publicVariants: Variant[] = [];
+  for (const v of variants) {
+    const target = `${id}/${v.width}.webp`;
+    await supabase.storage.from(PUBLIC_BUCKET).remove([target]);
+    const { error: copyError } = await supabase.storage
+      .from(PRIVATE_BUCKET)
+      .copy(v.path, target, { destinationBucket: PUBLIC_BUCKET });
+    if (copyError) {
+      await supabase.storage.from(PUBLIC_BUCKET).remove(publicVariants.map((p) => p.path));
+      console.error("[midia] cópia para o bucket público falhou");
+      return { ok: false, kind: "error", message: "Não foi possível publicar a imagem." };
+    }
+    publicVariants.push({ ...v, path: target });
+  }
+  return { ok: true, data: publicVariants };
 }
 
 export async function updateAltAction(id: string, alt: string, baseRevision: number): Promise<ActionResult> {
@@ -159,50 +192,25 @@ export async function updateAltAction(id: string, alt: string, baseRevision: num
   return { ok: true };
 }
 
-/** Aprova: exige texto alternativo e registro de licença/autorização. */
-export async function publishMediaAction(id: string, rightsNote: string): Promise<ActionResult> {
+/** Volta a imagem ao site (ex.: depois de "Tirar do site"). */
+export async function publishMediaAction(id: string): Promise<ActionResult> {
   const denied = await guard();
   if (denied) return denied;
-  const note = z.string().trim().min(10, "Descreva a licença ou autorização (mínimo 10 caracteres).").max(500).safeParse(rightsNote);
   if (!uuid.safeParse(id).success) return { ok: false, kind: "invalid", message: "Requisição inválida." };
-  if (!note.success) return { ok: false, kind: "invalid", message: note.error.issues[0]!.message };
 
   const supabase = await createSupabaseServerClient();
-  const { data: asset, error } = await supabase.from("media_assets").select("id, alt, status, private_variants").eq("id", id).single();
+  const { data: asset, error } = await supabase.from("media_assets").select("id, status, private_variants").eq("id", id).single();
   if (error || !asset) return { ok: false, kind: "not_found", message: "Imagem não encontrada." };
   if (asset.status === "published") return { ok: true };
-  if (!asset.alt?.trim()) return { ok: false, kind: "invalid", message: "Preencha o texto alternativo antes de aprovar." };
 
   const variants = parseVariants(asset.private_variants);
   if (variants.length === 0) return { ok: false, kind: "invalid", message: "Imagem sem versões processadas." };
-
-  // Copia SOMENTE as variantes otimizadas (sem original) para o bucket público.
-  const publicVariants: Variant[] = [];
-  for (const v of variants) {
-    const target = `${id}/${v.width}.webp`;
-    await supabase.storage.from(PUBLIC_BUCKET).remove([target]);
-    const { error: copyError } = await supabase.storage
-      .from(PRIVATE_BUCKET)
-      .copy(v.path, target, { destinationBucket: PUBLIC_BUCKET });
-    if (copyError) {
-      await supabase.storage.from(PUBLIC_BUCKET).remove(publicVariants.map((p) => p.path));
-      console.error("[midia] cópia para o bucket público falhou");
-      return { ok: false, kind: "error", message: "Não foi possível publicar a imagem." };
-    }
-    publicVariants.push({ ...v, path: target });
-  }
-
-  const { error: permError } = await supabase.from("media_permissions").insert({
-    kind: "licenca",
-    media_id: id,
-    description: note.data,
-    granted_on: new Date().toISOString().slice(0, 10),
-  });
-  if (permError) return mapDbError(permError);
+  const published = await copyToPublic(supabase, id, variants);
+  if (!published.ok) return published;
 
   const { error: upError } = await supabase
     .from("media_assets")
-    .update({ status: "published", public_variants: publicVariants })
+    .update({ status: "published", public_variants: published.data })
     .eq("id", id);
   if (upError) return mapDbError(upError);
 

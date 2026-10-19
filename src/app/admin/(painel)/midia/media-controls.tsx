@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useId, useRef, useState } from "react";
 import { Alert, buttonPrimary, buttonSecondary } from "@/components/ui/form";
 import { useHydrated } from "@/components/ui/use-hydrated";
-import { TextArea, TextInput } from "@/components/admin/editor/fields";
+import { TextInput } from "@/components/admin/editor/fields";
 import { formatDateTime } from "@/components/admin/ui";
 import {
   createUploadAction,
@@ -74,7 +74,7 @@ export function Uploader() {
     setStage(null);
     setProgress(null);
     if (!done.ok) return setMessage({ tone: "error", text: done.message });
-    setMessage({ tone: "success", text: "Imagem enviada. Ela fica privada até ser aprovada." });
+    setMessage({ tone: "success", text: "Imagem enviada e já disponível para usar no site." });
     setAlt("");
     if (inputRef.current) inputRef.current.value = "";
     router.refresh();
@@ -91,7 +91,7 @@ export function Uploader() {
           className="min-h-11 rounded-[var(--radius-control)] border border-line bg-surface-raised p-2 text-sm" />
       </div>
       <TextInput label="Texto alternativo (descreva a imagem)" value={alt} maxLength={250}
-        hint="Obrigatório para aprovar. Ex.: “Sala de atendimento com maca e iluminação natural”." onChange={(v) => setAlt(v ?? "")} />
+        hint="Recomendado: é lido por quem usa leitor de tela e pelo Google. Ex.: “Sala de atendimento com maca e iluminação natural”." onChange={(v) => setAlt(v ?? "")} />
       {stage ? (
         <div role="status" className="flex flex-col gap-1 text-sm">
           <span>{stage}</span>
@@ -119,16 +119,14 @@ type Asset = {
 
 const STATUS: Record<Asset["status"], string> = {
   processing: "Processando",
-  private: "Privada (não aprovada)",
-  published: "Aprovada (no site)",
+  private: "Fora do site",
+  published: "No site",
   archived: "Arquivada",
 };
 
 export function MediaCard({ asset, thumbUrl, usedIn }: { asset: Asset; thumbUrl: string | null; usedIn: string[] }) {
   const router = useRouter();
   const [alt, setAlt] = useState(asset.alt);
-  const [approving, setApproving] = useState(false);
-  const [rights, setRights] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: "error" | "success" | "info"; text: string; list?: string[] } | null>(null);
 
@@ -170,23 +168,10 @@ export function MediaCard({ asset, thumbUrl, usedIn }: { asset: Asset; thumbUrl:
           ) : null}
 
           {asset.status === "private" ? (
-            approving ? (
-              <div className="flex flex-col gap-2 rounded-lg border border-gold-300 bg-gold-100/40 p-3">
-                <TextArea label="Licença ou autorização de uso" value={rights} maxLength={500} rows={3}
-                  hint="Ex.: foto própria da clínica (out/2026); banco de imagens X, licença nº…; termo de autorização de imagem assinado em…"
-                  onChange={(v) => setRights(v ?? "")} />
-                <div className="flex flex-wrap gap-2">
-                  <button type="button" className={buttonPrimary} disabled={busy || alt !== asset.alt}
-                    onClick={() => act(() => publishMediaAction(asset.id, rights), "Imagem aprovada e disponível para o site.")}>
-                    Confirmar aprovação
-                  </button>
-                  <button type="button" className={buttonSecondary} onClick={() => setApproving(false)}>Cancelar</button>
-                </div>
-                {alt !== asset.alt ? <p className="text-xs text-danger">Salve o texto alternativo antes.</p> : null}
-              </div>
-            ) : (
-              <button type="button" className={buttonPrimary} disabled={busy} onClick={() => setApproving(true)}>Aprovar para o site</button>
-            )
+            <button type="button" className={buttonPrimary} disabled={busy}
+              onClick={() => act(() => publishMediaAction(asset.id), "Imagem de volta ao site.")}>
+              Colocar no site
+            </button>
           ) : null}
 
           {asset.status === "published" ? (
@@ -201,7 +186,7 @@ export function MediaCard({ asset, thumbUrl, usedIn }: { asset: Asset; thumbUrl:
 
           <button type="button" className="min-h-11 rounded px-3 text-sm font-semibold text-danger hover:bg-danger-bg" disabled={busy}
             onClick={async () => {
-              if (!(await confirmDialog("Excluir esta imagem? Se houver registro de licença, ela será arquivada (a evidência fica guardada).", { confirmLabel: "Excluir", danger: true }))) return;
+              if (!(await confirmDialog("Excluir esta imagem? Se houver registro de licença antigo, ela será arquivada (a evidência fica guardada).", { confirmLabel: "Excluir", danger: true }))) return;
               void act(() => deleteMediaAction(asset.id), "Imagem removida.");
             }}>
             Excluir

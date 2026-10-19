@@ -340,7 +340,7 @@ export type MediaOption = { id: string; alt: string | null; status: string; widt
 
 function mediaLabel(m: MediaOption) {
   const size = m.width && m.height ? ` · ${m.width}×${m.height}` : "";
-  const status = m.status === "published" ? "" : " · não aprovada";
+  const status = m.status === "published" ? "" : " · fora do site";
   return `${m.alt || "(sem texto alternativo)"}${size}${status}`;
 }
 
@@ -357,7 +357,7 @@ export function MediaPicker(props: {
       label={props.label}
       value={props.value}
       emptyLabel="Nenhuma"
-      hint={props.hint ?? "Imagens enviadas em Mídia. Para publicar, a imagem precisa estar aprovada."}
+      hint={props.hint ?? "Imagens enviadas em Mídia."}
       error={props.error}
       options={props.options.map((m) => ({ value: m.id, label: mediaLabel(m) }))}
       onChange={props.onChange}
