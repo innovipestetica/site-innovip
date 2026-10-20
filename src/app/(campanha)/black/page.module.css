@@ -227,6 +227,11 @@
   padding-inline: clamp(18px, 2.5vw, 38px);
 }
 
+.benefitGridFour h3 {
+  font-size: clamp(1.1rem, 1.6vw, 1.5rem);
+  line-height: 1.18;
+}
+
 .benefitGrid article,
 .stepGrid li {
   position: relative;
