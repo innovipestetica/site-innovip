@@ -254,6 +254,12 @@
   stroke-width: 1.4;
 }
 
+.iconWrap img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
 .benefitGrid h3,
 .stepGrid h3 {
   margin: 0;

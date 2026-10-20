@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { BLOCK_META, newBlockId, type Block, type BlockType, type CtaAction } from "@/lib/cms/blocks";
+import { BLOCK_META, FEATURE_ICON_KEYS, FEATURE_ICON_LABELS, newBlockId, type Block, type BlockType, type CtaAction, type FeatureIcon } from "@/lib/cms/blocks";
 import {
   Checkbox,
   EntryMultiPicker,
@@ -247,9 +247,9 @@ function StepLabelFields(props: { showLabel?: boolean; labelPrefix?: string; onC
   );
 }
 
-type ListItem = { title: string; text?: string; label?: string };
+type ListItem = { title: string; text?: string; label?: string; icon?: FeatureIcon; iconMediaId?: string };
 
-function ItemsEditor(props: { items: ListItem[]; onChange: (items: ListItem[]) => void; issue?: string; withLabel?: boolean }) {
+function ItemsEditor(props: { items: ListItem[]; onChange: (items: ListItem[]) => void; issue?: string; withLabel?: boolean; withIcon?: boolean; mediaOptions?: MediaOption[] }) {
   const groupId = useId();
   return (
     <fieldset className="flex flex-col gap-3" aria-describedby={props.issue ? `${groupId}-erro` : undefined}>
@@ -260,6 +260,16 @@ function ItemsEditor(props: { items: ListItem[]; onChange: (items: ListItem[]) =
             <TextInput label={`Item ${i + 1}: etiqueta própria (opcional)`} value={item.label} maxLength={40}
               hint="Substitui a etiqueta automática só neste item."
               onChange={(label) => props.onChange(props.items.map((it, j) => (j === i ? { ...it, label } : it)))} />
+          ) : null}
+          {props.withIcon ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Select label={`Item ${i + 1}: ícone pronto`} value={item.icon ?? "care"}
+                options={FEATURE_ICON_KEYS.map((icon) => ({ value: icon, label: FEATURE_ICON_LABELS[icon] }))}
+                onChange={(icon) => icon && props.onChange(props.items.map((it, j) => (j === i ? { ...it, icon } : it)))} />
+              <MediaPicker label={`Item ${i + 1}: ícone personalizado`} value={item.iconMediaId} options={props.mediaOptions ?? []}
+                hint="Opcional. Envie seu PNG ou WebP em Mídia; ele substitui o ícone pronto."
+                onChange={(iconMediaId) => props.onChange(props.items.map((it, j) => (j === i ? { ...it, iconMediaId } : it)))} />
+            </div>
           ) : null}
           <TextInput label={`Item ${i + 1}: título`} value={item.title} maxLength={80}
             onChange={(t) => props.onChange(props.items.map((it, j) => (j === i ? { ...it, title: t ?? "" } : it)))} />
@@ -346,7 +356,7 @@ function BlockFields(props: {
           {b.type === "steps" ? (
             <StepLabelFields showLabel={b.showLabel} labelPrefix={b.labelPrefix} onChange={(v) => onChange({ ...b, ...v })} />
           ) : null}
-          <ItemsEditor items={b.items} issue={issue("items")} withLabel={b.type === "steps"} onChange={(items) => onChange({ ...b, items } as Block)} />
+          <ItemsEditor items={b.items} issue={issue("items")} withLabel={b.type === "steps"} withIcon={b.type === "features"} mediaOptions={props.mediaOptions} onChange={(items) => onChange({ ...b, items } as Block)} />
         </>
       ) : null}
 

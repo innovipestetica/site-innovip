@@ -58,7 +58,23 @@ export const FLOW_ICON_KEYS = [
   "brilho", "escudo-check", "coracao", "telefone",
 ] as const;
 
+export const FEATURE_ICON_KEYS = ["clock", "sparkle", "care", "shield", "star", "leaf"] as const;
+export type FeatureIcon = (typeof FEATURE_ICON_KEYS)[number];
+export const FEATURE_ICON_LABELS: Record<FeatureIcon, string> = {
+  clock: "Relógio",
+  sparkle: "Brilho",
+  care: "Cuidado",
+  shield: "Escudo",
+  star: "Estrela",
+  leaf: "Folha",
+};
+
 const listItem = z.object({ title: shortText(80), text: optionalText(400) });
+const featureItem = listItem.extend({
+  icon: z.enum(FEATURE_ICON_KEYS).optional(),
+  /** Ícone próprio enviado à biblioteca de Mídia; quando presente substitui o ícone pronto. */
+  iconMediaId: uuid.optional(),
+});
 
 /**
  * Etiqueta das etapas ("Etapa 01"): palavra comum + número (labelPrefix,
@@ -129,7 +145,7 @@ export const blockSchemas = {
   }),
   features: z.object({
     heading: optionalText(120),
-    items: z.array(listItem).min(1).max(12),
+    items: z.array(featureItem).min(1).max(12),
   }),
   steps: z.object({
     heading: optionalText(120),

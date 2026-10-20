@@ -5,7 +5,7 @@ import { Logo } from "@/components/brand/logo";
 import { pageAttrs } from "@/lib/consent/tracking-config";
 import { getPublishedEntry, loadPublicContext } from "@/lib/cms/public-data";
 import { richTextToPlain } from "@/lib/cms/rich-text";
-import type { CtaAction } from "@/lib/cms/blocks";
+import type { CtaAction, FeatureIcon } from "@/lib/cms/blocks";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -18,16 +18,19 @@ export const metadata: Metadata = {
 const benefits = [
   {
     icon: "clock",
+    iconMediaId: undefined,
     title: "Acesso antecipado",
     text: "Saiba primeiro sobre novidades, agendas e experiências da Innovip.",
   },
   {
     icon: "sparkle",
+    iconMediaId: undefined,
     title: "Condições especiais",
     text: "Receba oportunidades selecionadas, criadas para quem acompanha a clínica de perto.",
   },
   {
     icon: "care",
+    iconMediaId: undefined,
     title: "Atendimento próximo",
     text: "Converse com a equipe para entender o cuidado mais adequado para o seu momento.",
   },
@@ -74,7 +77,7 @@ const faqs = [
   },
 ] as const;
 
-function Icon({ name }: { name: (typeof benefits)[number]["icon"] }) {
+function Icon({ name }: { name: FeatureIcon }) {
   if (name === "clock") {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -90,6 +93,15 @@ function Icon({ name }: { name: (typeof benefits)[number]["icon"] }) {
         <path d="m18.5 15 .6 2.4 2.4.6-2.4.6-.6 2.4-.6-2.4-2.4-.6 2.4-.6.6-2.4Z" />
       </svg>
     );
+  }
+  if (name === "shield") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 19 6v5c0 4.8-2.8 8-7 10-4.2-2-7-5.2-7-10V6l7-3Z" /><path d="m9 12 2 2 4-5" /></svg>;
+  }
+  if (name === "star") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.9-5.4 2.9 1-6-4.4-4.3 6.1-.9L12 3Z" /></svg>;
+  }
+  if (name === "leaf") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4C11 4 5 8 5 14c0 3 2 5 5 5 6 0 10-6 10-15Z" /><path d="M4 20c3-5 7-8 12-11" /></svg>;
   }
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -139,7 +151,7 @@ export default async function VipLandingPage() {
   const editableFaqs = editablePage?.blocks.find((block) => block.type === "care_flow");
   const finalCta = editablePage?.blocks.find((block) => block.type === "cta");
   const liveBenefits = features?.type === "features"
-    ? features.items.map((item, index) => ({ ...item, icon: benefits[index]?.icon ?? "care" as const }))
+    ? features.items.map((item, index) => ({ ...item, icon: item.icon ?? benefits[index]?.icon ?? "care" as const }))
     : benefits;
   const liveSteps = editableSteps?.type === "steps"
     ? editableSteps.items.map((item, index) => ({ number: item.label || String(index + 1).padStart(2, "0"), title: item.title, text: item.text || "" }))
@@ -195,7 +207,11 @@ export default async function VipLandingPage() {
           <div className={styles.benefitGrid}>
             {liveBenefits.map((benefit) => (
               <article key={benefit.title}>
-                <div className={styles.iconWrap}><Icon name={benefit.icon} /></div>
+                <div className={styles.iconWrap}>
+                  {benefit.iconMediaId && ctx?.media.get(benefit.iconMediaId)?.sources.at(-1)?.url ? (
+                    <Image src={ctx.media.get(benefit.iconMediaId)!.sources.at(-1)!.url} alt="" width={40} height={40} />
+                  ) : <Icon name={benefit.icon} />}
+                </div>
                 <h3>{benefit.title}</h3>
                 <span className={styles.accentRule} aria-hidden="true" />
                 <p>{benefit.text}</p>
