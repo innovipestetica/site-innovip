@@ -104,7 +104,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   turbopack: {
     rules: {
-      "*.css": {
+      // Apenas o CSS global importa o Tailwind. Aplicar este loader a
+      // `*.module.css` muda o arquivo para CSS global e remove o mapa de classes.
+      "globals.css": {
         loaders: ["@tailwindcss/turbopack"],
         as: "*.css",
       },
