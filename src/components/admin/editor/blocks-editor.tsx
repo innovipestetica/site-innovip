@@ -303,7 +303,9 @@ function BlockFields(props: {
     <>
       {b.type === "hero" ? (
         <>
-          <TextInput label="Título principal" value={b.heading} maxLength={120} error={issue("heading")} onChange={(v) => onChange({ ...b, heading: v ?? "" })} />
+          <TextInput label="Título principal" value={b.heading} maxLength={120} error={issue("heading")}
+            hint={props.independentLinks ? "Para colorir somente um trecho, use: {#008d68 texto colorido}" : undefined}
+            onChange={(v) => onChange({ ...b, heading: v ?? "" })} />
           <TextArea label="Subtítulo" value={b.subheading} maxLength={300} onChange={(v) => onChange({ ...b, subheading: v })} />
           <MediaPicker label="Imagem" value={b.mediaId} options={props.mediaOptions} onChange={(v) => onChange({ ...b, mediaId: v })} />
           {b.mediaId ? (
@@ -317,6 +319,7 @@ function BlockFields(props: {
 
       {b.type !== "hero" && b.type !== "banner_carousel" && b.type !== "image" && b.type !== "cta" && b.type !== "notice" && b.type !== "care_flow" && heading ? (
         <TextInput label="Título da seção (opcional)" value={"heading" in b ? (b.heading as string | undefined) : undefined} maxLength={120}
+          hint={props.independentLinks ? "Para colorir somente um trecho, use: {#008d68 texto colorido}" : undefined}
           onChange={(v) => onChange({ ...b, heading: v } as Block)} />
       ) : null}
 
@@ -339,7 +342,9 @@ function BlockFields(props: {
 
       {b.type === "cta" ? (
         <>
-          <TextInput label="Título" value={b.heading} maxLength={120} error={issue("heading")} onChange={(v) => onChange({ ...b, heading: v ?? "" })} />
+          <TextInput label="Título" value={b.heading} maxLength={120} error={issue("heading")}
+            hint={props.independentLinks ? "Para colorir somente um trecho, use: {#008d68 texto colorido}" : undefined}
+            onChange={(v) => onChange({ ...b, heading: v ?? "" })} />
           <TextArea label="Texto (opcional)" value={b.text} maxLength={300} onChange={(v) => onChange({ ...b, text: v })} />
           <CtaEditor independentLinks={props.independentLinks} label="Botão" value={b.action} onChange={(v) => v && onChange({ ...b, action: v })} issue={issue("action.href") ?? issue("action.label")} />
         </>

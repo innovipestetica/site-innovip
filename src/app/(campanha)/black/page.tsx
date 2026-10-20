@@ -121,6 +121,22 @@ function SectionLabel({ children, light = false }: { children: React.ReactNode; 
   );
 }
 
+/** Marca trechos como {#RRGGBB texto}; o restante continua texto React escapado. */
+function ColoredTitle({ text, fallback }: { text?: string; fallback: React.ReactNode }) {
+  if (!text) return fallback;
+  const parts: React.ReactNode[] = [];
+  const pattern = /\{(#[0-9a-f]{6})\s+([^{}]+)\}/gi;
+  let cursor = 0;
+  for (const match of text.matchAll(pattern)) {
+    const index = match.index ?? 0;
+    if (index > cursor) parts.push(text.slice(cursor, index));
+    parts.push(<span key={`${index}-${match[1]}`} style={{ color: match[1] }}>{match[2]}</span>);
+    cursor = index + match[0].length;
+  }
+  if (cursor < text.length) parts.push(text.slice(cursor));
+  return parts.length ? parts : text;
+}
+
 function CtaLink({ className, location, children, action }: { className?: string; location: string; children: React.ReactNode; action?: CtaAction }) {
   const href = action?.kind === "link" ? action.href : "/agendar-avaliacao";
   return (
@@ -184,7 +200,7 @@ export default async function VipLandingPage() {
           </Link>
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>Experiências que começam antes</p>
-            <h1 id="vip-title">{hero?.heading ?? <>Seu acesso a uma experiência <em>mais exclusiva.</em></>}</h1>
+            <h1 id="vip-title"><ColoredTitle text={hero?.heading} fallback={<>Seu acesso a uma experiência <em>mais exclusiva.</em></>} /></h1>
             <p className={styles.heroText}>
               {hero?.subheading ?? "Entre para a lista VIP da Innovip e receba novidades e condições especiais em primeira mão."}
             </p>
@@ -203,7 +219,7 @@ export default async function VipLandingPage() {
       <section className={styles.benefits} aria-labelledby="benefits-title">
         <div className={styles.container}>
           <SectionLabel>Benefícios da lista</SectionLabel>
-          <h2 id="benefits-title">Um cuidado pensado para estar mais perto.</h2>
+          <h2 id="benefits-title"><ColoredTitle text={features?.heading} fallback="Um cuidado pensado para estar mais perto." /></h2>
           <div className={styles.benefitGrid}>
             {liveBenefits.map((benefit) => (
               <article key={benefit.title}>
@@ -234,7 +250,7 @@ export default async function VipLandingPage() {
           <div>
             <p className={styles.eyebrow}>Uma experiência em outro nível</p>
             <span className={styles.accentRule} aria-hidden="true" />
-            <h2 id="story-title">{story?.heading ?? "Mais que acesso. Um convite para viver a Innovip."}</h2>
+            <h2 id="story-title"><ColoredTitle text={story?.heading} fallback="Mais que acesso. Um convite para viver a Innovip." /></h2>
           </div>
           <p className={styles.storyText}>
             {story?.type === "rich_text" ? richTextToPlain(story.body) : "A lista VIP aproxima você do universo Innovip: um espaço de cuidado, atenção e escolhas feitas com intenção. Sem promessas exageradas, apenas uma forma mais próxima de acompanhar o que preparamos."}
@@ -245,7 +261,7 @@ export default async function VipLandingPage() {
       <section className={styles.steps} aria-labelledby="steps-title">
         <div className={styles.container}>
           <SectionLabel>Como funciona</SectionLabel>
-          <h2 id="steps-title">Três passos para ficar mais perto.</h2>
+          <h2 id="steps-title"><ColoredTitle text={editableSteps?.heading} fallback="Três passos para ficar mais perto." /></h2>
           <ol className={styles.stepGrid}>
             {liveSteps.map((step) => (
               <li key={step.number}>
@@ -262,7 +278,7 @@ export default async function VipLandingPage() {
       <section className={styles.faq} aria-labelledby="faq-title">
         <div className={styles.faqInner}>
           <SectionLabel light>Perguntas frequentes</SectionLabel>
-          <h2 id="faq-title">Tudo o que você precisa saber.</h2>
+          <h2 id="faq-title"><ColoredTitle text={editableFaqs?.heading} fallback="Tudo o que você precisa saber." /></h2>
           <div className={styles.faqList}>
             {liveFaqs.map((faq) => (
               <details key={faq.question}>
@@ -281,7 +297,7 @@ export default async function VipLandingPage() {
         <div className={styles.finalCtaGlow} />
         <div className={styles.finalCtaInner}>
           <SectionLabel light>Seu próximo passo</SectionLabel>
-          <h2>{finalCta?.heading ?? <>Entre para a <em>lista VIP</em>.</>}</h2>
+          <h2><ColoredTitle text={finalCta?.heading} fallback={<>Entre para a <em>lista VIP</em>.</>} /></h2>
           <p>{finalCta?.text ?? "Fale com a equipe e seja uma das primeiras pessoas a acompanhar nossas novidades."}</p>
           <CtaLink className={styles.primaryButton} location="vip_footer" action={finalCta?.action}>
             {finalCta?.action.label ?? "Quero entrar para a lista"}
