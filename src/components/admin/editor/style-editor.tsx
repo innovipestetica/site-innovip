@@ -40,7 +40,7 @@ export function StyleEditor({ value, onChange }: { value: BlockStyle | undefined
   );
 }
 
-function ColorField({ label, hint, value, onChange }: { label: string; hint: string; value?: string; onChange: (c: string | undefined) => void }) {
+export function ColorField({ label, hint, value, onChange }: { label: string; hint: string; value?: string; onChange: (c: string | undefined) => void }) {
   const id = useId();
   return (
     <fieldset className="flex flex-col gap-1.5">

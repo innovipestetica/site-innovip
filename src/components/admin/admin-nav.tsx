@@ -7,6 +7,12 @@ import { useEffect, useId, useRef, useState } from "react";
 export const ADMIN_NAV: { group: string; items: { href: string; label: string }[] }[] = [
   { group: "Geral", items: [{ href: "/admin", label: "Início" }] },
   {
+    group: "Páginas independentes",
+    items: [
+      { href: "/admin/conteudo/paginas-personalizadas", label: "Páginas personalizadas" },
+    ],
+  },
+  {
     group: "Site",
     items: [
       { href: "/admin/conteudo/home", label: "Home" },
@@ -15,7 +21,6 @@ export const ADMIN_NAV: { group: string; items: { href: string; label: string }[
       { href: "/admin/conteudo/tecnologias", label: "Tecnologias" },
       { href: "/admin/taxonomias", label: "Categorias e objetivos" },
       { href: "/admin/conteudo/promocoes", label: "Promoções" },
-      { href: "/admin/conteudo/landing-pages", label: "Landing pages" },
       { href: "/admin/conteudo/blog", label: "Blog" },
       { href: "/admin/conteudo/faqs", label: "FAQs" },
       { href: "/admin/conteudo/equipe", label: "Equipe" },

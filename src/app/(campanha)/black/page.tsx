@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
+import { IndependentPage } from "@/components/site/independent-page";
 import { pageAttrs } from "@/lib/consent/tracking-config";
+import { getPublishedEntry, loadPublicContext } from "@/lib/cms/public-data";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -121,7 +123,17 @@ function CtaLink({ className, location, children }: { className?: string; locati
   );
 }
 
-export default function VipLandingPage() {
+export default async function VipLandingPage() {
+  const editablePage = await getPublishedEntry("landing", "black");
+
+  if (editablePage) {
+    const ctx = await loadPublicContext({
+      blocks: editablePage.blocks,
+      data: editablePage.data,
+    });
+    return <IndependentPage entry={editablePage} ctx={ctx} />;
+  }
+
   return (
     <main id="conteudo" className={styles.page} {...pageAttrs("landing")}>
       <section className={styles.hero} aria-labelledby="vip-title">

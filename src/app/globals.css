@@ -147,3 +147,24 @@
 .blk[data-accent] .blk-accent-bg {
   background-color: var(--blk-accent);
 }
+.blk-backdrop > :is(section, div, figure) {
+  background-color: transparent;
+}
+
+/* Páginas personalizadas: identidade isolada das configurações do site. */
+.independent-page {
+  background: var(--custom-bg);
+  color: var(--custom-text);
+}
+.independent-page :is(p, li, figcaption, blockquote, summary, dd, dt) {
+  color: inherit;
+}
+.independent-page :is(h1, h2, h3, h4),
+.independent-page .blk-accent {
+  color: var(--custom-accent);
+}
+.independent-page a[data-cta="link"] {
+  border-color: var(--custom-button) !important;
+  background: var(--custom-button) !important;
+  color: var(--custom-button-text) !important;
+}

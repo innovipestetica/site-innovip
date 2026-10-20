@@ -1,14 +1,8 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
-import { RenderBlocks } from "@/components/blocks/render-blocks";
-import { PageOpening } from "@/components/site/page-parts";
-import { PromotionStatus, PromotionTerms } from "@/components/site/promotion-status";
-import { SiteFooter } from "@/components/site/site-footer";
-import { SiteHeader } from "@/components/site/site-header";
+import { IndependentPage } from "@/components/site/independent-page";
 import { getMedia, getPublishedEntry, listPublishedSlugs, loadPublicContext } from "@/lib/cms/public-data";
 import { resolveMissing } from "@/lib/cms/resolve-missing";
 import { buildMetadata } from "@/lib/seo";
-import { pageAttrs } from "@/lib/consent/tracking-config";
 
 /**
  * Landing pages de campanha. Navegação reduzida opcional; começam noindex
@@ -33,28 +27,6 @@ export default async function LandingPage({ params }: PageProps<"/lp/[slug]">) {
   const lp = await getPublishedEntry("landing", slug);
   if (!lp) return resolveMissing(`/lp/${slug}`);
 
-  const promotionId = lp.landing?.promotionEntryId ?? null;
-  const ctx = await loadPublicContext({ blocks: lp.blocks, data: lp.data, promo: { entryId: promotionId } });
-  const promoRef = promotionId ? ctx.entries.get(promotionId) : undefined;
-  const promo = promoRef ? await getPublishedEntry("promotion", promoRef.slug) : null;
-  const reduced = lp.landing?.reducedNavigation ?? true;
-
-  return (
-    <>
-      <SiteHeader reduced={reduced} />
-      <main id="conteudo" className="flex-1" {...pageAttrs("landing")}>
-        <PageOpening firstBlockType={lp.blocks[0]?.type} title={lp.title} summary={lp.summary} />
-        {promo ? (
-          <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-4">
-            <Suspense fallback={<p className="text-sm text-muted" role="status">Verificando vigência da oferta…</p>}>
-              <PromotionStatus promo={promo} ctx={ctx} ctaLocation="landing" />
-            </Suspense>
-            <PromotionTerms terms={promo.promotion?.terms} />
-          </div>
-        ) : null}
-        <RenderBlocks blocks={lp.blocks} ctx={ctx} />
-      </main>
-      <SiteFooter reduced={reduced} />
-    </>
-  );
+  const ctx = await loadPublicContext({ blocks: lp.blocks, data: lp.data });
+  return <IndependentPage entry={lp} ctx={ctx} />;
 }

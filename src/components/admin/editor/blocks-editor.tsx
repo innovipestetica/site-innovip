@@ -21,11 +21,14 @@ import { FLOW_ICONS, FLOW_ICON_NAMES, FlowIcon } from "@/components/blocks/flow-
 type Issues = Record<string, string>;
 
 /** Bloco recém-adicionado: campos vazios, validados no salvamento. */
-function emptyBlock(type: BlockType): Block {
+function emptyBlock(type: BlockType, independentLinks = false): Block {
   const id = newBlockId();
+  const action: CtaAction = independentLinks
+    ? { kind: "link", label: "Botão", href: "/" }
+    : { kind: "evaluation", label: "Agendar avaliação" };
   switch (type) {
     case "hero":
-      return { id, type, heading: "", primary: { kind: "evaluation", label: "Agendar avaliação" } };
+      return { id, type, heading: "", primary: action };
     case "banner_carousel":
       return { id, type, slides: [{ key: newBlockId(), mediaId: "" }], autoplay: true, intervalSeconds: 6 };
     case "rich_text":
@@ -33,7 +36,7 @@ function emptyBlock(type: BlockType): Block {
     case "image":
       return { id, type, mediaId: "" };
     case "cta":
-      return { id, type, heading: "", action: { kind: "evaluation", label: "Agendar avaliação" } };
+      return { id, type, heading: "", action };
     case "features":
       return { id, type, items: [{ title: "" }] };
     case "steps":
@@ -81,6 +84,7 @@ export function BlocksEditor(props: {
   refOptions: RefOption[];
   mediaOptions: MediaOption[];
   issues: Issues;
+  independentLinks?: boolean;
 }) {
   const [toAdd, setToAdd] = useState<BlockType | undefined>(props.allowed[0]);
   const { blocks, onChange } = props;
@@ -128,7 +132,24 @@ export function BlocksEditor(props: {
                 refOptions={props.refOptions}
                 mediaOptions={props.mediaOptions}
                 issue={(field) => props.issues[`blocks.${idx}.${field}`]}
+                independentLinks={props.independentLinks}
               />
+              <fieldset className="flex flex-col gap-3 rounded-lg border border-line p-3">
+                <legend className="px-1 text-sm font-semibold">Imagem de fundo do bloco</legend>
+                <MediaPicker label="Imagem (opcional)" value={block.backdrop?.mediaId} options={props.mediaOptions}
+                  onChange={(mediaId) => update(idx, { ...block, backdrop: mediaId ? { mediaId, position: block.backdrop?.position ?? "center", overlay: block.backdrop?.overlay ?? 35, minHeight: block.backdrop?.minHeight } : undefined } as Block)} />
+                {block.backdrop ? (
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <Select label="Posição" value={block.backdrop.position}
+                      options={["center", "top", "bottom", "left", "right"].map((value) => ({ value, label: { center: "Centro", top: "Topo", bottom: "Base", left: "Esquerda", right: "Direita" }[value]! }))}
+                      onChange={(position) => position && update(idx, { ...block, backdrop: { ...block.backdrop!, position } } as Block)} />
+                    <TextInput label="Escurecimento (%)" value={String(block.backdrop.overlay)} maxLength={2}
+                      hint="0 a 90" onChange={(value) => update(idx, { ...block, backdrop: { ...block.backdrop!, overlay: Math.min(90, Math.max(0, Number(value) || 0)) } } as Block)} />
+                    <TextInput label="Altura mínima (px)" value={block.backdrop.minHeight ? String(block.backdrop.minHeight) : undefined} maxLength={4}
+                      hint="Opcional, até 1200" onChange={(value) => update(idx, { ...block, backdrop: { ...block.backdrop!, minHeight: value ? Math.min(1200, Math.max(0, Number(value) || 0)) : undefined } } as Block)} />
+                  </div>
+                ) : null}
+              </fieldset>
               <StyleEditor value={block.style} onChange={(style) => update(idx, { ...block, style } as Block)} />
             </div>
           </li>
@@ -148,7 +169,7 @@ export function BlocksEditor(props: {
         <button
           type="button"
           disabled={!toAdd}
-          onClick={() => toAdd && onChange([...blocks, emptyBlock(toAdd)])}
+          onClick={() => toAdd && onChange([...blocks, emptyBlock(toAdd, props.independentLinks)])}
           className="min-h-11 rounded-[var(--radius-control)] border border-brand-700 px-4 font-semibold text-brand-800 hover:bg-brand-50"
         >
           Adicionar
@@ -173,7 +194,7 @@ function IconButton(props: { label: string; onClick: () => void; disabled?: bool
   );
 }
 
-function CtaEditor(props: { label: string; value: CtaAction | undefined; onChange: (v: CtaAction | undefined) => void; optional?: boolean; issue?: string }) {
+function CtaEditor(props: { label: string; value: CtaAction | undefined; onChange: (v: CtaAction | undefined) => void; optional?: boolean; issue?: string; independentLinks?: boolean }) {
   const v = props.value;
   return (
     <fieldset className="flex flex-col gap-3 rounded-lg border border-line p-3">
@@ -182,7 +203,9 @@ function CtaEditor(props: { label: string; value: CtaAction | undefined; onChang
         label="Ação"
         value={v?.kind}
         emptyLabel={props.optional ? "Sem botão" : undefined}
-        options={[
+        options={props.independentLinks ? [
+          { value: "link", label: "Link próprio desta página" },
+        ] : [
           { value: "evaluation", label: "Agendar avaliação (destino definido em Configurações públicas)" },
           { value: "whatsapp", label: "WhatsApp (número das configurações)" },
           { value: "link", label: "Link" },
@@ -261,6 +284,7 @@ function BlockFields(props: {
   refOptions: RefOption[];
   mediaOptions: MediaOption[];
   issue: (field: string) => string | undefined;
+  independentLinks?: boolean;
 }) {
   const { block: b, onChange, issue } = props;
   const heading = "heading" in b || ["rich_text", "features", "steps", "faq_list", "treatment_list", "category_list", "concern_list", "promotion_list", "testimonial_list", "team_list", "gallery", "steps_carousel", "contact"].includes(b.type);
@@ -276,8 +300,8 @@ function BlockFields(props: {
             <TextInput label="Link ao clicar na imagem" value={b.imageLink} maxLength={500} error={issue("imageLink")}
               hint={"Opcional. https://…, caminho do site (/tratamentos), tel: ou mailto:. Links externos abrem em nova aba."} onChange={(imageLink) => onChange({ ...b, imageLink })} />
           ) : null}
-          <CtaEditor label="Botão principal" optional value={b.primary} onChange={(v) => onChange({ ...b, primary: v })} issue={issue("primary.href") ?? issue("primary.label")} />
-          <CtaEditor label="Botão secundário" optional value={b.secondary} onChange={(v) => onChange({ ...b, secondary: v })} issue={issue("secondary.href") ?? issue("secondary.label")} />
+          <CtaEditor independentLinks={props.independentLinks} label="Botão principal" optional value={b.primary} onChange={(v) => onChange({ ...b, primary: v })} issue={issue("primary.href") ?? issue("primary.label")} />
+          <CtaEditor independentLinks={props.independentLinks} label="Botão secundário" optional value={b.secondary} onChange={(v) => onChange({ ...b, secondary: v })} issue={issue("secondary.href") ?? issue("secondary.label")} />
         </>
       ) : null}
 
@@ -287,7 +311,7 @@ function BlockFields(props: {
       ) : null}
 
       {b.type === "banner_carousel" ? (
-        <BannerSlidesEditor block={b} onChange={onChange} mediaOptions={props.mediaOptions} issue={issue} />
+        <BannerSlidesEditor block={b} onChange={onChange} mediaOptions={props.mediaOptions} issue={issue} independentLinks={props.independentLinks} />
       ) : null}
 
       {b.type === "rich_text" ? (
@@ -307,7 +331,7 @@ function BlockFields(props: {
         <>
           <TextInput label="Título" value={b.heading} maxLength={120} error={issue("heading")} onChange={(v) => onChange({ ...b, heading: v ?? "" })} />
           <TextArea label="Texto (opcional)" value={b.text} maxLength={300} onChange={(v) => onChange({ ...b, text: v })} />
-          <CtaEditor label="Botão" value={b.action} onChange={(v) => v && onChange({ ...b, action: v })} issue={issue("action.href") ?? issue("action.label")} />
+          <CtaEditor independentLinks={props.independentLinks} label="Botão" value={b.action} onChange={(v) => v && onChange({ ...b, action: v })} issue={issue("action.href") ?? issue("action.label")} />
         </>
       ) : null}
 
@@ -549,6 +573,7 @@ function BannerSlidesEditor(props: {
   onChange: (b: Block) => void;
   mediaOptions: MediaOption[];
   issue: (field: string) => string | undefined;
+  independentLinks?: boolean;
 }) {
   const { block: b, onChange } = props;
   const setSlides = (slides: CarouselBlock["slides"]) => onChange({ ...b, slides });
@@ -597,7 +622,7 @@ function BannerSlidesEditor(props: {
               onChange={(v) => update(i, { mobile: v ? { mediaId: v } : undefined })} />
             <TextInput label="Título (opcional)" value={slide.title} maxLength={120} onChange={(title) => update(i, { title })} />
             <TextArea label="Texto (opcional)" value={slide.text} maxLength={240} rows={2} onChange={(text) => update(i, { text })} />
-            <CtaEditor label="Botão (opcional)" optional value={slide.action}
+            <CtaEditor independentLinks={props.independentLinks} label="Botão (opcional)" optional value={slide.action}
               issue={props.issue(`slides.${i}.action.href`) ?? props.issue(`slides.${i}.action.label`)}
               onChange={(action) => update(i, { action })} />
             <TextInput label="Link ao clicar no banner" value={slide.link} maxLength={500} error={props.issue(`slides.${i}.link`)}

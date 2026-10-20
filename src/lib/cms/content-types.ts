@@ -27,13 +27,19 @@ const ALL_BLOCKS: BlockType[] = [
   "testimonial_list", "team_list", "gallery", "contact",
 ];
 
+/** Blocos autocontidos: não dependem de tratamentos, promoções, FAQs ou configurações do site. */
+const INDEPENDENT_PAGE_BLOCKS: BlockType[] = [
+  "hero", "banner_carousel", "rich_text", "image", "cta", "features", "steps",
+  "steps_carousel", "care_flow", "notice", "gallery",
+];
+
 export const CONTENT_TYPES: Record<ContentType, TypeMeta> = {
   home: { label: "Home", plural: "Home", segment: "home", publicPrefix: "/", usesBlocks: true, allowedBlocks: ALL_BLOCKS, defaultNoindex: false },
   page: { label: "Página", plural: "Páginas", segment: "paginas", publicPrefix: "/", usesBlocks: true, allowedBlocks: ALL_BLOCKS, defaultNoindex: false },
   treatment: { label: "Tratamento", plural: "Tratamentos", segment: "tratamentos", publicPrefix: "/tratamentos/", usesBlocks: true, allowedBlocks: ALL_BLOCKS, defaultNoindex: false },
   technology: { label: "Tecnologia", plural: "Tecnologias", segment: "tecnologias", publicPrefix: null, usesBlocks: true, allowedBlocks: ALL_BLOCKS, defaultNoindex: false },
   promotion: { label: "Promoção", plural: "Promoções", segment: "promocoes", publicPrefix: "/promocoes/", usesBlocks: true, allowedBlocks: ALL_BLOCKS, defaultNoindex: false },
-  landing: { label: "Landing page", plural: "Landing pages", segment: "landing-pages", publicPrefix: "/lp/", usesBlocks: true, allowedBlocks: ALL_BLOCKS, defaultNoindex: true },
+  landing: { label: "Página personalizada", plural: "Páginas personalizadas", segment: "paginas-personalizadas", publicPrefix: "/lp/", usesBlocks: true, allowedBlocks: INDEPENDENT_PAGE_BLOCKS, defaultNoindex: true },
   blog_post: { label: "Post do blog", plural: "Blog", segment: "blog", publicPrefix: "/blog/", usesBlocks: true, allowedBlocks: ALL_BLOCKS, defaultNoindex: false },
   faq: { label: "Pergunta frequente", plural: "FAQs", segment: "faqs", publicPrefix: null, usesBlocks: false, allowedBlocks: [], defaultNoindex: false },
   team_member: { label: "Profissional", plural: "Equipe", segment: "equipe", publicPrefix: null, usesBlocks: false, allowedBlocks: [], defaultNoindex: false },
@@ -138,6 +144,14 @@ export const detailsSchemas = {
 } as const;
 
 export const dataSchemas: Partial<Record<ContentType, z.ZodType>> = {
+  landing: z.object({
+    logoMediaId: z.uuid().optional(),
+    pageBackground: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+    pageText: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+    pageAccent: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+    buttonBackground: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+    buttonText: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
+  }),
   faq: z.object({ answer: z.string().trim().max(3000).optional() }),
   team_member: z.object({
     role: z.string().trim().max(120).optional(),
@@ -233,13 +247,34 @@ export function initialPayload(type: ContentType, title: string, makeId: () => s
       { id: makeId(), type: "notice", tone: "important", text: "A indicação depende de avaliação individual com profissional habilitado. Resultados variam de pessoa para pessoa." },
       { id: makeId(), type: "cta", heading: "Quer saber se este tratamento é indicado para você?", action: { kind: "evaluation", label: "Agendar avaliação" } },
     );
+  } else if (type === "landing") {
+    blocks.push(
+      {
+        id: makeId(), type: "hero", heading: title, subheading: "Escreva aqui a apresentação da sua página.",
+        primary: { kind: "link", label: "Saiba mais", href: "/" },
+      },
+      {
+        id: makeId(), type: "features", heading: "Destaques",
+        items: [{ title: "Primeiro destaque", text: "Edite este texto no painel." }],
+      },
+      {
+        id: makeId(), type: "cta", heading: "Próximo passo", text: "Edite esta chamada e escolha qualquer destino para o botão.",
+        action: { kind: "link", label: "Continuar", href: "/" },
+      },
+    );
   }
   return {
     schema_version: CURRENT_SCHEMA_VERSION,
     title,
     blocks,
     seo: CONTENT_TYPES[type].defaultNoindex ? { noindex: true } : {},
-    data: {},
+    data: type === "landing" ? {
+      pageBackground: "#ffffff",
+      pageText: "#1e2b27",
+      pageAccent: "#008d68",
+      buttonBackground: "#008d68",
+      buttonText: "#ffffff",
+    } : {},
     details: type === "treatment" ? { requires_evaluation: true } : type === "landing" ? { reduced_navigation: true } : {},
     relations: { categories: [], concerns: [], treatments: [] },
   };

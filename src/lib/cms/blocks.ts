@@ -33,6 +33,14 @@ export const blockStyleSchema = z.object({
 });
 export type BlockStyle = z.infer<typeof blockStyleSchema>;
 
+export const blockBackdropSchema = z.object({
+  mediaId: uuid,
+  position: z.enum(["center", "top", "bottom", "left", "right"]).default("center"),
+  overlay: z.number().int().min(0).max(90).default(35),
+  minHeight: z.number().int().min(0).max(1200).optional(),
+});
+export type BlockBackdrop = z.infer<typeof blockBackdropSchema>;
+
 /** Ação de um botão: sem telefone ou URL fixos dentro do bloco. */
 export const ctaActionSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("evaluation"), label: shortText(40) }), // destino nas Configurações públicas
@@ -201,7 +209,7 @@ export type BlockType = keyof typeof blockSchemas;
 export const BLOCK_TYPES = Object.keys(blockSchemas) as BlockType[];
 
 export type Block = {
-  [K in BlockType]: z.infer<(typeof blockSchemas)[K]> & { id: string; type: K; style?: BlockStyle };
+  [K in BlockType]: z.infer<(typeof blockSchemas)[K]> & { id: string; type: K; style?: BlockStyle; backdrop?: BlockBackdrop };
 }[BlockType];
 
 type BlockVariant = z.ZodObject<{ id: typeof blockId; type: z.ZodLiteral<BlockType> }>;
@@ -209,7 +217,7 @@ type BlockVariant = z.ZodObject<{ id: typeof blockId; type: z.ZodLiteral<BlockTy
 export const blockSchema = z.discriminatedUnion(
   "type",
   BLOCK_TYPES.map((type) =>
-    blockSchemas[type].extend({ id: blockId, type: z.literal(type), style: blockStyleSchema.optional() }),
+    blockSchemas[type].extend({ id: blockId, type: z.literal(type), style: blockStyleSchema.optional(), backdrop: blockBackdropSchema.optional() }),
   ) as unknown as [BlockVariant, ...BlockVariant[]],
 ) as unknown as z.ZodType<Block>;
 

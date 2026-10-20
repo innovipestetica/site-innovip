@@ -1,4 +1,4 @@
-import { Fragment, Suspense, type ReactNode } from "react";
+import { Fragment, Suspense, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { requestNow } from "@/lib/request-time";
 import { stepLabelText, type Block, type CtaAction } from "@/lib/cms/blocks";
@@ -142,7 +142,26 @@ export function RenderBlocks({ blocks, ctx, pageHasTitle = false }: { blocks: Bl
         const content = <RenderBlock block={block} ctx={ctx} first={idx === 0} pageHasTitle={pageHasTitle} />;
         // Cores escolhidas no painel: invólucro com variáveis CSS (globals.css).
         const styled = blockStyleAttrs(block.style);
-        return styled ? <div key={block.id} {...styled}>{content}</div> : <Fragment key={block.id}>{content}</Fragment>;
+        const media = block.backdrop?.mediaId ? ctx.media.get(block.backdrop.mediaId) : undefined;
+        const image = media?.sources.at(-1)?.url;
+        const backdropStyle: CSSProperties | undefined = image ? {
+          backgroundImage: `linear-gradient(rgba(0,0,0,${block.backdrop!.overlay / 100}), rgba(0,0,0,${block.backdrop!.overlay / 100})), url("${image}")`,
+          backgroundPosition: block.backdrop!.position,
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          minHeight: block.backdrop!.minHeight ? `${block.backdrop!.minHeight}px` : undefined,
+        } : undefined;
+        if (!styled && !backdropStyle) return <Fragment key={block.id}>{content}</Fragment>;
+        return (
+          <div
+            key={block.id}
+            {...styled}
+            className={`${styled?.className ?? ""}${backdropStyle ? " blk-backdrop" : ""}`.trim()}
+            style={{ ...(styled?.style ?? {}), ...(backdropStyle ?? {}) }}
+          >
+            {content}
+          </div>
+        );
       })}
     </>
   );

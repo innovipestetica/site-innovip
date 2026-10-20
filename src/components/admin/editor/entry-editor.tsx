@@ -31,13 +31,13 @@ import {
   EntryMultiPicker,
   MediaPicker,
   MoneyInput,
-  Select,
   TextArea,
   TextInput,
   type MediaOption,
   type RefOption,
 } from "./fields";
 import { confirmDialog, promptDialog } from "@/components/admin/dialog";
+import { ColorField } from "./style-editor";
 
 export type Taxonomy = { id: string; name: string; status: string };
 
@@ -296,6 +296,7 @@ export function EntryEditor(props: EditorProps) {
             refOptions={props.refOptions}
             mediaOptions={props.mediaOptions}
             issues={issues}
+            independentLinks={entry.type === "landing"}
           />
         ) : null}
 
@@ -377,15 +378,17 @@ function TypeFields(props: {
         </>
       ));
     case "landing":
-      return wrap("Campanha", (
+      return wrap("Identidade visual independente", (
         <>
-          <TextInput label="Chave da campanha" value={det.campaign_key as string | undefined} maxLength={60} error={issues["details.campaign_key"]}
-            hint="Ex.: verao_2027. Usada na atribuição de leads." onChange={(v) => setDetail("campaign_key", v)} />
-          <Select label="Promoção associada (fonte única da oferta)" value={det.promotion_entry_id as string | undefined} emptyLabel="Nenhuma"
-            options={props.refOptions.filter((o) => o.type === "promotion" && o.id).map((o) => ({ value: o.id!, label: o.title ?? "" }))}
-            onChange={(v) => setDetail("promotion_entry_id", v)} />
-          <Checkbox label="Navegação reduzida" hint="Esconde o menu principal para manter o foco na campanha."
-            checked={(det.reduced_navigation as boolean | undefined) ?? true} onChange={(v) => setDetail("reduced_navigation", v)} />
+          <p className="text-sm text-muted">Esta página não usa cabeçalho, rodapé, WhatsApp ou configurações públicas do site. Imagens, cores e links pertencem somente a ela.</p>
+          <MediaPicker label="Logo própria (opcional)" value={d.logoMediaId} options={props.mediaOptions} onChange={(v) => setData("logoMediaId", v)} />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <ColorField label="Fundo geral" hint="Cor de fundo da página." value={d.pageBackground} onChange={(v) => setData("pageBackground", v)} />
+            <ColorField label="Texto geral" hint="Cor padrão dos textos." value={d.pageText} onChange={(v) => setData("pageText", v)} />
+            <ColorField label="Cor de destaque" hint="Linhas, detalhes e destaques." value={d.pageAccent} onChange={(v) => setData("pageAccent", v)} />
+            <ColorField label="Fundo dos botões" hint="Cor padrão dos botões." value={d.buttonBackground} onChange={(v) => setData("buttonBackground", v)} />
+            <ColorField label="Texto dos botões" hint="Cor do texto dos botões." value={d.buttonText} onChange={(v) => setData("buttonText", v)} />
+          </div>
         </>
       ));
     case "faq":
