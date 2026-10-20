@@ -228,8 +228,8 @@
 }
 
 .benefitGridFour h3 {
-  font-size: clamp(1.1rem, 1.6vw, 1.5rem);
-  line-height: 1.18;
+  font-size: clamp(0.95rem, 1.25vw, 1.2rem);
+  line-height: 1.22;
 }
 
 .benefitGrid article,
