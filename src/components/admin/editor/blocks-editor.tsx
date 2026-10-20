@@ -77,6 +77,10 @@ function emptyBlock(type: BlockType, independentLinks = false): Block {
   }
 }
 
+function emptyYoutubeBlock(): Block {
+  return { id: newBlockId(), type: "rich_text", heading: "", body: [], youtubeUrl: "", youtubeAutoplay: true, youtubeAspect: "16:9" };
+}
+
 export function BlocksEditor(props: {
   blocks: Block[];
   allowed: BlockType[];
@@ -108,7 +112,7 @@ export function BlocksEditor(props: {
           <li key={block.id} className="rounded-[var(--radius-card)] border border-line bg-surface-raised">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2">
               <h3 className="text-sm font-semibold text-ink">
-                {idx + 1}. {BLOCK_META[block.type].label}
+                {idx + 1}. {block.type === "rich_text" && block.youtubeUrl !== undefined ? "Vídeo do YouTube" : BLOCK_META[block.type].label}
               </h3>
               <div className="flex flex-wrap gap-1">
                 <IconButton label={`Mover bloco ${idx + 1} para cima`} disabled={idx === 0} onClick={() => move(idx, -1)}>↑</IconButton>
@@ -173,6 +177,10 @@ export function BlocksEditor(props: {
           className="min-h-11 rounded-[var(--radius-control)] border border-brand-700 px-4 font-semibold text-brand-800 hover:bg-brand-50"
         >
           Adicionar
+        </button>
+        <button type="button" onClick={() => onChange([...blocks, emptyYoutubeBlock()])}
+          className="min-h-11 rounded-[var(--radius-control)] border border-brand-700 px-4 font-semibold text-brand-800 hover:bg-brand-50">
+          Adicionar vídeo do YouTube
         </button>
       </div>
     </section>
@@ -327,8 +335,37 @@ function BlockFields(props: {
         <BannerSlidesEditor block={b} onChange={onChange} mediaOptions={props.mediaOptions} issue={issue} independentLinks={props.independentLinks} />
       ) : null}
 
-      {b.type === "rich_text" ? (
-        <RichTextArea label="Texto" value={b.body} error={issue("body")} onChange={(body) => onChange({ ...b, body })} />
+      {b.type === "rich_text" && b.youtubeUrl !== undefined ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <TextInput label="Link ou código do vídeo do YouTube" value={b.youtubeUrl} maxLength={500}
+            hint="Aceita youtube.com, youtu.be, Shorts ou o código de 11 caracteres."
+            onChange={(youtubeUrl) => onChange({ ...b, youtubeUrl: youtubeUrl ?? "" })} />
+          <Select label="Formato" value={b.youtubeAspect ?? "16:9"}
+            options={[{ value: "16:9", label: "Horizontal (16:9)" }, { value: "9:16", label: "Vertical (9:16)" }, { value: "1:1", label: "Quadrado (1:1)" }]}
+            onChange={(youtubeAspect) => youtubeAspect && onChange({ ...b, youtubeAspect })} />
+          <p className="self-end text-sm text-muted">O botão “Assistir com som” inicia o vídeo com áudio. Navegadores não permitem início automático com som.</p>
+        </div>
+      ) : b.type === "rich_text" ? (
+        <>
+          <RichTextArea label="Texto (usado quando não houver imagens)" value={b.body} error={issue("body")} onChange={(body) => onChange({ ...b, body })} />
+          <MediaMultiPicker
+            label="Imagens do carrossel (opcional)"
+            value={b.carouselMediaIds ?? []}
+            options={props.mediaOptions}
+            error={issue("carouselMediaIds")}
+            onChange={(carouselMediaIds) => onChange({ ...b, carouselMediaIds })}
+          />
+          {(b.carouselMediaIds?.length ?? 0) > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Checkbox label="Passar as imagens automaticamente" checked={b.carouselAutoplay ?? true}
+                onChange={(carouselAutoplay) => onChange({ ...b, carouselAutoplay })} />
+              <Select label="Tempo por imagem" value={String(b.carouselIntervalSeconds ?? 5)}
+                options={[4, 5, 6, 8].map((value) => ({ value: String(value), label: `${value} segundos` }))}
+                onChange={(value) => value && onChange({ ...b, carouselIntervalSeconds: Number(value) as 4 | 5 | 6 | 8 })} />
+            </div>
+          ) : null}
+          <p className="text-sm text-muted">Ao selecionar imagens, elas substituem o texto na coluna direita desta seção, uma por vez.</p>
+        </>
       ) : null}
 
       {b.type === "image" ? (

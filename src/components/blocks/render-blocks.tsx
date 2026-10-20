@@ -12,6 +12,7 @@ import { RichText } from "./rich-text";
 import { BannerCarousel } from "./banner-carousel";
 import { CardCarousel } from "./card-carousel";
 import { CareFlow } from "./care-flow";
+import { YoutubeVideo } from "./youtube-video";
 
 /**
  * Renderização dos blocos (Server Components, sem JS no cliente).
@@ -220,6 +221,14 @@ function RenderBlock({ block: b, ctx, first, pageHasTitle }: { block: Block; ctx
       );
     }
     case "rich_text":
+      if (b.youtubeUrl) {
+        return (
+          <section aria-labelledby={b.heading ? headingId : undefined} className={section}>
+            <Heading text={b.heading} id={headingId} />
+            <YoutubeVideo url={b.youtubeUrl} title={b.heading} aspect={b.youtubeAspect} />
+          </section>
+        );
+      }
       return (
         <section aria-labelledby={b.heading ? headingId : undefined} className={section}>
           <Heading text={b.heading} id={headingId} />

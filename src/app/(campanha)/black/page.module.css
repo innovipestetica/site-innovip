@@ -335,6 +335,69 @@
   line-height: 1.85;
 }
 
+.storyCarousel {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  max-height: 560px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 24px;
+  background: #101513;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.28);
+}
+
+.storyCarousel > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.storyCarousel > button {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  background: rgba(5, 8, 7, 0.58);
+  color: white;
+  font-size: 2rem;
+  line-height: 1;
+  transform: translateY(-50%);
+  backdrop-filter: blur(8px);
+}
+
+.storyCarousel > button:first-of-type { left: 14px; }
+.storyCarousel > button:nth-of-type(2) { right: 14px; }
+
+.storyCarousel > div {
+  position: absolute;
+  right: 0;
+  bottom: 18px;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.storyCarousel > div button {
+  width: 8px;
+  height: 8px;
+  cursor: pointer;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.storyCarousel > div button[aria-current="true"] {
+  width: 24px;
+  border-radius: 999px;
+  background: var(--vip-green-bright);
+}
+
 .steps {
   background: #fff;
 }
@@ -368,6 +431,21 @@
   background: #090d0c;
   color: white;
   padding-block: clamp(88px, 10vw, 132px);
+}
+
+.videoSection {
+  padding: 80px 24px;
+  background: #f7f8f7;
+}
+
+.videoSection h2 {
+  max-width: 820px;
+  margin: 0 auto 36px;
+  color: #16231f;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1.05;
+  text-align: center;
 }
 
 .faqInner {

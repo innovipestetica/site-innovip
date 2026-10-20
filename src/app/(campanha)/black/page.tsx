@@ -5,7 +5,9 @@ import { Logo } from "@/components/brand/logo";
 import { pageAttrs } from "@/lib/consent/tracking-config";
 import { getPublishedEntry, loadPublicContext } from "@/lib/cms/public-data";
 import { richTextToPlain } from "@/lib/cms/rich-text";
-import type { CtaAction, FeatureIcon } from "@/lib/cms/blocks";
+import type { Block, CtaAction, FeatureIcon } from "@/lib/cms/blocks";
+import { YoutubeVideo } from "@/components/blocks/youtube-video";
+import { SingleImageCarousel } from "@/components/blocks/single-image-carousel";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -166,6 +168,9 @@ export default async function VipLandingPage() {
   const editableSteps = editablePage?.blocks.find((block) => block.type === "steps");
   const editableFaqs = editablePage?.blocks.find((block) => block.type === "care_flow");
   const finalCta = editablePage?.blocks.find((block) => block.type === "cta");
+  const videos = editablePage?.blocks.filter(
+    (block): block is Extract<Block, { type: "rich_text" }> => block.type === "rich_text" && !!block.youtubeUrl,
+  ) ?? [];
   const liveBenefits = features?.type === "features"
     ? features.items.map((item, index) => ({ ...item, icon: item.icon ?? benefits[index]?.icon ?? "care" as const }))
     : benefits;
@@ -181,6 +186,19 @@ export default async function VipLandingPage() {
   };
   const heroBackground = backgroundUrl(hero?.backdrop?.mediaId, "/landing/lista-vip/hero.webp");
   const storyBackground = backgroundUrl(story?.backdrop?.mediaId, "/landing/lista-vip/story.webp");
+  const storySlides = story?.type === "rich_text"
+    ? (story.carouselMediaIds ?? []).flatMap((mediaId) => {
+        const media = ctx?.media.get(mediaId);
+        const largest = media?.sources.at(-1);
+        return media && largest ? [{
+          url: largest.url,
+          srcSet: media.sources.map((source) => `${source.url} ${source.width}w`).join(", "),
+          alt: media.alt,
+          width: media.width ?? undefined,
+          height: media.height ?? undefined,
+        }] : [];
+      })
+    : [];
 
   return (
     <main id="conteudo" className={styles.page} {...pageAttrs("landing")}>
@@ -252,9 +270,14 @@ export default async function VipLandingPage() {
             <span className={styles.accentRule} aria-hidden="true" />
             <h2 id="story-title"><ColoredTitle text={story?.heading} fallback="Mais que acesso. Um convite para viver a Innovip." /></h2>
           </div>
-          <p className={styles.storyText}>
-            {story?.type === "rich_text" ? richTextToPlain(story.body) : "A lista VIP aproxima você do universo Innovip: um espaço de cuidado, atenção e escolhas feitas com intenção. Sem promessas exageradas, apenas uma forma mais próxima de acompanhar o que preparamos."}
-          </p>
+          {storySlides.length ? (
+            <SingleImageCarousel slides={storySlides} autoplay={story?.carouselAutoplay ?? true}
+              intervalSeconds={story?.carouselIntervalSeconds ?? 5} className={styles.storyCarousel} />
+          ) : (
+            <p className={styles.storyText}>
+              {story?.type === "rich_text" ? richTextToPlain(story.body) : "A lista VIP aproxima você do universo Innovip: um espaço de cuidado, atenção e escolhas feitas com intenção. Sem promessas exageradas, apenas uma forma mais próxima de acompanhar o que preparamos."}
+            </p>
+          )}
         </div>
       </section>
 
@@ -274,6 +297,13 @@ export default async function VipLandingPage() {
           </ol>
         </div>
       </section>
+
+      {videos.map((video) => (
+        <section key={video.id} className={styles.videoSection}>
+          {video.heading ? <h2><ColoredTitle text={video.heading} fallback={video.heading} /></h2> : null}
+          <YoutubeVideo url={video.youtubeUrl!} title={video.heading} aspect={video.youtubeAspect} />
+        </section>
+      ))}
 
       <section className={styles.faq} aria-labelledby="faq-title">
         <div className={styles.faqInner}>

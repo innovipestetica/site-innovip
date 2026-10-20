@@ -131,7 +131,15 @@ export const blockSchemas = {
   }),
   rich_text: z.object({
     heading: optionalText(120),
-    body: richTextSchema.min(1),
+    body: richTextSchema,
+    /** Carrossel opcional exibido no lugar do texto, uma imagem por vez. */
+    carouselMediaIds: z.array(uuid).max(24).optional(),
+    carouselAutoplay: z.boolean().default(true).optional(),
+    carouselIntervalSeconds: z.union([z.literal(4), z.literal(5), z.literal(6), z.literal(8)]).default(5).optional(),
+    /** Quando preenchido, este bloco vira um vídeo do YouTube. */
+    youtubeUrl: z.string().trim().max(500).optional(),
+    youtubeAutoplay: z.boolean().default(true).optional(),
+    youtubeAspect: z.enum(["16:9", "9:16", "1:1"]).default("16:9").optional(),
   }),
   image: z.object({
     mediaId: uuid,
