@@ -181,7 +181,9 @@ export function EntryEditor(props: EditorProps) {
     });
   }
 
-  const path = publicPath(entry.type, entry.slug);
+  const path = entry.type === "landing" && entry.slug === "black"
+    ? "/black"
+    : publicPath(entry.type, entry.slug);
   const disabled = !hydrated || busy !== null;
   const isArchived = entry.lifecycleStatus === "archived";
   const unpublishedChanges = entry.publishedRevision !== null && entry.publishedRevision !== revision;
