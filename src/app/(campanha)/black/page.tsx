@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
-import { IndependentPage } from "@/components/site/independent-page";
 import { pageAttrs } from "@/lib/consent/tracking-config";
 import { getPublishedEntry, loadPublicContext } from "@/lib/cms/public-data";
+import { richTextToPlain } from "@/lib/cms/rich-text";
+import type { CtaAction } from "@/lib/cms/blocks";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -108,10 +109,11 @@ function SectionLabel({ children, light = false }: { children: React.ReactNode; 
   );
 }
 
-function CtaLink({ className, location, children }: { className?: string; location: string; children: React.ReactNode }) {
+function CtaLink({ className, location, children, action }: { className?: string; location: string; children: React.ReactNode; action?: CtaAction }) {
+  const href = action?.kind === "link" ? action.href : "/agendar-avaliacao";
   return (
     <Link
-      href="/agendar-avaliacao"
+      href={href}
       className={className}
       data-cta="evaluation"
       data-cta-target="link"
@@ -125,20 +127,38 @@ function CtaLink({ className, location, children }: { className?: string; locati
 
 export default async function VipLandingPage() {
   const editablePage = await getPublishedEntry("landing", "black");
-
-  if (editablePage) {
-    const ctx = await loadPublicContext({
+  const ctx = editablePage ? await loadPublicContext({
       blocks: editablePage.blocks,
       data: editablePage.data,
-    });
-    return <IndependentPage entry={editablePage} ctx={ctx} />;
-  }
+    }) : undefined;
+
+  const hero = editablePage?.blocks.find((block) => block.type === "hero");
+  const features = editablePage?.blocks.find((block) => block.type === "features");
+  const story = editablePage?.blocks.find((block) => block.type === "rich_text");
+  const editableSteps = editablePage?.blocks.find((block) => block.type === "steps");
+  const editableFaqs = editablePage?.blocks.find((block) => block.type === "care_flow");
+  const finalCta = editablePage?.blocks.find((block) => block.type === "cta");
+  const liveBenefits = features?.type === "features"
+    ? features.items.map((item, index) => ({ ...item, icon: benefits[index]?.icon ?? "care" as const }))
+    : benefits;
+  const liveSteps = editableSteps?.type === "steps"
+    ? editableSteps.items.map((item, index) => ({ number: item.label || String(index + 1).padStart(2, "0"), title: item.title, text: item.text || "" }))
+    : steps;
+  const liveFaqs = editableFaqs?.type === "care_flow"
+    ? editableFaqs.items.map((item) => ({ question: item.title, answer: item.text || "" }))
+    : faqs;
+  const backgroundUrl = (mediaId: string | undefined, fallback: string) => {
+    const media = mediaId && ctx ? ctx.media.get(mediaId) : undefined;
+    return media?.sources.at(-1)?.url ?? fallback;
+  };
+  const heroBackground = backgroundUrl(hero?.backdrop?.mediaId, "/landing/lista-vip/hero.webp");
+  const storyBackground = backgroundUrl(story?.backdrop?.mediaId, "/landing/lista-vip/story.webp");
 
   return (
     <main id="conteudo" className={styles.page} {...pageAttrs("landing")}>
       <section className={styles.hero} aria-labelledby="vip-title">
         <Image
-          src="/landing/lista-vip/hero.webp"
+          src={heroBackground}
           alt=""
           fill
           priority
@@ -152,14 +172,12 @@ export default async function VipLandingPage() {
           </Link>
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>Experiências que começam antes</p>
-            <h1 id="vip-title">
-              Seu acesso a uma experiência <em>mais exclusiva.</em>
-            </h1>
+            <h1 id="vip-title">{hero?.heading ?? <>Seu acesso a uma experiência <em>mais exclusiva.</em></>}</h1>
             <p className={styles.heroText}>
-              Entre para a lista VIP da Innovip e receba novidades e condições especiais em primeira mão.
+              {hero?.subheading ?? "Entre para a lista VIP da Innovip e receba novidades e condições especiais em primeira mão."}
             </p>
-            <CtaLink className={styles.primaryButton} location="vip_hero">
-              Entrar para a lista VIP
+            <CtaLink className={styles.primaryButton} location="vip_hero" action={hero?.primary}>
+              {hero?.primary?.label ?? "Entrar para a lista VIP"}
             </CtaLink>
           </div>
           <ul className={styles.trustList} aria-label="Diferenciais da lista VIP">
@@ -175,7 +193,7 @@ export default async function VipLandingPage() {
           <SectionLabel>Benefícios da lista</SectionLabel>
           <h2 id="benefits-title">Um cuidado pensado para estar mais perto.</h2>
           <div className={styles.benefitGrid}>
-            {benefits.map((benefit) => (
+            {liveBenefits.map((benefit) => (
               <article key={benefit.title}>
                 <div className={styles.iconWrap}><Icon name={benefit.icon} /></div>
                 <h3>{benefit.title}</h3>
@@ -189,7 +207,7 @@ export default async function VipLandingPage() {
 
       <section className={styles.story} aria-labelledby="story-title">
         <Image
-          src="/landing/lista-vip/story.webp"
+          src={storyBackground}
           alt=""
           fill
           sizes="100vw"
@@ -200,10 +218,10 @@ export default async function VipLandingPage() {
           <div>
             <p className={styles.eyebrow}>Uma experiência em outro nível</p>
             <span className={styles.accentRule} aria-hidden="true" />
-            <h2 id="story-title">Mais que acesso. Um convite para viver a Innovip.</h2>
+            <h2 id="story-title">{story?.heading ?? "Mais que acesso. Um convite para viver a Innovip."}</h2>
           </div>
           <p className={styles.storyText}>
-            A lista VIP aproxima você do universo Innovip: um espaço de cuidado, atenção e escolhas feitas com intenção. Sem promessas exageradas, apenas uma forma mais próxima de acompanhar o que preparamos.
+            {story?.type === "rich_text" ? richTextToPlain(story.body) : "A lista VIP aproxima você do universo Innovip: um espaço de cuidado, atenção e escolhas feitas com intenção. Sem promessas exageradas, apenas uma forma mais próxima de acompanhar o que preparamos."}
           </p>
         </div>
       </section>
@@ -213,7 +231,7 @@ export default async function VipLandingPage() {
           <SectionLabel>Como funciona</SectionLabel>
           <h2 id="steps-title">Três passos para ficar mais perto.</h2>
           <ol className={styles.stepGrid}>
-            {steps.map((step) => (
+            {liveSteps.map((step) => (
               <li key={step.number}>
                 <span className={styles.stepNumber}>{step.number}</span>
                 <span className={styles.accentRule} aria-hidden="true" />
@@ -230,7 +248,7 @@ export default async function VipLandingPage() {
           <SectionLabel light>Perguntas frequentes</SectionLabel>
           <h2 id="faq-title">Tudo o que você precisa saber.</h2>
           <div className={styles.faqList}>
-            {faqs.map((faq) => (
+            {liveFaqs.map((faq) => (
               <details key={faq.question}>
                 <summary>
                   <span>{faq.question}</span>
@@ -247,10 +265,10 @@ export default async function VipLandingPage() {
         <div className={styles.finalCtaGlow} />
         <div className={styles.finalCtaInner}>
           <SectionLabel light>Seu próximo passo</SectionLabel>
-          <h2>Entre para a <em>lista VIP</em>.</h2>
-          <p>Fale com a equipe e seja uma das primeiras pessoas a acompanhar nossas novidades.</p>
-          <CtaLink className={styles.primaryButton} location="vip_footer">
-            Quero entrar para a lista
+          <h2>{finalCta?.heading ?? <>Entre para a <em>lista VIP</em>.</>}</h2>
+          <p>{finalCta?.text ?? "Fale com a equipe e seja uma das primeiras pessoas a acompanhar nossas novidades."}</p>
+          <CtaLink className={styles.primaryButton} location="vip_footer" action={finalCta?.action}>
+            {finalCta?.action.label ?? "Quero entrar para a lista"}
           </CtaLink>
           <small>Innovip Clínica de Estética · Atendimento individual e responsável.</small>
         </div>
