@@ -219,6 +219,14 @@
   padding: 0;
 }
 
+.benefitGridFour {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.benefitGridFour article {
+  padding-inline: clamp(18px, 2.5vw, 38px);
+}
+
 .benefitGrid article,
 .stepGrid li {
   position: relative;
@@ -338,12 +346,23 @@
 .storyCarousel {
   position: relative;
   overflow: hidden;
-  aspect-ratio: 4 / 5;
-  max-height: 560px;
+  aspect-ratio: 1;
+  max-height: 520px;
   border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 24px;
   background: #101513;
   box-shadow: 0 28px 70px rgba(0, 0, 0, 0.28);
+}
+
+@media (min-width: 761px) and (max-width: 1024px) {
+  .benefitGridFour {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 54px;
+  }
+
+  .benefitGridFour article:nth-child(3)::before {
+    display: none;
+  }
 }
 
 .storyCarousel > img {

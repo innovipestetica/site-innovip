@@ -238,7 +238,7 @@ export default async function VipLandingPage() {
         <div className={styles.container}>
           <SectionLabel>Benefícios da lista</SectionLabel>
           <h2 id="benefits-title"><ColoredTitle text={features?.heading} fallback="Um cuidado pensado para estar mais perto." /></h2>
-          <div className={styles.benefitGrid}>
+          <div className={`${styles.benefitGrid} ${liveBenefits.length === 4 ? styles.benefitGridFour : ""}`}>
             {liveBenefits.map((benefit) => (
               <article key={benefit.title}>
                 <div className={styles.iconWrap}>
