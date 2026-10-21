@@ -11,12 +11,15 @@ import { SingleImageCarousel } from "@/components/blocks/single-image-carousel";
 import { RenderBlocks } from "@/components/blocks/render-blocks";
 import styles from "./page.module.css";
 
-export const metadata: Metadata = {
-  title: "Lista VIP",
-  description:
-    "Entre para a lista VIP da Innovip e receba novidades, condições especiais e atendimento próximo.",
-  alternates: { canonical: "/black" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPublishedEntry("landing", "black");
+  return {
+    title: page?.seo.title || page?.title || "Lista VIP",
+    description: page?.seo.description || page?.summary || "Entre para a lista VIP da Innovip e receba novidades, condições especiais e atendimento próximo.",
+    alternates: { canonical: "/black" },
+    robots: page?.seo.noindex ? { index: false, follow: false } : undefined,
+  };
+}
 
 const benefits = [
   {
