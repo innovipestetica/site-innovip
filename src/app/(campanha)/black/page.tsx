@@ -214,8 +214,9 @@ export default async function VipLandingPage() {
           priority
           sizes="100vw"
           className={styles.backgroundImage}
+          style={{ objectPosition: hero?.backdrop?.position ?? "center" }}
         />
-        <div className={styles.heroShade} />
+        <div className={styles.heroShade} style={{ opacity: hero?.backdrop ? hero.backdrop.overlay / 100 : 1 }} />
         <div className={styles.heroInner}>
           <Link href="/" className={styles.logoLink} aria-label="Innovip — página inicial">
             <Logo size={86} priority className={styles.logo} />
@@ -266,8 +267,9 @@ export default async function VipLandingPage() {
           fill
           sizes="100vw"
           className={styles.backgroundImage}
+          style={{ objectPosition: story?.backdrop?.position ?? "center" }}
         />
-        <div className={styles.storyShade} />
+        <div className={styles.storyShade} style={{ opacity: story?.backdrop ? story.backdrop.overlay / 100 : 1 }} />
         <div className={`${styles.container} ${styles.storyGrid}`}>
           <div>
             <p className={styles.eyebrow}>{pageText("storyEyebrow", "Uma experiência em outro nível")}</p>
