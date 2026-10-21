@@ -15,7 +15,7 @@
 
 .hero {
   position: relative;
-  min-height: 760px;
+  min-height: 680px;
   isolation: isolate;
   display: flex;
   align-items: stretch;
@@ -41,7 +41,7 @@
   width: min(1180px, calc(100% - 40px));
   margin-inline: auto;
   display: flex;
-  min-height: 760px;
+  min-height: 680px;
   flex-direction: column;
   padding-block: 30px 36px;
 }
@@ -67,8 +67,8 @@
 
 .heroCopy {
   width: min(650px, 64%);
-  margin-block: auto;
-  padding-block: 52px;
+  margin-top: auto;
+  padding-block: 52px 18px;
 }
 
 .eyebrow {
@@ -81,13 +81,23 @@
 }
 
 .hero h1 {
-  max-width: 680px;
+  max-width: 600px;
   margin: 0;
   color: #0c100f;
-  font-size: clamp(3.25rem, 6.4vw, 6.7rem);
+  font-size: clamp(1.55rem, 3vw, 2.65rem);
   font-weight: 600;
-  letter-spacing: -0.065em;
-  line-height: 0.91;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+}
+
+.heroMark {
+  display: block;
+  width: min(330px, 78%);
+  height: auto;
+  max-height: 120px;
+  margin: 0 0 22px;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .hero h1 em,
@@ -615,7 +625,7 @@
 @media (max-width: 760px) {
   .hero,
   .heroInner {
-    min-height: 700px;
+    min-height: 640px;
   }
 
   .heroShade {
@@ -638,7 +648,12 @@
 
   .hero h1 {
     max-width: 540px;
-    font-size: clamp(3rem, 14vw, 5rem);
+    font-size: clamp(1.45rem, 7vw, 2.15rem);
+  }
+
+  .heroMark {
+    width: min(260px, 82%);
+    max-height: 96px;
   }
 
   .primaryButton {

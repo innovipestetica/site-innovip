@@ -190,9 +190,11 @@ export default async function VipLandingPage() {
   };
   const heroBackground = backgroundUrl(hero?.backdrop?.mediaId, "/landing/lista-vip/hero.webp");
   const storyBackground = backgroundUrl(story?.backdrop?.mediaId, "/landing/lista-vip/story.webp");
-  const configuredLogoId = typeof editablePage?.data.logoMediaId === "string" ? editablePage.data.logoMediaId : hero?.mediaId;
+  const configuredLogoId = typeof editablePage?.data.logoMediaId === "string" ? editablePage.data.logoMediaId : undefined;
   const logoMedia = configuredLogoId ? ctx?.media.get(configuredLogoId) : undefined;
   const logoSource = logoMedia?.sources.at(-1);
+  const heroMarkMedia = hero?.mediaId ? ctx?.media.get(hero.mediaId) : undefined;
+  const heroMarkSource = heroMarkMedia?.sources.at(-1);
   const storySlides = story?.type === "rich_text"
     ? (story.carouselMediaIds ?? []).flatMap((mediaId) => {
         const media = ctx?.media.get(mediaId);
@@ -232,6 +234,13 @@ export default async function VipLandingPage() {
           </Link>
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>{pageText("heroEyebrow", "Experiências que começam antes")}</p>
+            {heroMarkMedia && heroMarkSource ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={heroMarkSource.url} srcSet={heroMarkMedia.sources.map((source) => `${source.url} ${source.width}w`).join(", ")}
+                sizes="(max-width: 760px) 220px, 320px" alt={heroMarkMedia.alt || ""}
+                width={heroMarkMedia.width ?? undefined} height={heroMarkMedia.height ?? undefined}
+                className={styles.heroMark} loading="eager" decoding="async" />
+            ) : null}
             <h1 id="vip-title"><ColoredTitle text={hero?.heading} fallback={<>Seu acesso a uma experiência <em>mais exclusiva.</em></>} /></h1>
             <p className={styles.heroText}>
               {hero?.subheading ?? "Entre para a lista VIP da Innovip e receba novidades e condições especiais em primeira mão."}
@@ -240,11 +249,6 @@ export default async function VipLandingPage() {
               {hero?.primary?.label ?? "Entrar para a lista VIP"}
             </CtaLink>
           </div>
-          <ul className={styles.trustList} aria-label="Diferenciais da lista VIP">
-            <li><span aria-hidden="true">✓</span> {pageText("trustItem1", "Entrada gratuita")}</li>
-            <li><span aria-hidden="true">◇</span> {pageText("trustItem2", "Canal oficial")}</li>
-            <li><span aria-hidden="true">○</span> {pageText("trustItem3", "Saia quando quiser")}</li>
-          </ul>
         </div>
       </section>
 
