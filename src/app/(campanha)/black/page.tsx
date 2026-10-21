@@ -190,6 +190,8 @@ export default async function VipLandingPage() {
   };
   const heroBackground = backgroundUrl(hero?.backdrop?.mediaId, "/landing/lista-vip/hero.webp");
   const storyBackground = backgroundUrl(story?.backdrop?.mediaId, "/landing/lista-vip/story.webp");
+  const logoMedia = typeof editablePage?.data.logoMediaId === "string" ? ctx?.media.get(editablePage.data.logoMediaId) : undefined;
+  const logoSource = logoMedia?.sources.at(-1);
   const storySlides = story?.type === "rich_text"
     ? (story.carouselMediaIds ?? []).flatMap((mediaId) => {
         const media = ctx?.media.get(mediaId);
@@ -215,11 +217,17 @@ export default async function VipLandingPage() {
           sizes="100vw"
           className={styles.backgroundImage}
           style={{ objectPosition: hero?.backdrop?.position ?? "center" }}
+          unoptimized={heroBackground.startsWith("http")}
         />
         <div className={styles.heroShade} style={{ opacity: hero?.backdrop ? hero.backdrop.overlay / 100 : 1 }} />
         <div className={styles.heroInner}>
           <Link href="/" className={styles.logoLink} aria-label="Innovip — página inicial">
-            <Logo size={86} priority className={styles.logo} />
+            {logoMedia && logoSource ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoSource.url} srcSet={logoMedia.sources.map((source) => `${source.url} ${source.width}w`).join(", ")}
+                sizes="86px" alt={logoMedia.alt || "Innovip"} width={logoMedia.width ?? 86} height={logoMedia.height ?? 86}
+                className={styles.logo} loading="eager" decoding="async" />
+            ) : <Logo size={86} priority className={styles.logo} />}
           </Link>
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>{pageText("heroEyebrow", "Experiências que começam antes")}</p>
@@ -268,6 +276,7 @@ export default async function VipLandingPage() {
           sizes="100vw"
           className={styles.backgroundImage}
           style={{ objectPosition: story?.backdrop?.position ?? "center" }}
+          unoptimized={storyBackground.startsWith("http")}
         />
         <div className={styles.storyShade} style={{ opacity: story?.backdrop ? story.backdrop.overlay / 100 : 1 }} />
         <div className={`${styles.container} ${styles.storyGrid}`}>
