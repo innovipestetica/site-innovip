@@ -190,7 +190,8 @@ export default async function VipLandingPage() {
   };
   const heroBackground = backgroundUrl(hero?.backdrop?.mediaId, "/landing/lista-vip/hero.webp");
   const storyBackground = backgroundUrl(story?.backdrop?.mediaId, "/landing/lista-vip/story.webp");
-  const logoMedia = typeof editablePage?.data.logoMediaId === "string" ? ctx?.media.get(editablePage.data.logoMediaId) : undefined;
+  const configuredLogoId = typeof editablePage?.data.logoMediaId === "string" ? editablePage.data.logoMediaId : hero?.mediaId;
+  const logoMedia = configuredLogoId ? ctx?.media.get(configuredLogoId) : undefined;
   const logoSource = logoMedia?.sources.at(-1);
   const storySlides = story?.type === "rich_text"
     ? (story.carouselMediaIds ?? []).flatMap((mediaId) => {
