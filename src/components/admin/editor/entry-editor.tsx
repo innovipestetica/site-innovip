@@ -78,8 +78,6 @@ export function EntryEditor(props: EditorProps) {
   const [slugValue, setSlugValue] = useState(entry.slug);
 
   const dirty = useMemo(() => JSON.stringify(payload) !== saved, [payload, saved]);
-  useEffect(() => setSlugValue(entry.slug), [entry.slug]);
-
   // Aviso ao sair com alterações não salvas.
   useEffect(() => {
     if (!dirty) return;
