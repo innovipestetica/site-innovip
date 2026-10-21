@@ -8,6 +8,7 @@ import { richTextToPlain } from "@/lib/cms/rich-text";
 import type { Block, CtaAction, FeatureIcon } from "@/lib/cms/blocks";
 import { YoutubeVideo } from "@/components/blocks/youtube-video";
 import { SingleImageCarousel } from "@/components/blocks/single-image-carousel";
+import { RenderBlocks } from "@/components/blocks/render-blocks";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -168,13 +169,25 @@ export default async function VipLandingPage() {
 
   const hero = editablePage?.blocks.find((block) => block.type === "hero");
   const features = editablePage?.blocks.find((block) => block.type === "features");
-  const story = editablePage?.blocks.find((block) => block.type === "rich_text");
+  const story = editablePage?.blocks.find(
+    (block): block is Extract<Block, { type: "rich_text" }> => block.type === "rich_text" && !block.youtubeUrl,
+  );
   const editableSteps = editablePage?.blocks.find((block) => block.type === "steps");
   const editableFaqs = editablePage?.blocks.find((block) => block.type === "care_flow");
   const finalCta = editablePage?.blocks.find((block) => block.type === "cta");
   const videos = editablePage?.blocks.filter(
     (block): block is Extract<Block, { type: "rich_text" }> => block.type === "rich_text" && !!block.youtubeUrl,
   ) ?? [];
+  const customBlockIds = new Set([
+    hero?.id,
+    features?.id,
+    story?.id,
+    editableSteps?.id,
+    editableFaqs?.id,
+    finalCta?.id,
+    ...videos.map((video) => video.id),
+  ].filter((id): id is string => !!id));
+  const additionalBlocks = editablePage?.blocks.filter((block) => !customBlockIds.has(block.id)) ?? [];
   const liveBenefits = features?.type === "features"
     ? features.items.map((item, index) => ({ ...item, icon: item.icon ?? benefits[index]?.icon ?? "care" as const }))
     : benefits;
@@ -252,7 +265,7 @@ export default async function VipLandingPage() {
         </div>
       </section>
 
-      <section className={styles.benefits} aria-labelledby="benefits-title">
+      {!editablePage || features ? <section className={styles.benefits} aria-labelledby="benefits-title">
         <div className={styles.container}>
           <SectionLabel>{pageText("benefitsLabel", "Benefícios da lista")}</SectionLabel>
           <h2 id="benefits-title"><ColoredTitle text={features?.heading} fallback="Um cuidado pensado para estar mais perto." /></h2>
@@ -271,9 +284,9 @@ export default async function VipLandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> : null}
 
-      <section className={styles.story} aria-labelledby="story-title">
+      {!editablePage || story ? <section className={styles.story} aria-labelledby="story-title">
         <Image
           src={storyBackground}
           alt=""
@@ -299,9 +312,9 @@ export default async function VipLandingPage() {
             </p>
           )}
         </div>
-      </section>
+      </section> : null}
 
-      <section className={styles.steps} aria-labelledby="steps-title">
+      {!editablePage || editableSteps ? <section className={styles.steps} aria-labelledby="steps-title">
         <div className={styles.container}>
           <SectionLabel>{pageText("stepsLabel", "Como funciona")}</SectionLabel>
           <h2 id="steps-title"><ColoredTitle text={editableSteps?.heading} fallback="Três passos para ficar mais perto." /></h2>
@@ -316,7 +329,7 @@ export default async function VipLandingPage() {
             ))}
           </ol>
         </div>
-      </section>
+      </section> : null}
 
       {videos.map((video) => (
         <section key={video.id} className={styles.videoSection}>
@@ -325,7 +338,9 @@ export default async function VipLandingPage() {
         </section>
       ))}
 
-      <section className={styles.faq} aria-labelledby="faq-title">
+      {ctx && additionalBlocks.length ? <RenderBlocks blocks={additionalBlocks} ctx={ctx} /> : null}
+
+      {!editablePage || editableFaqs ? <section className={styles.faq} aria-labelledby="faq-title">
         <div className={styles.faqInner}>
           <SectionLabel light>{pageText("faqLabel", "Perguntas frequentes")}</SectionLabel>
           <h2 id="faq-title"><ColoredTitle text={editableFaqs?.heading} fallback="Tudo o que você precisa saber." /></h2>
@@ -341,9 +356,9 @@ export default async function VipLandingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> : null}
 
-      <footer className={styles.finalCta}>
+      {!editablePage || finalCta ? <footer className={styles.finalCta}>
         <div className={styles.finalCtaGlow} />
         <div className={styles.finalCtaInner}>
           <SectionLabel light>{pageText("footerEyebrow", "Seu próximo passo")}</SectionLabel>
@@ -354,7 +369,7 @@ export default async function VipLandingPage() {
           </CtaLink>
           <small>{pageText("footerNote", "Innovip Clínica de Estética · Atendimento individual e responsável.")}</small>
         </div>
-      </footer>
+      </footer> : null}
     </main>
   );
 }
