@@ -226,7 +226,7 @@ export default async function VipLandingPage() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logoSource.url} srcSet={logoMedia.sources.map((source) => `${source.url} ${source.width}w`).join(", ")}
                 sizes="86px" alt={logoMedia.alt || "Innovip"} width={logoMedia.width ?? 86} height={logoMedia.height ?? 86}
-                className={styles.logo} loading="eager" decoding="async" />
+                className={`${styles.logo} ${styles.customLogo}`} loading="eager" decoding="async" />
             ) : <Logo size={86} priority className={styles.logo} />}
           </Link>
           <div className={styles.heroCopy}>

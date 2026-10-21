@@ -22,20 +22,22 @@
 }
 
 .backgroundImage {
-  z-index: -3;
+  z-index: 0;
   object-fit: cover;
 }
 
 .heroShade {
   position: absolute;
   inset: 0;
-  z-index: -2;
+  z-index: 1;
   background:
     linear-gradient(90deg, rgba(247, 244, 238, 0.98) 0%, rgba(247, 244, 238, 0.91) 38%, rgba(247, 244, 238, 0.2) 68%, rgba(0, 0, 0, 0.35) 100%),
     linear-gradient(0deg, rgba(247, 244, 238, 0.9) 0%, transparent 28%);
 }
 
 .heroInner {
+  position: relative;
+  z-index: 2;
   width: min(1180px, calc(100% - 40px));
   margin-inline: auto;
   display: flex;
@@ -55,6 +57,12 @@
   width: 76px;
   height: 76px;
   object-fit: contain;
+}
+
+.customLogo {
+  width: clamp(120px, 13vw, 170px);
+  height: auto;
+  max-height: 78px;
 }
 
 .heroCopy {
@@ -315,11 +323,13 @@
 .storyShade {
   position: absolute;
   inset: 0;
-  z-index: -2;
+  z-index: 1;
   background: linear-gradient(90deg, rgba(3, 7, 6, 0.76), rgba(3, 7, 6, 0.55));
 }
 
 .storyGrid {
+  position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   align-items: center;
