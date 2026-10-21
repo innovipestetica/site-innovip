@@ -59,7 +59,7 @@ function contentSecurityPolicy(): string {
     "img-src": ["'self'", "data:", "blob:", ...(sb ? [sb.http] : []), ...tr.img],
     "font-src": ["'self'"],
     "connect-src": ["'self'", ...(sb ? [sb.http, sb.ws] : []), ...tr.connect],
-    "frame-src": tr.frame.length ? tr.frame : ["'none'"],
+    "frame-src": ["https://www.youtube.com", "https://www.youtube-nocookie.com", ...tr.frame],
     "object-src": ["'none'"],
     "base-uri": ["'self'"],
     "form-action": ["'self'"],
