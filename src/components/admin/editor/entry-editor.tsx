@@ -75,8 +75,10 @@ export function EntryEditor(props: EditorProps) {
   const [message, setMessage] = useState<Message | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [conflict, setConflict] = useState(false);
+  const [slugValue, setSlugValue] = useState(entry.slug);
 
   const dirty = useMemo(() => JSON.stringify(payload) !== saved, [payload, saved]);
+  useEffect(() => setSlugValue(entry.slug), [entry.slug]);
 
   // Aviso ao sair com alterações não salvas.
   useEffect(() => {
@@ -181,6 +183,17 @@ export function EntryEditor(props: EditorProps) {
     });
   }
 
+  async function onApplySlug() {
+    const slug = slugValue.trim();
+    if (!slug || slug === entry.slug) return;
+    await run("slug", async () => {
+      const res = await changeSlugAction(entry.id, slug);
+      if (!res.ok) return setMessage({ tone: "error", text: res.message });
+      setMessage({ tone: "success", text: "Endereço alterado. O endereço antigo redirecionará para o novo." });
+      router.refresh();
+    });
+  }
+
   const path = entry.type === "landing" && entry.slug === "black"
     ? "/black"
     : publicPath(entry.type, entry.slug);
@@ -272,6 +285,18 @@ export function EntryEditor(props: EditorProps) {
             <p className="text-sm text-muted">
               Endereço: <code className="rounded bg-brand-50 px-1">{path ?? entry.slug}</code>
             </p>
+          ) : null}
+          {entry.type === "landing" ? (
+            <div className="grid items-end gap-3 sm:grid-cols-[1fr_auto]">
+              <TextInput label="Slug da página" value={slugValue} maxLength={120}
+                hint="Use letras minúsculas, números e hífens. Ex.: black-friday"
+                onChange={(value) => setSlugValue(value ?? "")} />
+              <button type="button" className={buttonSecondary}
+                disabled={disabled || dirty || !slugValue.trim() || slugValue.trim() === entry.slug}
+                onClick={onApplySlug}>
+                {busy === "slug" ? "Alterando…" : "Alterar endereço"}
+              </button>
+            </div>
           ) : null}
         </section>
 
