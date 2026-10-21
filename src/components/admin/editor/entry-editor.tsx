@@ -391,6 +391,21 @@ function TypeFields(props: {
             <ColorField label="Fundo dos botões" hint="Cor padrão dos botões." value={d.buttonBackground} onChange={(v) => setData("buttonBackground", v)} />
             <ColorField label="Texto dos botões" hint="Cor do texto dos botões." value={d.buttonText} onChange={(v) => setData("buttonText", v)} />
           </div>
+          <div className="mt-2 border-t border-line pt-4">
+            <h3 className="mb-4 font-semibold text-ink">Textos complementares da landing</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <TextInput label="Texto pequeno do topo" value={d.heroEyebrow} maxLength={120} placeholder="Experiências que começam antes" onChange={(v) => setData("heroEyebrow", v)} />
+              <TextInput label="Título pequeno dos benefícios" value={d.benefitsLabel} maxLength={100} placeholder="Benefícios da lista" onChange={(v) => setData("benefitsLabel", v)} />
+              <TextInput label="Informação 1 abaixo do botão" value={d.trustItem1} maxLength={100} placeholder="Entrada gratuita" onChange={(v) => setData("trustItem1", v)} />
+              <TextInput label="Informação 2 abaixo do botão" value={d.trustItem2} maxLength={100} placeholder="Canal oficial" onChange={(v) => setData("trustItem2", v)} />
+              <TextInput label="Informação 3 abaixo do botão" value={d.trustItem3} maxLength={100} placeholder="Saia quando quiser" onChange={(v) => setData("trustItem3", v)} />
+              <TextInput label="Frase acima de “Veja a evolução”" value={d.storyEyebrow} maxLength={120} placeholder="Uma experiência em outro nível" onChange={(v) => setData("storyEyebrow", v)} />
+              <TextInput label="Título pequeno dos passos" value={d.stepsLabel} maxLength={100} placeholder="Como funciona" onChange={(v) => setData("stepsLabel", v)} />
+              <TextInput label="Título pequeno do FAQ" value={d.faqLabel} maxLength={100} placeholder="Perguntas frequentes" onChange={(v) => setData("faqLabel", v)} />
+              <TextInput label="Texto pequeno da chamada final" value={d.footerEyebrow} maxLength={100} placeholder="Seu próximo passo" onChange={(v) => setData("footerEyebrow", v)} />
+              <TextInput label="Observação no final da página" value={d.footerNote} maxLength={200} placeholder="Innovip Clínica de Estética · Atendimento individual e responsável." onChange={(v) => setData("footerNote", v)} />
+            </div>
+          </div>
         </>
       ));
     case "faq":
