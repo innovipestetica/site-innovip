@@ -343,7 +343,7 @@ function BlockFields(props: {
           <Select label="Formato" value={b.youtubeAspect ?? "16:9"}
             options={[{ value: "16:9", label: "Horizontal (16:9)" }, { value: "9:16", label: "Vertical (9:16)" }, { value: "1:1", label: "Quadrado (1:1)" }]}
             onChange={(youtubeAspect) => youtubeAspect && onChange({ ...b, youtubeAspect })} />
-          <p className="self-end text-sm text-muted">O botão “Assistir com som” inicia o vídeo com áudio. Navegadores não permitem início automático com som.</p>
+          <p className="self-end text-sm text-muted">O vídeo começa automaticamente sem áudio. No primeiro clique em “Ativar som”, o áudio é liberado.</p>
         </div>
       ) : b.type === "rich_text" ? (
         <>

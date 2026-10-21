@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 function youtubeId(value: string): string | null {
   const trimmed = value.trim();
@@ -25,22 +25,28 @@ export function YoutubeVideo({ url, title, aspect = "16:9" }: {
   aspect?: "16:9" | "9:16" | "1:1";
 }) {
   const id = youtubeId(url);
-  const [playing, setPlaying] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [soundEnabled, setSoundEnabled] = useState(false);
   if (!id || !/^[a-zA-Z0-9_-]{11}$/.test(id)) return null;
   const ratio = aspect === "9:16" ? "aspect-[9/16] max-w-md" : aspect === "1:1" ? "aspect-square max-w-2xl" : "aspect-video max-w-5xl";
-  const params = new URLSearchParams({ rel: "0", playsinline: "1", modestbranding: "1", autoplay: "1" });
+  const params = new URLSearchParams({ rel: "0", playsinline: "1", modestbranding: "1", autoplay: "1", mute: "1", enablejsapi: "1" });
+  const enableSound = () => {
+    const player = iframeRef.current?.contentWindow;
+    if (!player) return;
+    player.postMessage(JSON.stringify({ event: "command", func: "unMute", args: [] }), "*");
+    player.postMessage(JSON.stringify({ event: "command", func: "playVideo", args: [] }), "*");
+    setSoundEnabled(true);
+  };
   return (
     <div className={`relative mx-auto w-full overflow-hidden rounded-[var(--radius-card)] bg-black shadow-lg ${ratio}`}>
-      {playing ? (
-        <iframe className="h-full w-full" src={`https://www.youtube-nocookie.com/embed/${id}?${params}`}
-          title={title || "Vídeo do YouTube"} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen loading="lazy" />
-      ) : (
-        <button type="button" onClick={() => setPlaying(true)}
-          className="absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-4 bg-black px-6 text-center text-white hover:bg-neutral-900 focus-visible:outline-4 focus-visible:outline-offset-[-4px] focus-visible:outline-white">
-          <span aria-hidden="true" className="flex size-20 items-center justify-center rounded-full bg-white text-3xl text-black">▶</span>
-          <span className="text-lg font-semibold">Assistir com som</span>
+      <iframe ref={iframeRef} className="h-full w-full" src={`https://www.youtube-nocookie.com/embed/${id}?${params}`}
+        title={title || "Vídeo do YouTube"} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen loading="lazy" />
+      {!soundEnabled ? (
+        <button type="button" onClick={enableSound} aria-label="Ativar som do vídeo"
+          className="absolute inset-0 flex h-full w-full items-end justify-center bg-transparent p-5 text-center text-white focus-visible:outline-4 focus-visible:outline-offset-[-4px] focus-visible:outline-white">
+          <span className="rounded-full bg-black/80 px-6 py-3 text-sm font-bold uppercase tracking-wider shadow-lg backdrop-blur-sm">🔊 Ativar som</span>
         </button>
-      )}
+      ) : null}
     </div>
   );
 }
