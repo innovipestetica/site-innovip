@@ -92,9 +92,9 @@
 
 .heroMark {
   display: block;
-  width: min(430px, 92%);
+  width: min(650px, 100%);
   height: auto;
-  max-height: 160px;
+  max-height: 190px;
   margin: 0 0 22px;
   object-fit: contain;
   object-position: left center;
