@@ -92,9 +92,9 @@
 
 .heroMark {
   display: block;
-  width: min(330px, 78%);
+  width: min(430px, 92%);
   height: auto;
-  max-height: 120px;
+  max-height: 160px;
   margin: 0 0 22px;
   object-fit: contain;
   object-position: left center;
@@ -652,8 +652,8 @@
   }
 
   .heroMark {
-    width: min(260px, 82%);
-    max-height: 96px;
+    width: min(340px, 92%);
+    max-height: 126px;
   }
 
   .primaryButton {
