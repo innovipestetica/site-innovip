@@ -433,7 +433,8 @@ function BlockFields(props: {
           <TextInput label="Título principal" value={b.heading} maxLength={120} error={issue("heading")} onChange={(heading) => onChange({ ...b, heading: heading ?? "" })} />
           <TextArea label="Texto de apoio" value={b.text} maxLength={300} rows={3} onChange={(text) => onChange({ ...b, text })} />
           <TextArea label="Benefícios (um por linha)" value={b.pricingBenefits} maxLength={1200} rows={5} onChange={(pricingBenefits) => onChange({ ...b, pricingBenefits })} />
-          <MediaPicker label="Imagem da oferta (opcional)" value={b.discountImageId} options={props.mediaOptions} onChange={(discountImageId) => onChange({ ...b, discountImageId })} />
+          <MediaPicker label="Imagem da oferta (opcional)" value={b.mediaId ?? b.discountImageId} options={props.mediaOptions}
+            onChange={(mediaId) => onChange({ ...b, mediaId, discountImageId: undefined })} />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <TextInput label="Texto sobre o desconto" value={b.discountLabel} maxLength={100} placeholder="Oferta especial" onChange={(discountLabel) => onChange({ ...b, discountLabel })} />
             <TextInput label="Desconto" value={b.discountPercent} maxLength={20} placeholder="30%" onChange={(discountPercent) => onChange({ ...b, discountPercent })} />

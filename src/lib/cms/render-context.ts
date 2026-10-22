@@ -62,7 +62,7 @@ export function collectRefs(value: unknown, acc = { entries: new Set<string>(), 
     for (const [k, v] of Object.entries(value)) {
       if (/entryId$/i.test(k) && typeof v === "string") acc.entries.add(v);
       else if (/entryIds$/i.test(k) && Array.isArray(v)) v.forEach((x) => typeof x === "string" && acc.entries.add(x));
-      else if (/mediaId$/i.test(k) && typeof v === "string") acc.media.add(v);
+      else if ((/mediaId$/i.test(k) || k === "discountImageId") && typeof v === "string") acc.media.add(v);
       else if (/mediaIds$/i.test(k) && Array.isArray(v)) v.forEach((x) => typeof x === "string" && acc.media.add(x));
       else collectRefs(v, acc);
     }

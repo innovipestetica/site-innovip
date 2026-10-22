@@ -158,6 +158,9 @@ export const blockSchemas = {
     installment: optionalText(80),
     pricingBenefits: z.string().trim().max(1200).optional(),
     urgency: optionalText(120),
+    /** Imagem do bloco de desconto. `mediaId` segue a convenção extraída pelo banco. */
+    mediaId: uuid.optional(),
+    /** Compatibilidade com blocos salvos antes da correção do nome da referência. */
     discountImageId: uuid.optional(),
     discountLabel: optionalText(100),
     discountPercent: optionalText(20),

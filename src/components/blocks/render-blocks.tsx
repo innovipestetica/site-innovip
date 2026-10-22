@@ -249,7 +249,8 @@ function RenderBlock({ block: b, ctx, first, pageHasTitle }: { block: Block; ctx
     case "cta":
       if (b.variant === "discount") {
         const benefits = (b.pricingBenefits || "").split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
-        const offerImage = b.discountImageId ? ctx.media.get(b.discountImageId) : undefined;
+        const offerImageId = b.mediaId ?? b.discountImageId;
+        const offerImage = offerImageId ? ctx.media.get(offerImageId) : undefined;
         const offerImageSource = offerImage?.sources.at(-1);
         return (
           <section className="bg-[#f7f4ee] px-4 py-16 text-[#101513] sm:py-24">
@@ -266,9 +267,9 @@ function RenderBlock({ block: b, ctx, first, pageHasTitle }: { block: Block; ctx
                 </div>
                 {offerImageSource ? <div className="relative mt-10 overflow-hidden rounded-2xl lg:hidden"><Picture media={offerImage!} sizes="100vw" /></div> : null}
               </div>
-              <div className="relative flex flex-col justify-center overflow-hidden bg-[radial-gradient(circle_at_top_right,#08745a_0%,#043f32_45%,#022c24_100%)] p-8 text-white sm:p-12 lg:p-14">
-                {b.discountBadge ? <div className="self-end rounded-full border border-[#d9cfae] px-5 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#f7efd4]">{b.discountBadge}</div> : null}
-                {b.discountLabel ? <p className="mt-12 flex items-center gap-5 text-xs font-bold uppercase tracking-[0.3em] text-white/90 after:h-px after:w-20 after:bg-white/60">{b.discountLabel}</p> : null}
+              <div className="relative flex flex-col items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top_right,#08745a_0%,#043f32_45%,#022c24_100%)] p-8 text-center text-white sm:p-12 lg:p-14">
+                {b.discountBadge ? <div className="rounded-full border border-[#d9cfae] px-5 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#f7efd4]">{b.discountBadge}</div> : null}
+                {b.discountLabel ? <p className="mt-12 flex items-center justify-center gap-5 text-xs font-bold uppercase tracking-[0.3em] text-white/90 before:h-px before:w-10 before:bg-white/60 after:h-px after:w-10 after:bg-white/60">{b.discountLabel}</p> : null}
                 {b.discountPercent ? <p className="mt-7 font-serif text-[7rem] font-semibold leading-[0.8] tracking-[-0.08em] text-[#fffdf5] sm:text-[9rem]">{b.discountPercent}</p> : null}
                 {b.discountSuffix ? <p className="mt-7 text-2xl font-semibold uppercase tracking-[0.16em] sm:text-3xl">{b.discountSuffix}</p> : null}
                 {b.urgency ? <p className="mt-5 text-lg text-[#efe7d0]">{b.urgency}</p> : null}
