@@ -247,6 +247,37 @@ function RenderBlock({ block: b, ctx, first, pageHasTitle }: { block: Block; ctx
       );
     }
     case "cta":
+      if (b.variant === "discount") {
+        const benefits = (b.pricingBenefits || "").split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
+        const offerImage = b.discountImageId ? ctx.media.get(b.discountImageId) : undefined;
+        const offerImageSource = offerImage?.sources.at(-1);
+        return (
+          <section className="bg-[#f7f4ee] px-4 py-16 text-[#101513] sm:py-24">
+            <div className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] border border-[#0b664f]/15 bg-white shadow-[0_25px_80px_rgba(0,80,60,0.12)] lg:grid lg:grid-cols-[1.65fr_1fr]">
+              <div className="relative min-h-[560px] overflow-hidden p-8 sm:p-12 lg:p-16">
+                {/* Variantes otimizadas no upload; a imagem usa recorte editorial próprio do bloco. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {offerImageSource ? <img src={offerImageSource.url} alt={offerImage?.alt || ""} className="absolute inset-y-0 right-0 hidden h-full w-[48%] object-cover lg:block" loading="lazy" decoding="async" /> : null}
+                <div className="relative z-10 max-w-xl lg:max-w-[55%]">
+                  {b.pricingEyebrow ? <p className="flex items-center gap-5 text-xs font-bold uppercase tracking-[0.3em] text-[#08745a] after:h-px after:w-20 after:bg-[#8fa29a]">{b.pricingEyebrow}</p> : null}
+                  <h2 className="mt-10 text-4xl font-semibold leading-[1.02] tracking-[-0.05em] sm:text-6xl">{b.heading}</h2>
+                  {b.text ? <p className="mt-7 text-base leading-8 text-[#59635f] sm:text-lg">{b.text}</p> : null}
+                  {benefits.length ? <ul className="mt-9 space-y-4 text-base sm:text-lg">{benefits.map((benefit) => <li key={benefit} className="flex items-start gap-3"><span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#075e49] font-bold text-white">✓</span><span>{benefit}</span></li>)}</ul> : null}
+                </div>
+                {offerImageSource ? <div className="relative mt-10 overflow-hidden rounded-2xl lg:hidden"><Picture media={offerImage!} sizes="100vw" /></div> : null}
+              </div>
+              <div className="relative flex flex-col justify-center overflow-hidden bg-[radial-gradient(circle_at_top_right,#08745a_0%,#043f32_45%,#022c24_100%)] p-8 text-white sm:p-12 lg:p-14">
+                {b.discountBadge ? <div className="self-end rounded-full border border-[#d9cfae] px-5 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#f7efd4]">{b.discountBadge}</div> : null}
+                {b.discountLabel ? <p className="mt-12 flex items-center gap-5 text-xs font-bold uppercase tracking-[0.3em] text-white/90 after:h-px after:w-20 after:bg-white/60">{b.discountLabel}</p> : null}
+                {b.discountPercent ? <p className="mt-7 font-serif text-[7rem] font-semibold leading-[0.8] tracking-[-0.08em] text-[#fffdf5] sm:text-[9rem]">{b.discountPercent}</p> : null}
+                {b.discountSuffix ? <p className="mt-7 text-2xl font-semibold uppercase tracking-[0.16em] sm:text-3xl">{b.discountSuffix}</p> : null}
+                {b.urgency ? <p className="mt-5 text-lg text-[#efe7d0]">{b.urgency}</p> : null}
+                <div className="mt-10 [&_a]:!border-white [&_a]:!bg-white [&_a]:!text-[#064d3c] [&_button]:!border-white [&_button]:!bg-white [&_button]:!text-[#064d3c]"><CtaButton action={b.action} ctx={ctx} /></div>
+              </div>
+            </div>
+          </section>
+        );
+      }
       if (b.variant === "pricing") {
         const benefits = (b.pricingBenefits || b.text || "").split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
         return (

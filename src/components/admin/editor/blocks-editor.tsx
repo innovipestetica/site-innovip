@@ -96,6 +96,22 @@ function emptyPricingBlock(): Block {
   };
 }
 
+function emptyDiscountBlock(): Block {
+  return {
+    id: newBlockId(), type: "cta", variant: "discount",
+    pricingEyebrow: "Condição exclusiva",
+    heading: "Seu momento de cuidar da pele chegou.",
+    text: "Tratamentos estéticos avançados, com cuidado personalizado para você.",
+    pricingBenefits: "Resultados visíveis e naturais\nProcedimentos seguros e personalizados\nAcompanhamento com especialistas",
+    discountLabel: "Oferta especial",
+    discountPercent: "30%",
+    discountSuffix: "de desconto",
+    discountBadge: "Vagas limitadas",
+    urgency: "Por tempo limitado",
+    action: { kind: "link", label: "Quero aproveitar", href: "/" },
+  };
+}
+
 export function BlocksEditor(props: {
   blocks: Block[];
   allowed: BlockType[];
@@ -127,7 +143,7 @@ export function BlocksEditor(props: {
           <li key={block.id} className="rounded-[var(--radius-card)] border border-line bg-surface-raised">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2">
               <h3 className="text-sm font-semibold text-ink">
-                {idx + 1}. {block.type === "rich_text" && block.youtubeUrl !== undefined ? "Vídeo do YouTube" : block.type === "cta" && block.variant === "pricing" ? "Preço e condição" : BLOCK_META[block.type].label}
+                {idx + 1}. {block.type === "rich_text" && block.youtubeUrl !== undefined ? "Vídeo do YouTube" : block.type === "cta" && block.variant === "pricing" ? "Preço e condição" : block.type === "cta" && block.variant === "discount" ? "Oferta com desconto" : BLOCK_META[block.type].label}
               </h3>
               <div className="flex flex-wrap gap-1">
                 <IconButton label={`Mover bloco ${idx + 1} para cima`} disabled={idx === 0} onClick={() => move(idx, -1)}>↑</IconButton>
@@ -200,6 +216,10 @@ export function BlocksEditor(props: {
         <button type="button" onClick={() => onChange([...blocks, emptyPricingBlock()])}
           className="min-h-11 rounded-[var(--radius-control)] border border-brand-700 px-4 font-semibold text-brand-800 hover:bg-brand-50">
           Adicionar bloco de preço
+        </button>
+        <button type="button" onClick={() => onChange([...blocks, emptyDiscountBlock()])}
+          className="min-h-11 rounded-[var(--radius-control)] border border-brand-700 px-4 font-semibold text-brand-800 hover:bg-brand-50">
+          Adicionar bloco de desconto
         </button>
       </div>
     </section>
@@ -407,6 +427,20 @@ function BlockFields(props: {
             <TextInput label="Parcelamento" value={b.installment} maxLength={80} placeholder="ou 10x de R$ 149" onChange={(installment) => onChange({ ...b, installment })} />
           </div>
           <TextInput label="Aviso abaixo do preço" value={b.urgency} maxLength={120} placeholder="Condição por tempo limitado" onChange={(urgency) => onChange({ ...b, urgency })} />
+          <CtaEditor independentLinks={props.independentLinks} label="Botão" value={b.action} onChange={(v) => v && onChange({ ...b, action: v })} issue={issue("action.href") ?? issue("action.label")} />
+        </> : b.variant === "discount" ? <>
+          <TextInput label="Chamada superior" value={b.pricingEyebrow} maxLength={100} onChange={(pricingEyebrow) => onChange({ ...b, pricingEyebrow })} />
+          <TextInput label="Título principal" value={b.heading} maxLength={120} error={issue("heading")} onChange={(heading) => onChange({ ...b, heading: heading ?? "" })} />
+          <TextArea label="Texto de apoio" value={b.text} maxLength={300} rows={3} onChange={(text) => onChange({ ...b, text })} />
+          <TextArea label="Benefícios (um por linha)" value={b.pricingBenefits} maxLength={1200} rows={5} onChange={(pricingBenefits) => onChange({ ...b, pricingBenefits })} />
+          <MediaPicker label="Imagem da oferta (opcional)" value={b.discountImageId} options={props.mediaOptions} onChange={(discountImageId) => onChange({ ...b, discountImageId })} />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <TextInput label="Texto sobre o desconto" value={b.discountLabel} maxLength={100} placeholder="Oferta especial" onChange={(discountLabel) => onChange({ ...b, discountLabel })} />
+            <TextInput label="Desconto" value={b.discountPercent} maxLength={20} placeholder="30%" onChange={(discountPercent) => onChange({ ...b, discountPercent })} />
+            <TextInput label="Complemento" value={b.discountSuffix} maxLength={60} placeholder="de desconto" onChange={(discountSuffix) => onChange({ ...b, discountSuffix })} />
+            <TextInput label="Selo" value={b.discountBadge} maxLength={80} placeholder="Vagas limitadas" onChange={(discountBadge) => onChange({ ...b, discountBadge })} />
+          </div>
+          <TextInput label="Aviso da oferta" value={b.urgency} maxLength={120} placeholder="Por tempo limitado" onChange={(urgency) => onChange({ ...b, urgency })} />
           <CtaEditor independentLinks={props.independentLinks} label="Botão" value={b.action} onChange={(v) => v && onChange({ ...b, action: v })} issue={issue("action.href") ?? issue("action.label")} />
         </> : <>
           <TextInput label="Título" value={b.heading} maxLength={120} error={issue("heading")}

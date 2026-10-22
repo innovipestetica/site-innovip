@@ -167,7 +167,7 @@ export async function BlackLandingPage({ slug = "black" }: { slug?: string }) {
   const editableSteps = editablePage?.blocks.find((block) => block.type === "steps");
   const editableFaqs = editablePage?.blocks.find((block) => block.type === "care_flow");
   const finalCta = editablePage?.blocks.find(
-    (block): block is Extract<Block, { type: "cta" }> => block.type === "cta" && block.variant !== "pricing",
+    (block): block is Extract<Block, { type: "cta" }> => block.type === "cta" && (block.variant === undefined || block.variant === "default"),
   );
   const videos = editablePage?.blocks.filter(
     (block): block is Extract<Block, { type: "rich_text" }> => block.type === "rich_text" && !!block.youtubeUrl,
