@@ -247,6 +247,29 @@ function RenderBlock({ block: b, ctx, first, pageHasTitle }: { block: Block; ctx
       );
     }
     case "cta":
+      if (b.variant === "pricing") {
+        const benefits = (b.pricingBenefits || b.text || "").split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
+        return (
+          <section className="bg-[#f7f4ee] px-4 py-16 text-[#101513] sm:py-24">
+            <div className="mx-auto max-w-6xl">
+              {b.pricingEyebrow ? <div className="mb-10 flex items-center justify-center gap-5 text-center text-xs font-bold uppercase tracking-[0.3em] text-[#245c4d] before:h-px before:w-20 before:bg-[#8fa29a] after:h-px after:w-20 after:bg-[#8fa29a]">{b.pricingEyebrow}</div> : null}
+              <div className="grid overflow-hidden rounded-3xl border border-[#008d68]/20 bg-white/70 shadow-[0_25px_80px_rgba(0,80,60,0.10)] md:grid-cols-2">
+                <div className="p-8 sm:p-12 lg:p-16">
+                  <h2 className="text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">{b.heading}</h2>
+                  {benefits.length ? <ul className="mt-8 space-y-4 text-base text-[#4f5c57] sm:text-lg">{benefits.map((benefit) => <li key={benefit} className="flex items-start gap-3"><span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#008d68]/10 font-bold text-[#008d68]">✓</span><span>{benefit}</span></li>)}</ul> : null}
+                </div>
+                <div className="relative border-t border-[#008d68]/15 p-8 sm:p-12 md:border-l md:border-t-0 lg:p-16">
+                  {b.oldPrice ? <p className="text-xl text-[#6b7470] line-through sm:text-2xl">{b.oldPrice}</p> : null}
+                  {b.price ? <p className="mt-2 text-5xl font-bold leading-none tracking-[-0.05em] text-[#008d68] sm:text-7xl">{b.price}</p> : null}
+                  {b.installment ? <p className="mt-4 text-2xl text-[#173c32] sm:text-3xl">{b.installment}</p> : null}
+                  {b.urgency ? <p className="mt-7 flex items-center gap-2 text-sm font-medium text-[#31594e]"><span aria-hidden="true">◷</span>{b.urgency}</p> : null}
+                  <div className="mt-8"><CtaButton action={b.action} ctx={ctx} /></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      }
       return (
         <section className="bg-brand-800 text-white">
           <div className={`${section} flex flex-col items-center gap-4 text-center`}>

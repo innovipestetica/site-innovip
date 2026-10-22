@@ -81,6 +81,21 @@ function emptyYoutubeBlock(): Block {
   return { id: newBlockId(), type: "rich_text", heading: "", body: [], youtubeUrl: "", youtubeAutoplay: true, youtubeAspect: "16:9" };
 }
 
+function emptyPricingBlock(): Block {
+  return {
+    id: newBlockId(), type: "cta", variant: "pricing",
+    pricingEyebrow: "Condição especial de Black",
+    heading: "Nome do tratamento",
+    text: "Tratamento completo e personalizado",
+    oldPrice: "De R$ 2.490",
+    price: "Por R$ 1.490",
+    installment: "ou 10x de R$ 149",
+    pricingBenefits: "Avaliação individual\nPlano pensado para você\nAcompanhamento da equipe Innovip",
+    urgency: "Condição por tempo limitado",
+    action: { kind: "link", label: "Garantir minha condição", href: "/" },
+  };
+}
+
 export function BlocksEditor(props: {
   blocks: Block[];
   allowed: BlockType[];
@@ -112,7 +127,7 @@ export function BlocksEditor(props: {
           <li key={block.id} className="rounded-[var(--radius-card)] border border-line bg-surface-raised">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2">
               <h3 className="text-sm font-semibold text-ink">
-                {idx + 1}. {block.type === "rich_text" && block.youtubeUrl !== undefined ? "Vídeo do YouTube" : BLOCK_META[block.type].label}
+                {idx + 1}. {block.type === "rich_text" && block.youtubeUrl !== undefined ? "Vídeo do YouTube" : block.type === "cta" && block.variant === "pricing" ? "Preço e condição" : BLOCK_META[block.type].label}
               </h3>
               <div className="flex flex-wrap gap-1">
                 <IconButton label={`Mover bloco ${idx + 1} para cima`} disabled={idx === 0} onClick={() => move(idx, -1)}>↑</IconButton>
@@ -181,6 +196,10 @@ export function BlocksEditor(props: {
         <button type="button" onClick={() => onChange([...blocks, emptyYoutubeBlock()])}
           className="min-h-11 rounded-[var(--radius-control)] border border-brand-700 px-4 font-semibold text-brand-800 hover:bg-brand-50">
           Adicionar vídeo do YouTube
+        </button>
+        <button type="button" onClick={() => onChange([...blocks, emptyPricingBlock()])}
+          className="min-h-11 rounded-[var(--radius-control)] border border-brand-700 px-4 font-semibold text-brand-800 hover:bg-brand-50">
+          Adicionar bloco de preço
         </button>
       </div>
     </section>
@@ -378,7 +397,18 @@ function BlockFields(props: {
       ) : null}
 
       {b.type === "cta" ? (
-        <>
+        b.variant === "pricing" ? <>
+          <TextInput label="Chamada superior" value={b.pricingEyebrow} maxLength={100} onChange={(pricingEyebrow) => onChange({ ...b, pricingEyebrow })} />
+          <TextInput label="Nome da oferta ou tratamento" value={b.heading} maxLength={120} error={issue("heading")} onChange={(heading) => onChange({ ...b, heading: heading ?? "" })} />
+          <TextArea label="Benefícios (um por linha)" value={b.pricingBenefits} maxLength={1200} rows={5} onChange={(pricingBenefits) => onChange({ ...b, pricingBenefits })} />
+          <div className="grid gap-4 sm:grid-cols-3">
+            <TextInput label="Preço anterior" value={b.oldPrice} maxLength={40} placeholder="De R$ 2.490" onChange={(oldPrice) => onChange({ ...b, oldPrice })} />
+            <TextInput label="Preço promocional" value={b.price} maxLength={40} placeholder="Por R$ 1.490" onChange={(price) => onChange({ ...b, price })} />
+            <TextInput label="Parcelamento" value={b.installment} maxLength={80} placeholder="ou 10x de R$ 149" onChange={(installment) => onChange({ ...b, installment })} />
+          </div>
+          <TextInput label="Aviso abaixo do preço" value={b.urgency} maxLength={120} placeholder="Condição por tempo limitado" onChange={(urgency) => onChange({ ...b, urgency })} />
+          <CtaEditor independentLinks={props.independentLinks} label="Botão" value={b.action} onChange={(v) => v && onChange({ ...b, action: v })} issue={issue("action.href") ?? issue("action.label")} />
+        </> : <>
           <TextInput label="Título" value={b.heading} maxLength={120} error={issue("heading")}
             hint={props.independentLinks ? "Para colorir somente um trecho, use: {#008d68 texto colorido}" : undefined}
             onChange={(v) => onChange({ ...b, heading: v ?? "" })} />

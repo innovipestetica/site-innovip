@@ -150,6 +150,14 @@ export const blockSchemas = {
     heading: shortText(120),
     text: optionalText(300),
     action: ctaActionSchema,
+    /** Variante de preço usa o mesmo tipo de banco para manter compatibilidade do CMS. */
+    variant: z.enum(["default", "pricing"]).default("default").optional(),
+    pricingEyebrow: optionalText(100),
+    oldPrice: optionalText(40),
+    price: optionalText(40),
+    installment: optionalText(80),
+    pricingBenefits: z.string().trim().max(1200).optional(),
+    urgency: optionalText(120),
   }),
   features: z.object({
     heading: optionalText(120),
