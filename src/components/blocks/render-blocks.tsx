@@ -265,7 +265,6 @@ function RenderBlock({ block: b, ctx, first, pageHasTitle }: { block: Block; ctx
                   {b.text ? <p className="mt-7 text-base leading-8 text-[#59635f] sm:text-lg">{b.text}</p> : null}
                   {benefits.length ? <ul className="mt-9 space-y-4 text-base sm:text-lg">{benefits.map((benefit) => <li key={benefit} className="flex items-start gap-3"><span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#075e49] font-bold text-white">✓</span><span>{benefit}</span></li>)}</ul> : null}
                 </div>
-                {offerImageSource ? <div className="relative mt-10 overflow-hidden rounded-2xl lg:hidden"><Picture media={offerImage!} sizes="100vw" /></div> : null}
               </div>
               <div className="relative flex flex-col items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top_right,#08745a_0%,#043f32_45%,#022c24_100%)] p-8 text-center text-white sm:p-12 lg:p-14">
                 {b.discountBadge ? <div className="rounded-full border border-[#d9cfae] px-5 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#f7efd4]">{b.discountBadge}</div> : null}
