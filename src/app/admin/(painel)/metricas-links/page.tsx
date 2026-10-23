@@ -84,13 +84,14 @@ async function LinkMetrics() {
         <section aria-labelledby="acessos-detalhados" className="rounded-[var(--radius-card)] border border-line bg-surface-raised">
           <div className="border-b border-line p-4"><h2 id="acessos-detalhados" className="font-semibold text-brand-800">Acessos detalhados</h2><p className="text-xs text-muted">Exibindo até 5.000 registros mais recentes.</p></div>
           <div className="overflow-x-auto">
-            <table className="min-w-[1900px] w-full text-left text-xs">
+            <table className="min-w-[2000px] w-full text-left text-xs">
               <thead><tr className="border-b border-line bg-surface text-muted">
-                {['Data e hora','Origem','UTM origem','Mídia','Campanha','Conteúdo','Termo','Dispositivo','Sistema','Navegador','Idioma','Localização','Visita','Origem detalhada','Página do clique'].map((h) => <th key={h} className="whitespace-nowrap px-3 py-3 font-medium">{h}</th>)}
+                {['Data e hora','Página acessada','Origem','UTM origem','Mídia','Campanha','Conteúdo','Termo','Dispositivo','Sistema','Navegador','Idioma','Localização','Visita','Origem detalhada','Página do clique'].map((h) => <th key={h} className="whitespace-nowrap px-3 py-3 font-medium">{h}</th>)}
               </tr></thead>
               <tbody>{events.map((event) => (
                 <tr key={event.id} className="border-b border-line/70 align-top last:border-0">
                   <td className="whitespace-nowrap px-3 py-3">{formatDateTime(event.created_at)}</td>
+                  <td className="whitespace-nowrap px-3 py-3"><code>{event.source_path}</code></td>
                   <td className="px-3 py-3">{event.referrer_host || 'Direto'}</td>
                   <td className="px-3 py-3">{event.utm_source || '—'}</td><td className="px-3 py-3">{event.utm_medium || '—'}</td><td className="px-3 py-3">{event.utm_campaign || '—'}</td><td className="px-3 py-3">{event.utm_content || '—'}</td><td className="px-3 py-3">{event.utm_term || '—'}</td>
                   <td className="px-3 py-3 capitalize">{event.device_type || '—'}</td><td className="px-3 py-3">{event.operating_system || '—'}</td><td className="px-3 py-3">{event.browser || '—'}</td><td className="px-3 py-3">{event.browser_language || '—'}</td>
