@@ -28,8 +28,8 @@ async function Redirects() {
   const privileged = createSupabasePrivilegedClient();
   const [{ data, error }, { count: vipCount, error: countError }, { data: vipRecent, error: recentError }] = await Promise.all([
     supabase.from("redirects").select("id, source_path, target_path, status_code, created_at").order("created_at", { ascending: false }).limit(500),
-    privileged.from("redirect_events").select("id", { count: "exact", head: true }).eq("source_path", "/grupovip"),
-    privileged.from("redirect_events").select("id, created_at, referrer_host, utm_source, utm_medium, utm_campaign").eq("source_path", "/grupovip").order("created_at", { ascending: false }).limit(20),
+    privileged.from("redirect_events").select("id", { count: "exact", head: true }).eq("source_path", "/grupovip").or("utm_campaign.is.null,utm_campaign.neq.validacao"),
+    privileged.from("redirect_events").select("id, created_at, referrer_host, utm_source, utm_medium, utm_campaign").eq("source_path", "/grupovip").or("utm_campaign.is.null,utm_campaign.neq.validacao").order("created_at", { ascending: false }).limit(20),
   ]);
   if (error) throw new Error(`redirects: ${error.code}`);
   if (countError) throw new Error(`redirect_events count: ${countError.code}`);
@@ -43,7 +43,7 @@ async function Redirects() {
             <h2 id="grupovip-metricas" className="text-lg font-semibold text-brand-800">Acessos ao Grupo VIP</h2>
             <p className="mt-1 text-sm text-muted"><code>/grupovip</code> encaminha automaticamente para o grupo do WhatsApp.</p>
           </div>
-          <p className="text-3xl font-bold text-brand-800">{vipCount ?? 0} <span className="text-sm font-normal text-muted">redirecionamentos</span></p>
+          <p className="text-3xl font-bold text-brand-800">{vipCount ?? 0} <span className="text-sm font-normal text-muted">{vipCount === 1 ? "redirecionamento" : "redirecionamentos"}</span></p>
         </div>
         {vipRecent?.length ? (
           <div className="mt-5 overflow-x-auto">
