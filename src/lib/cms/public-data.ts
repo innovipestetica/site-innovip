@@ -219,17 +219,33 @@ export async function getPublicTaxonomies(): Promise<{ categories: RenderTaxonom
 }
 
 /** Redirecionamento cadastrado para um caminho (ou null). */
-export async function getRedirect(path: string): Promise<{ target: string; status: number } | null> {
+export type PublicRedirect = {
+  target: string;
+  status: number;
+  previewTitle: string | null;
+  previewDescription: string | null;
+  previewSiteName: string | null;
+  previewMediaId: string | null;
+};
+
+export async function getRedirect(path: string): Promise<PublicRedirect | null> {
   "use cache";
   cachePolicy(TAG.redirects);
   const supabase = createSupabasePublicClient();
   const { data, error } = await supabase
     .from("redirects")
-    .select("target_path, status_code")
+    .select("target_path, status_code, preview_title, preview_description, preview_site_name, preview_media_id")
     .eq("source_path", path)
     .maybeSingle();
   if (error) throw new Error(`getRedirect: ${error.code}`);
-  return data ? { target: data.target_path, status: data.status_code } : null;
+  return data ? {
+    target: data.target_path,
+    status: data.status_code,
+    previewTitle: data.preview_title,
+    previewDescription: data.preview_description,
+    previewSiteName: data.preview_site_name,
+    previewMediaId: data.preview_media_id,
+  } : null;
 }
 
 async function getEntriesByIds(ids: string[]): Promise<RenderEntry[]> {

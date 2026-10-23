@@ -3,8 +3,9 @@ import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/auth/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabasePrivilegedClient } from "@/lib/supabase/privileged";
+import { listMediaOptions } from "@/lib/cms/admin-data";
 import { AdminMain, EmptyState, PageHeader, formatDateTime } from "@/components/admin/ui";
-import { AddRedirectForm, DeleteRedirectButton } from "./redirect-controls";
+import { AddRedirectForm, DeleteRedirectButton, RedirectPreviewForm } from "./redirect-controls";
 
 export const metadata: Metadata = { title: "Redirecionamentos" };
 
@@ -26,10 +27,11 @@ async function Redirects() {
   await requireAdmin();
   const supabase = await createSupabaseServerClient();
   const privileged = createSupabasePrivilegedClient();
-  const [{ data, error }, { count: vipCount, error: countError }, { data: vipRecent, error: recentError }] = await Promise.all([
-    supabase.from("redirects").select("id, source_path, target_path, status_code, created_at").order("created_at", { ascending: false }).limit(500),
+  const [{ data, error }, { count: vipCount, error: countError }, { data: vipRecent, error: recentError }, mediaOptions] = await Promise.all([
+    supabase.from("redirects").select("id, source_path, target_path, status_code, created_at, preview_title, preview_description, preview_site_name, preview_media_id").order("created_at", { ascending: false }).limit(500),
     privileged.from("redirect_events").select("id", { count: "exact", head: true }).eq("source_path", "/grupovip").or("utm_campaign.is.null,utm_campaign.neq.validacao"),
     privileged.from("redirect_events").select("id, created_at, referrer_host, utm_source, utm_medium, utm_campaign").eq("source_path", "/grupovip").or("utm_campaign.is.null,utm_campaign.neq.validacao").order("created_at", { ascending: false }).limit(20),
+    listMediaOptions(),
   ]);
   if (error) throw new Error(`redirects: ${error.code}`);
   if (countError) throw new Error(`redirect_events count: ${countError.code}`);
@@ -60,18 +62,18 @@ async function Redirects() {
           </div>
         ) : <p className="mt-5 text-sm text-muted">Nenhum acesso registrado ainda.</p>}
       </section>
-      <AddRedirectForm />
+      <AddRedirectForm mediaOptions={mediaOptions} />
       {data.length === 0 ? (
         <EmptyState>Nenhum redirecionamento.</EmptyState>
       ) : (
         <ul className="divide-y divide-line rounded-[var(--radius-card)] border border-line bg-surface-raised">
           {data.map((r) => (
-            <li key={r.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-              <span className="break-all text-sm">
-                <code>{r.source_path}</code> → <code>{r.target_path}</code>{" "}
-                <span className="text-xs text-muted">({r.status_code} · {formatDateTime(r.created_at)})</span>
-              </span>
-              <DeleteRedirectButton id={r.id} source={r.source_path} />
+            <li key={r.id} className="px-4 py-3">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <span className="break-all text-sm"><code>{r.source_path}</code> → <code>{r.target_path}</code>{" "}<span className="text-xs text-muted">({r.status_code} · {formatDateTime(r.created_at)})</span></span>
+                <DeleteRedirectButton id={r.id} source={r.source_path} />
+              </div>
+              <RedirectPreviewForm redirect={r} mediaOptions={mediaOptions} />
             </li>
           ))}
         </ul>

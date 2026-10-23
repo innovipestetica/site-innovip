@@ -230,14 +230,14 @@ isOneToOne: false
                   Relationships: []
                 },"redirects": {
                   Row: {
-                    "created_at": string,"id": string,"source_path": string,"status_code": number,"target_path": string
+                    "created_at": string,"id": string,"preview_description": string | null,"preview_media_id": string | null,"preview_site_name": string | null,"preview_title": string | null,"source_path": string,"status_code": number,"target_path": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"source_path": string,"status_code"?: number,"target_path": string
+                    "created_at"?: string,"id"?: string,"preview_description"?: string | null,"preview_media_id"?: string | null,"preview_site_name"?: string | null,"preview_title"?: string | null,"source_path": string,"status_code"?: number,"target_path": string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"source_path"?: string,"status_code"?: number,"target_path"?: string
+                    "created_at"?: string,"id"?: string,"preview_description"?: string | null,"preview_media_id"?: string | null,"preview_site_name"?: string | null,"preview_title"?: string | null,"source_path"?: string,"status_code"?: number,"target_path"?: string
                   }
                   Relationships: [
                     

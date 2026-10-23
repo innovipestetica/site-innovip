@@ -2,6 +2,8 @@ import { createHmac } from "node:crypto";
 import { NextResponse, type NextRequest, userAgentFromString } from "next/server";
 import { serverEnv } from "@/lib/env/server";
 import { createSupabasePrivilegedClient } from "@/lib/supabase/privileged";
+import { getMedia, getRedirect } from "@/lib/cms/public-data";
+import { absoluteUrl } from "@/lib/seo";
 
 const TARGET = "https://chat.whatsapp.com/CXMNBJBFNslFEdxLcroT4H?s=cl&p=i&mlu=4&ilr=4";
 const noStore = {
@@ -59,7 +61,22 @@ function visitorKey(request: NextRequest): string | null {
   return createHmac("sha256", serverEnv().SUPABASE_SECRET_KEY).update(`${ip}|${ua}`).digest("hex");
 }
 
+function html(value: string) {
+  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+}
+
+async function previewResponse(target: string, preview: NonNullable<Awaited<ReturnType<typeof getRedirect>>>) {
+  if (!preview.previewTitle) return null;
+  const image = await getMedia(preview.previewMediaId);
+  const imageUrl = image?.sources.at(-1)?.url;
+  const safeTargetJson = JSON.stringify(target).replaceAll("<", "\\u003c");
+  const markup = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${html(preview.previewTitle)}</title><meta name="robots" content="noindex,follow"><meta property="og:type" content="website"><meta property="og:url" content="${html(absoluteUrl("/grupovip"))}"><meta property="og:title" content="${html(preview.previewTitle)}">${preview.previewDescription ? `<meta name="description" content="${html(preview.previewDescription)}"><meta property="og:description" content="${html(preview.previewDescription)}">` : ""}${preview.previewSiteName ? `<meta property="og:site_name" content="${html(preview.previewSiteName)}">` : ""}${imageUrl ? `<meta property="og:image" content="${html(imageUrl)}"><meta property="og:image:alt" content="${html(image?.alt || preview.previewTitle)}">` : ""}<script>location.replace(${safeTargetJson})</script></head><body><p>Abrindo o destino… <a href="${html(target)}">Toque aqui se não abrir automaticamente.</a></p></body></html>`;
+  return new NextResponse(markup, { status: 200, headers: { ...noStore, "Content-Type": "text/html; charset=utf-8" } });
+}
+
 export async function GET(request: NextRequest) {
+  const redirectConfig = await getRedirect("/grupovip").catch(() => null);
+  const target = redirectConfig?.target || TARGET;
   try {
     const supabase = createSupabasePrivilegedClient();
     const ua = userAgentFromString(request.headers.get("user-agent") || undefined);
@@ -70,7 +87,7 @@ export async function GET(request: NextRequest) {
     const type = ua.isBot ? "bot" : ua.device.type === "mobile" ? "celular" : ua.device.type === "tablet" ? "tablet" : "computador";
     const { error } = await supabase.from("redirect_events").insert({
       source_path: "/grupovip",
-      target_url: TARGET,
+      target_url: target,
       referrer_host: referrerHost(request),
       utm_source: campaignValue(request, "utm_source"),
       utm_medium: campaignValue(request, "utm_medium"),
@@ -95,5 +112,9 @@ export async function GET(request: NextRequest) {
     console.error("[grupovip] registro indisponível", { name: error instanceof Error ? error.name : "unknown" });
   }
 
-  return NextResponse.redirect(TARGET, { status: 307, headers: noStore });
+  if (redirectConfig) {
+    const response = await previewResponse(target, redirectConfig);
+    if (response) return response;
+  }
+  return NextResponse.redirect(target, { status: 307, headers: noStore });
 }

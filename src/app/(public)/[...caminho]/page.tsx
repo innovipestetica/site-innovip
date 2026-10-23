@@ -5,6 +5,9 @@ import { getMedia, getPublishedEntry, listPublishedSlugs, loadPublicContext } fr
 import { resolveMissing } from "@/lib/cms/resolve-missing";
 import { buildMetadata } from "@/lib/seo";
 import { pageAttrs } from "@/lib/consent/tracking-config";
+import { getRedirect } from "@/lib/cms/public-data";
+import { absoluteUrl } from "@/lib/seo";
+import { RedirectPreview } from "@/components/site/redirect-preview";
 
 /**
  * Páginas institucionais do CMS (tipo "page"): /a-innovip, /contato,
@@ -25,7 +28,27 @@ async function load(caminho: string[]) {
 export async function generateMetadata({ params }: PageProps<"/[...caminho]">): Promise<Metadata> {
   const { caminho } = await params;
   const page = await load(caminho);
-  if (!page) return { robots: { index: false, follow: false } };
+  if (!page) {
+    const path = `/${caminho.join("/")}`;
+    const redirect = await getRedirect(path);
+    if (!redirect?.previewTitle) return { robots: { index: false, follow: false } };
+    const image = await getMedia(redirect.previewMediaId);
+    const largest = image?.sources.at(-1);
+    return {
+      title: redirect.previewTitle,
+      description: redirect.previewDescription || undefined,
+      robots: { index: false, follow: true },
+      openGraph: {
+        title: redirect.previewTitle,
+        description: redirect.previewDescription || undefined,
+        siteName: redirect.previewSiteName || undefined,
+        url: absoluteUrl(path),
+        type: "website",
+        locale: "pt_BR",
+        images: largest ? [{ url: largest.url, width: largest.width, alt: image?.alt }] : undefined,
+      },
+    };
+  }
   const image = await getMedia(page.seo.mediaId ?? (page.data.mediaId as string | undefined));
   return buildMetadata({ title: page.title, description: page.summary, path: `/${page.slug}`, seo: page.seo, image });
 }
@@ -33,7 +56,11 @@ export async function generateMetadata({ params }: PageProps<"/[...caminho]">): 
 export default async function CmsPage({ params }: PageProps<"/[...caminho]">) {
   const { caminho } = await params;
   const page = await load(caminho);
-  if (!page) return resolveMissing(`/${caminho.join("/")}`);
+  if (!page) {
+    const redirect = await getRedirect(`/${caminho.join("/")}`);
+    if (redirect?.previewTitle) return <RedirectPreview target={redirect.target} />;
+    return resolveMissing(`/${caminho.join("/")}`);
+  }
 
   const ctx = await loadPublicContext({ blocks: page.blocks, data: page.data });
   return (
