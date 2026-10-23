@@ -14,3 +14,6 @@ alter table public.redirects
 insert into public.redirects (source_path, target_path, status_code)
 values ('/grupovip', 'https://chat.whatsapp.com/CXMNBJBFNslFEdxLcroT4H?s=cl&p=i&mlu=4&ilr=4', 302)
 on conflict (source_path) do nothing;
+
+grant select (preview_title, preview_description, preview_site_name, preview_media_id)
+  on public.redirects to anon;
