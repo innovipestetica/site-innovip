@@ -216,6 +216,18 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"redirect_events": {
+                  Row: {
+                    "created_at": string,"id": number,"referrer_host": string | null,"source_path": string,"target_url": string,"utm_campaign": string | null,"utm_medium": string | null,"utm_source": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: never,"referrer_host"?: string | null,"source_path"?: string,"target_url": string,"utm_campaign"?: string | null,"utm_medium"?: string | null,"utm_source"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: never,"referrer_host"?: string | null,"source_path"?: string,"target_url"?: string,"utm_campaign"?: string | null,"utm_medium"?: string | null,"utm_source"?: string | null
+                  }
+                  Relationships: []
                 },"redirects": {
                   Row: {
                     "created_at": string,"id": string,"source_path": string,"status_code": number,"target_path": string
