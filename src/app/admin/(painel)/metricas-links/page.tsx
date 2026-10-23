@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { requireAdmin } from "@/lib/auth/admin";
 import { createSupabasePrivilegedClient } from "@/lib/supabase/privileged";
 import { AdminMain, EmptyState, PageHeader, formatDateTime } from "@/components/admin/ui";
@@ -33,7 +34,15 @@ function peak(events: Event[], part: "weekday" | "hour") {
   return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
 }
 
-export default async function LinkMetricsPage() {
+export default function LinkMetricsPage() {
+  return (
+    <Suspense fallback={<AdminMain><p className="text-sm text-muted" role="status">Carregando métricas…</p></AdminMain>}>
+      <LinkMetrics />
+    </Suspense>
+  );
+}
+
+async function LinkMetrics() {
   await requireAdmin("/admin/metricas-links");
   const supabase = createSupabasePrivilegedClient();
   const { data, error, count } = await supabase
