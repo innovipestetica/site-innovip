@@ -218,14 +218,14 @@ isOneToOne: false
                   ]
                 },"redirect_events": {
                   Row: {
-                    "created_at": string,"id": number,"referrer_host": string | null,"source_path": string,"target_url": string,"utm_campaign": string | null,"utm_medium": string | null,"utm_source": string | null
+                    "browser": string | null,"browser_language": string | null,"city": string | null,"clicked_page": string | null,"country_code": string | null,"created_at": string,"device_type": string | null,"id": number,"is_returning": boolean | null,"operating_system": string | null,"referrer_host": string | null,"region_code": string | null,"source_detail": string | null,"source_path": string,"target_url": string,"timezone": string | null,"utm_campaign": string | null,"utm_content": string | null,"utm_medium": string | null,"utm_source": string | null,"utm_term": string | null,"visitor_key": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: never,"referrer_host"?: string | null,"source_path"?: string,"target_url": string,"utm_campaign"?: string | null,"utm_medium"?: string | null,"utm_source"?: string | null
+                    "browser"?: string | null,"browser_language"?: string | null,"city"?: string | null,"clicked_page"?: string | null,"country_code"?: string | null,"created_at"?: string,"device_type"?: string | null,"id"?: never,"is_returning"?: boolean | null,"operating_system"?: string | null,"referrer_host"?: string | null,"region_code"?: string | null,"source_detail"?: string | null,"source_path"?: string,"target_url": string,"timezone"?: string | null,"utm_campaign"?: string | null,"utm_content"?: string | null,"utm_medium"?: string | null,"utm_source"?: string | null,"utm_term"?: string | null,"visitor_key"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"id"?: never,"referrer_host"?: string | null,"source_path"?: string,"target_url"?: string,"utm_campaign"?: string | null,"utm_medium"?: string | null,"utm_source"?: string | null
+                    "browser"?: string | null,"browser_language"?: string | null,"city"?: string | null,"clicked_page"?: string | null,"country_code"?: string | null,"created_at"?: string,"device_type"?: string | null,"id"?: never,"is_returning"?: boolean | null,"operating_system"?: string | null,"referrer_host"?: string | null,"region_code"?: string | null,"source_detail"?: string | null,"source_path"?: string,"target_url"?: string,"timezone"?: string | null,"utm_campaign"?: string | null,"utm_content"?: string | null,"utm_medium"?: string | null,"utm_source"?: string | null,"utm_term"?: string | null,"visitor_key"?: string | null
                   }
                   Relationships: []
                 },"redirects": {

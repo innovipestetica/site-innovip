@@ -33,6 +33,7 @@ export const ADMIN_NAV: { group: string; items: { href: string; label: string }[
       { href: "/admin/midia", label: "Mídia" },
       { href: "/admin/configuracoes", label: "Configurações públicas" },
       { href: "/admin/redirecionamentos", label: "Redirecionamentos" },
+      { href: "/admin/metricas-links", label: "Planilha de acessos" },
     ],
   },
 ];
