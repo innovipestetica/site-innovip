@@ -3,7 +3,6 @@ import { NextResponse, type NextRequest, userAgentFromString } from "next/server
 import { serverEnv } from "@/lib/env/server";
 import { createSupabasePrivilegedClient } from "@/lib/supabase/privileged";
 import { getMedia, getRedirect } from "@/lib/cms/public-data";
-import { absoluteUrl } from "@/lib/seo";
 
 const TARGET = "https://chat.whatsapp.com/CXMNBJBFNslFEdxLcroT4H?s=cl&p=i&mlu=4&ilr=4";
 const noStore = {
@@ -65,13 +64,16 @@ function html(value: string) {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
 
-async function previewResponse(target: string, preview: NonNullable<Awaited<ReturnType<typeof getRedirect>>>) {
+async function previewResponse(request: NextRequest, target: string, preview: NonNullable<Awaited<ReturnType<typeof getRedirect>>>) {
   if (!preview.previewTitle) return null;
   const image = await getMedia(preview.previewMediaId);
-  const imageUrl = image?.sources.at(-1)?.url;
+  const largest = image?.sources.at(-1);
+  const imageUrl = largest?.url;
+  const imageHeight = largest && image?.width && image.height ? Math.round(largest.width * image.height / image.width) : 630;
+  const sharedUrl = `${request.nextUrl.origin}/grupovip`;
   const safeTargetJson = JSON.stringify(target).replaceAll("<", "\\u003c");
-  const markup = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${html(preview.previewTitle)}</title><meta name="robots" content="noindex,follow"><meta property="og:type" content="website"><meta property="og:url" content="${html(absoluteUrl("/grupovip"))}"><meta property="og:title" content="${html(preview.previewTitle)}">${preview.previewDescription ? `<meta name="description" content="${html(preview.previewDescription)}"><meta property="og:description" content="${html(preview.previewDescription)}">` : ""}${preview.previewSiteName ? `<meta property="og:site_name" content="${html(preview.previewSiteName)}">` : ""}${imageUrl ? `<meta property="og:image" content="${html(imageUrl)}"><meta property="og:image:alt" content="${html(image?.alt || preview.previewTitle)}">` : ""}<script>location.replace(${safeTargetJson})</script></head><body><p>Abrindo o destino… <a href="${html(target)}">Toque aqui se não abrir automaticamente.</a></p></body></html>`;
-  return new NextResponse(markup, { status: 200, headers: { ...noStore, "Content-Type": "text/html; charset=utf-8" } });
+  const markup = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${html(preview.previewTitle)}</title><meta name="robots" content="noindex,follow"><link rel="canonical" href="${html(sharedUrl)}"><meta property="og:type" content="website"><meta property="og:locale" content="pt_BR"><meta property="og:url" content="${html(sharedUrl)}"><meta property="og:title" content="${html(preview.previewTitle)}">${preview.previewDescription ? `<meta name="description" content="${html(preview.previewDescription)}"><meta property="og:description" content="${html(preview.previewDescription)}">` : ""}${preview.previewSiteName ? `<meta property="og:site_name" content="${html(preview.previewSiteName)}">` : ""}${imageUrl ? `<meta property="og:image" content="${html(imageUrl)}"><meta property="og:image:secure_url" content="${html(imageUrl)}"><meta property="og:image:type" content="image/webp"><meta property="og:image:width" content="${largest?.width || 1200}"><meta property="og:image:height" content="${imageHeight}"><meta property="og:image:alt" content="${html(image?.alt || preview.previewTitle)}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${html(imageUrl)}">` : ""}<meta name="twitter:title" content="${html(preview.previewTitle)}">${preview.previewDescription ? `<meta name="twitter:description" content="${html(preview.previewDescription)}">` : ""}<script>location.replace(${safeTargetJson})</script></head><body><p>Abrindo o destino… <a href="${html(target)}">Toque aqui se não abrir automaticamente.</a></p></body></html>`;
+  return new NextResponse(markup, { status: 200, headers: { "Cache-Control": "public, max-age=0, s-maxage=300", "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex, follow" } });
 }
 
 export async function GET(request: NextRequest) {
@@ -113,7 +115,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (redirectConfig) {
-    const response = await previewResponse(target, redirectConfig);
+    const response = await previewResponse(request, target, redirectConfig);
     if (response) return response;
   }
   return NextResponse.redirect(target, { status: 307, headers: noStore });
