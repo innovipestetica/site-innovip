@@ -1,27 +1,7 @@
 import type { MetadataRoute } from "next";
 
-/**
- * Indexação só é liberada com SITE_INDEXING_ENABLED=true (produção, após o
- * lançamento). robots.txt não protege nada: /admin continua exigindo login.
- */
+/** Permite páginas públicas e mantém áreas internas fora dos rastreadores. */
 export default function robots(): MetadataRoute.Robots {
-  if (process.env.SITE_INDEXING_ENABLED !== "true") {
-    return {
-      rules: [
-        {
-          userAgent: [
-            "facebookexternalhit",
-            "Facebot",
-            "Instagram",
-            "meta-externalagent",
-            "meta-externalfetcher",
-          ],
-          allow: "/",
-        },
-        { userAgent: "*", disallow: "/" },
-      ],
-    };
-  }
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/, "");
   return {
     rules: {
