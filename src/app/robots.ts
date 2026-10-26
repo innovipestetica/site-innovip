@@ -8,7 +8,16 @@ export default function robots(): MetadataRoute.Robots {
   if (process.env.SITE_INDEXING_ENABLED !== "true") {
     return {
       rules: [
-        { userAgent: ["facebookexternalhit", "Facebot", "Instagram"], allow: "/" },
+        {
+          userAgent: [
+            "facebookexternalhit",
+            "Facebot",
+            "Instagram",
+            "meta-externalagent",
+            "meta-externalfetcher",
+          ],
+          allow: "/",
+        },
         { userAgent: "*", disallow: "/" },
       ],
     };
