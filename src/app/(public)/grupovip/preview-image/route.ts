@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import sharp from "sharp";
 import { getMedia, getRedirect } from "@/lib/cms/public-data";
 
-export const runtime = "nodejs";
-
 export async function GET() {
   try {
     const redirect = await getRedirect("/grupovip");
