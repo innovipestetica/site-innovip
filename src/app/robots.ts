@@ -6,7 +6,12 @@ import type { MetadataRoute } from "next";
  */
 export default function robots(): MetadataRoute.Robots {
   if (process.env.SITE_INDEXING_ENABLED !== "true") {
-    return { rules: { userAgent: "*", disallow: "/" } };
+    return {
+      rules: [
+        { userAgent: ["facebookexternalhit", "Facebot", "Instagram"], allow: "/" },
+        { userAgent: "*", disallow: "/" },
+      ],
+    };
   }
   const base = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/, "");
   return {
