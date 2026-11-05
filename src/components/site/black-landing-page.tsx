@@ -8,7 +8,13 @@ import type { Block, CtaAction, FeatureIcon } from "@/lib/cms/blocks";
 import { YoutubeVideo } from "@/components/blocks/youtube-video";
 import { SingleImageCarousel } from "@/components/blocks/single-image-carousel";
 import { RenderBlocks } from "@/components/blocks/render-blocks";
+import { LavieenMetaPixel } from "@/components/tracking/lavieen-meta-pixel";
 import styles from "@/app/(campanha)/black/page.module.css";
+
+const LAVIEEN_PIXEL_PAGE_IDS = new Set([
+  "bac27d7a-a252-40b7-8520-e1b16376ee1d",
+  "d7b326dc-c5fe-4618-b1e6-35d2d65b03f9",
+]);
 
 const benefits = [
   {
@@ -150,6 +156,7 @@ function CtaLink({ className, location, children, action }: { className?: string
 
 export async function BlackLandingPage({ slug = "black" }: { slug?: string }) {
   const editablePage = await getPublishedEntry("landing", slug);
+  const hasLavieenPixel = editablePage ? LAVIEEN_PIXEL_PAGE_IDS.has(editablePage.id) : false;
   const pageText = (key: string, fallback: string) => {
     const value = editablePage?.data[key];
     return typeof value === "string" && value.trim() ? value : fallback;
@@ -217,7 +224,9 @@ export async function BlackLandingPage({ slug = "black" }: { slug?: string }) {
     : [];
 
   return (
-    <main id="conteudo" className={styles.page} {...pageAttrs("landing")}>
+    <>
+      {hasLavieenPixel ? <LavieenMetaPixel /> : null}
+      <main id="conteudo" className={styles.page} {...pageAttrs("landing")}>
       <section className={styles.hero} aria-labelledby="vip-title">
         <Image
           src={heroBackground}
@@ -364,7 +373,8 @@ export async function BlackLandingPage({ slug = "black" }: { slug?: string }) {
           <small>{pageText("footerNote", "Innovip Clínica de Estética · Atendimento individual e responsável.")}</small>
         </div>
       </footer> : null}
-    </main>
+      </main>
+    </>
   );
 }
 
