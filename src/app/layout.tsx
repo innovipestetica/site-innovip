@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Montserrat } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 // Tipografia provisória: Montserrat (próxima do lettering da logo) para
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Pular para o conteúdo
         </a>
         {children}
+        <SpeedInsights />
       </body>
     </html>
   );
