@@ -50,9 +50,12 @@ function peak(events: Event[], part: "weekday" | "hour") {
   return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
 }
 
-export default async function LinkMetricsPage({ searchParams }: { searchParams: Promise<Params> }) {
-  const params = await searchParams;
-  return <Suspense fallback={<AdminMain><p className="text-sm text-muted" role="status">Carregando métricas…</p></AdminMain>}><LinkMetrics params={params} /></Suspense>;
+export default function LinkMetricsPage({ searchParams }: { searchParams: Promise<Params> }) {
+  return <Suspense fallback={<AdminMain><p className="text-sm text-muted" role="status">Carregando métricas…</p></AdminMain>}><LinkMetricsFromParams searchParams={searchParams} /></Suspense>;
+}
+
+async function LinkMetricsFromParams({ searchParams }: { searchParams: Promise<Params> }) {
+  return <LinkMetrics params={await searchParams} />;
 }
 
 async function LinkMetrics({ params }: { params: Params }) {
