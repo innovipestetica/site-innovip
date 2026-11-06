@@ -54,3 +54,6 @@ supabase/.branches/
 
 # backups locais (originais de mídia e dados internos)
 /backups/
+
+/.vercel/
+.env*.local

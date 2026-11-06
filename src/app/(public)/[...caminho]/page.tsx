@@ -57,9 +57,10 @@ export default async function CmsPage({ params }: PageProps<"/[...caminho]">) {
   const { caminho } = await params;
   const page = await load(caminho);
   if (!page) {
-    const redirect = await getRedirect(`/${caminho.join("/")}`);
-    if (redirect?.previewTitle) return <RedirectPreview target={redirect.target} />;
-    return resolveMissing(`/${caminho.join("/")}`);
+    const path = `/${caminho.join("/")}`;
+    const redirect = await getRedirect(path);
+    if (redirect) return <RedirectPreview target={redirect.target} sourcePath={path} />;
+    return resolveMissing(path);
   }
 
   const ctx = await loadPublicContext({ blocks: page.blocks, data: page.data });
